@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import {
   Users,
@@ -15,11 +15,32 @@ import {
   MonitorSmartphone,
   ChevronRight,
 } from "lucide-react";
-import { useAuth, REHAB_ROOMS } from "@/hooks/use-auth";
+import { useAuth } from "@/hooks/use-auth";
+import { receptionistService, RoomItem } from "@/services/receptionist.service";
 
 export default function DashboardOverviewPage() {
-  const { user, selectedRoom } = useAuth();
-  const currentRoom = REHAB_ROOMS.find((r) => r.id === selectedRoom) || REHAB_ROOMS[0];
+  const { user } = useAuth();
+  // GĐ2 bước 6 — phòng PHCN thật từ GET /routing/rooms, thay cho hằng số
+  // REHAB_ROOMS ghi cứng + các số "Đang khám A-01 / Hàng đợi 02" bịa sẵn.
+  const [rooms, setRooms] = useState<RoomItem[]>([]);
+  const [roomsError, setRoomsError] = useState("");
+  useEffect(() => {
+    let cancelled = false;
+    receptionistService
+      .getRooms()
+      .then((list) => {
+        if (cancelled) return;
+        setRooms(
+          list.filter((r) => r.specialtyName === "Phục hồi chức năng"),
+        );
+      })
+      .catch(() => {
+        if (!cancelled) setRoomsError("Không tải được danh sách phòng.");
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const getRoleDestination = () => {
     switch (user?.role) {
@@ -65,14 +86,20 @@ export default function DashboardOverviewPage() {
           <div>
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-[6px] bg-[#fffefc] border border-[#cfe7d3] text-[#0f3e17] text-xs font-semibold mb-3">
               <span className="w-2 h-2 rounded-full bg-[#0f3e17]" />
-              Ca trực ngày: 12/11/2026 • Trạng thái: Sẵn sàng
+              Ca trực ngày: {new Date().toLocaleDateString("vi-VN")} • Trạng thái: Sẵn sàng
             </div>
             <h1 className="text-2xl sm:text-3xl font-extrabold text-[#0f3e17] tracking-tight">
               Xin chào, {user?.name || "Bác sĩ / Nhân viên"}!
             </h1>
             <p className="mt-1 text-sm text-[#222222]/80 flex items-center gap-2">
               <MapPin className="w-4 h-4 text-[#0f3e17]" />
-              <span>Đang trực tại: <strong className="text-[#0f3e17] font-bold">{currentRoom.name}</strong></span>
+              <span>Đang trực tại: <strong className="text-[#0f3e17] font-bold">{(() => {
+                const myId = user?.doctor?.id ?? user?.technician?.id;
+                const mine = myId
+                  ? rooms.find((r) => r.booths.some((b) => b.doctorId === myId))
+                  : undefined;
+                return mine ? mine.roomName : "Chưa có ca trực hôm nay";
+              })()}</strong></span>
             </p>
           </div>
 
@@ -168,35 +195,50 @@ export default function DashboardOverviewPage() {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-            {REHAB_ROOMS.map((room, idx) => {
-              const isCurrent = room.id === selectedRoom;
+            {roomsError && (
+              <p className="text-xs text-rose-700 col-span-2">{roomsError}</p>
+            )}
+            {rooms.length === 0 && !roomsError && (
+              <p className="text-xs text-[#222222]/70 col-span-2">
+                Đang tải danh sách phòng...
+              </p>
+            )}
+            {rooms.map((room) => {
+              const doctors = Array.from(
+                new Set(
+                  room.booths
+                    .map((b) => b.doctorName)
+                    .filter((n): n is string => Boolean(n)),
+                ),
+              );
+              const latestEnd = room.booths
+                .map((b) => b.sessionEndTime)
+                .filter((t): t is string => Boolean(t))
+                .sort()
+                .pop();
               return (
                 <div
                   key={room.id}
-                  className={`p-4 rounded-[14px] border transition-colors ${
-                    isCurrent
-                      ? "bg-[#e1f4df]/40 border-[#cfe7d3]"
-                      : "bg-[#fffefc] border-[#efeeeb] hover:bg-[#efeeeb]/40"
-                  }`}
+                  className="p-4 rounded-[14px] border bg-[#fffefc] border-[#efeeeb] hover:bg-[#efeeeb]/40 transition-colors"
                 >
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-xs font-bold text-[#0f3e17]">{room.id}</span>
+                    <span className="text-xs font-bold text-[#0f3e17]">{room.roomCode}</span>
                     <span
                       className={`text-[10px] px-2 py-0.5 rounded-[6px] font-semibold ${
-                        idx % 3 === 0
+                        doctors.length > 0
                           ? "bg-[#e1f4df] text-[#0f3e17] border border-[#cfe7d3]"
-                          : "bg-[#b6ced5]/30 text-[#0f3e17] border border-[#b6ced5]"
+                          : "bg-[#efeeeb] text-[#222222]/70 border border-[#efeeeb]"
                       }`}
                     >
-                      {idx % 3 === 0 ? "Đang trống" : "Đang điều trị"}
+                      {doctors.length > 0 ? "Có ca trực" : "Chưa có ca trực"}
                     </span>
                   </div>
                   <div className="text-xs font-semibold text-[#222222] line-clamp-1">
-                    {room.name}
+                    {room.roomName}
                   </div>
                   <div className="mt-3 flex items-center justify-between text-[11px] text-[#222222]/70 pt-2 border-t border-[#efeeeb]">
-                    <span>Số đang khám: <strong className="text-[#0f3e17] font-bold">A-0{idx + 1}</strong></span>
-                    <span>Hàng đợi: <strong className="text-[#0f3e17] font-bold">0{idx + 2}</strong></span>
+                    <span>Bác sĩ trực: <strong className="text-[#0f3e17] font-bold">{doctors.length > 0 ? doctors.join(", ") : "—"}</strong></span>
+                    <span>Ca trực tới: <strong className="text-[#0f3e17] font-bold">{latestEnd ? new Date(latestEnd).toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" }) : "—"}</strong></span>
                   </div>
                 </div>
               );

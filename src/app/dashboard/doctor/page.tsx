@@ -15,7 +15,7 @@ import {
   Save,
   CheckCircle2,
 } from "lucide-react";
-import { useAuth, REHAB_ROOMS } from "@/hooks/use-auth";
+import { useAuth } from "@/hooks/use-auth";
 import { ttsService } from "@/services/tts.service";
 import {
   doctorService,
@@ -139,8 +139,7 @@ const EXERCISES_TEMPLATE: HomeExercisePrescription[] = [
 ];
 
 export default function DoctorWorkspacePage() {
-  const { user, selectedRoom } = useAuth();
-  const currentRoom = REHAB_ROOMS.find((r) => r.id === selectedRoom) || REHAB_ROOMS[0];
+  const { user } = useAuth();
 
   // Hàng đợi buồng khám — lịch hẹn thật của bác sĩ hôm nay.
   const [queue, setQueue] = useState<DoctorQueueItem[]>([]);
@@ -229,6 +228,7 @@ export default function DoctorWorkspacePage() {
   // GĐ2 §4.4.3 — phòng trực của bác sĩ (giải quyết từ GET /routing/rooms:
   // buồng có doctorId trùng user) + trạng thái gọi thật qua API.
   const [myRoomId, setMyRoomId] = useState("");
+  const [myRoomName, setMyRoomName] = useState("");
   const [isCalling, setIsCalling] = useState(false);
   const [callError, setCallError] = useState("");
 
@@ -243,7 +243,10 @@ export default function DoctorWorkspacePage() {
         const mine = list.find((r) =>
           r.booths?.some((b) => b.doctorId === myDoctorId),
         );
-        if (mine) setMyRoomId(mine.id);
+        if (mine) {
+          setMyRoomId(mine.id);
+          setMyRoomName(mine.roomName);
+        }
       })
       .catch(() => {
         // Không xác định được phòng trực: nút gọi sẽ báo rõ lỗi, không gọi giả.
@@ -384,7 +387,7 @@ export default function DoctorWorkspacePage() {
         })
       );
 
-      const roomTitle = roomQueue.roomName || currentRoom.name || "Phòng khám";
+      const roomTitle = roomQueue.roomName || myRoomName || "Phòng khám";
       const roomLocation = "Khu B - Tầng 1";
 
       const callPayload = {
@@ -569,7 +572,7 @@ export default function DoctorWorkspacePage() {
             Bàn Khám & Lượng giá: {user?.name || "Bác sĩ Thanh Sang"}
           </h1>
           <p className="text-xs text-[#222222]/80 mt-1 font-light">
-            Buồng trực: <strong className="text-[#0f3e17] font-semibold">{currentRoom.name}</strong> • 193 Quang Trung, Đại Lộc, Đà Nẵng
+            Buồng trực: <strong className="text-[#0f3e17] font-semibold">{myRoomName || "Chưa xác định ca trực"}</strong> • 193 Quang Trung, Đại Lộc, Đà Nẵng
           </p>
         </div>
 
@@ -1129,7 +1132,7 @@ export default function DoctorWorkspacePage() {
             {/* Bottom Actions: Save & Print */}
             <div className="mt-8 pt-4 border-t border-[#efeeeb] flex items-center justify-between">
               <span className="text-xs text-[#222222]/60">
-                Buồng: <strong>{currentRoom.name}</strong> • Bác sĩ: {user?.name || "BS. Lâm Thanh Tú"}
+                Buồng: <strong>{myRoomName || "Chưa xác định ca trực"}</strong> • Bác sĩ: {user?.name || "BS. Lâm Thanh Tú"}
               </span>
 
               <div className="flex gap-3">

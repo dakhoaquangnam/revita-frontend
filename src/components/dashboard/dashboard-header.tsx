@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import {
   ChevronDown,
@@ -12,7 +12,8 @@ import {
   LogOut,
   Menu,
 } from "lucide-react";
-import { useAuth, REHAB_ROOMS } from "@/hooks/use-auth";
+import { useAuth } from "@/hooks/use-auth";
+import { receptionistService, RoomItem } from "@/services/receptionist.service";
 
 export function DashboardHeader({
   onMenuClick,
@@ -24,8 +25,26 @@ export function DashboardHeader({
   const [showRoomDropdown, setShowRoomDropdown] = useState(false);
   const [showUserDropdown, setShowUserDropdown] = useState(false);
   const [isOnline, setIsOnline] = useState(true);
-
-  const activeRoomObj = REHAB_ROOMS.find((r) => r.id === selectedRoom) || REHAB_ROOMS[0];
+  // GĐ2 bước 6 — danh sách phòng thật từ GET /routing/rooms (lọc chuyên
+  // khoa PHCN), thay cho hằng số REHAB_ROOMS ghi cứng đã xóa. Mã phòng cũ
+  // (ROOM-101...) không có trong DB nên không khớp được thì về phòng đầu tiên.
+  const [rooms, setRooms] = useState<RoomItem[]>([]);
+  useEffect(() => {
+    let cancelled = false;
+    receptionistService
+      .getRooms()
+      .then((list) => {
+        if (cancelled) return;
+        setRooms(
+          list.filter((r) => r.specialtyName === "Phục hồi chức năng"),
+        );
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+  const activeRoom = rooms.find((r) => r.id === selectedRoom) ?? rooms[0];
 
   const getRoleBadge = (role?: string) => {
     switch (role) {
@@ -63,9 +82,9 @@ export function DashboardHeader({
             <MapPin className="w-4 h-4 text-[#0f3e17]" />
             <div className="text-left hidden sm:block">
               <div className="text-[10px] text-[#222222]/60 leading-tight">Buồng trực hiện tại</div>
-              <div className="font-semibold text-[#0f3e17] truncate max-w-[200px]">{activeRoomObj.name}</div>
+              <div className="font-semibold text-[#0f3e17] truncate max-w-[200px]">{activeRoom?.roomName ?? "Đang tải danh sách phòng..."}</div>
             </div>
-            <div className="sm:hidden font-semibold text-[#0f3e17]">{activeRoomObj.id}</div>
+            <div className="sm:hidden font-semibold text-[#0f3e17]">{activeRoom?.roomCode ?? "—"}</div>
             <ChevronDown className="w-3.5 h-3.5 text-[#222222]/50 ml-1" />
           </button>
 
@@ -78,7 +97,12 @@ export function DashboardHeader({
               <div className="px-3 py-1.5 border-b border-[#efeeeb] text-[11px] font-semibold text-[#0f3e17] uppercase tracking-wider">
                 Chuyển đổi Buồng khám / Quầy trực
               </div>
-              {REHAB_ROOMS.map((room) => (
+              {rooms.length === 0 && (
+                <div className="px-3 py-2 text-xs text-[#222222]/70">
+                  Đang tải danh sách phòng...
+                </div>
+              )}
+              {rooms.map((room) => (
                 <button
                   key={room.id}
                   onClick={() => {
@@ -89,7 +113,7 @@ export function DashboardHeader({
                     selectedRoom === room.id ? "bg-[#e1f4df] text-[#0f3e17] font-semibold" : "text-[#222222]"
                   }`}
                 >
-                  <span className="truncate pr-2">{room.name}</span>
+                  <span className="truncate pr-2">{room.roomName}</span>
                   {selectedRoom === room.id && <Check className="w-4 h-4 text-[#0f3e17] flex-shrink-0" />}
                 </button>
               ))}
