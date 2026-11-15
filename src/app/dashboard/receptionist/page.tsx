@@ -62,6 +62,13 @@ export default function ReceptionistWorkspacePage() {
   // Modal in phiếu tiếp nhận STT
   const [printedTicket, setPrintedTicket] = useState<any | null>(null);
 
+  // Thông báo khi tài khoản đang đăng nhập không có quyền lễ tân (403).
+  // Hay gặp khi trình duyệt đang giữ phiên của tài khoản bác sĩ/admin
+  // (tên hiển thị có thể vẫn là "Lễ tân" do dữ liệu cũ) — cách xử lý duy
+  // nhất là đăng xuất rồi đăng nhập lại bằng tài khoản lễ tân.
+  const ROLE_ERROR_MESSAGE =
+    "Tài khoản đang đăng nhập không có quyền lễ tân nên không mở được quầy. Đăng xuất rồi đăng nhập lại bằng tài khoản lễ tân (dakhoaquangnam@gmail.com).";
+
   // Mở quầy cho ca làm việc: backend chỉ cấp số khi có phiên phân công
   // ACTIVE của lễ tân đang đăng nhập (POST /take-number/take tự chọn quầy
   // theo phiên này, không nhận counterId từ frontend). Nếu mở quầy lỗi thì
@@ -73,8 +80,10 @@ export default function ReceptionistWorkspacePage() {
       setActiveCounterId(counterId);
     } catch (err: any) {
       setCounterSessionError(
-        err.response?.data?.message ||
-          "Không mở được quầy tiếp nhận. Cấp số sẽ lỗi — kiểm tra lại rồi thử lại.",
+        err.response?.status === 403
+          ? ROLE_ERROR_MESSAGE
+          : err.response?.data?.message ||
+              "Không mở được quầy tiếp nhận. Cấp số sẽ lỗi — kiểm tra lại rồi thử lại.",
       );
     }
   };
@@ -93,8 +102,14 @@ export default function ReceptionistWorkspacePage() {
           setActiveCounterId(current.counterId);
           return;
         }
-      } catch {
-        // Chưa có phiên đang mở thì mở quầy đầu tiên bên dưới.
+      } catch (err: any) {
+        // 403 = sai tài khoản (không có quyền lễ tân): mở quầy cũng sẽ 403,
+        // báo rõ luôn thay vì thử mở rồi mới báo.
+        if (err.response?.status === 403) {
+          setCounterSessionError(ROLE_ERROR_MESSAGE);
+          return;
+        }
+        // Lỗi khác thì thử mở quầy đầu tiên bên dưới.
       }
       await openCounterSession(data[0].counterId);
     } catch (err: any) {
@@ -137,20 +152,37 @@ export default function ReceptionistWorkspacePage() {
   useQueueEvents(activeCounterId);
 
   const handleCallNext = async () => {
-    if (!activeCounterId) return;
+    if (!activeCounterId) {
+      alert(
+        "Chưa mở quầy nên chưa gọi được số. " +
+          (counterSessionError ||
+            "Tải lại trang để hệ thống tự mở quầy."),
+      );
+      return;
+    }
     setActionLoading(true);
     try {
       await receptionistService.callNextPatient(activeCounterId);
       await fetchQueue(activeCounterId);
     } catch (err: any) {
-      alert("Lỗi khi gọi số: " + (err.message || "Vui lòng kiểm tra lại"));
+      alert(
+        "Lỗi khi gọi số: " +
+          (err.response?.data?.message || err.message || "Vui lòng kiểm tra lại"),
+      );
     } finally {
       setActionLoading(false);
     }
   };
 
   const handleSkip = async () => {
-    if (!activeCounterId) return;
+    if (!activeCounterId) {
+      alert(
+        "Chưa mở quầy nên chưa đánh dấu vắng được. " +
+          (counterSessionError ||
+            "Tải lại trang để hệ thống tự mở quầy."),
+      );
+      return;
+    }
     setActionLoading(true);
     try {
       await receptionistService.skipCurrentPatient(activeCounterId);
@@ -163,7 +195,14 @@ export default function ReceptionistWorkspacePage() {
   };
 
   const handleRollback = async () => {
-    if (!activeCounterId) return;
+    if (!activeCounterId) {
+      alert(
+        "Chưa mở quầy nên chưa gọi lại được. " +
+          (counterSessionError ||
+            "Tải lại trang để hệ thống tự mở quầy."),
+      );
+      return;
+    }
     setActionLoading(true);
     try {
       await receptionistService.rollbackPreviousPatient(activeCounterId);
