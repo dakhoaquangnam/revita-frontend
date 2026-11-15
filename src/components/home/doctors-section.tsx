@@ -1,12 +1,25 @@
 "use client";
 
-import React from "react";
+import React, { useMemo } from "react";
 import Link from "next/link";
 import { useDoctors } from "@/hooks/use-public-data";
 import { Award, Briefcase, Calendar, ShieldCheck, UserRound, CheckCircle2 } from "lucide-react";
 
+// Bác sĩ chủ phòng khám (tài khoản DOCTOR của anh Sang) luôn đứng đầu mục
+// "Bác sĩ Thanh Sang & Đội ngũ Chuyên khoa". Danh sách backend trả về xếp
+// theo tên A-Z nên sau khi sửa tên "Bs Thanh Sang" -> "Nguyễn Thanh Sang",
+// thẻ của anh rơi xuống vị trí thứ 7 và bị slice(0, 6) cắt mất khỏi trang chủ.
+const OWNER_DOCTOR_ID = "584944cf-9203-4598-86f6-74ef867ab5fd";
+
 export function DoctorsSection() {
   const { data: doctors, isLoading } = useDoctors();
+
+  const orderedDoctors = useMemo(() => {
+    if (!doctors) return [];
+    const owner = doctors.find((d) => d.id === OWNER_DOCTOR_ID);
+    const rest = doctors.filter((d) => d.id !== OWNER_DOCTOR_ID);
+    return owner ? [owner, ...rest] : rest;
+  }, [doctors]);
 
   return (
     <section id="bac-si" className="py-24 bg-[#fffefc] border-b border-[#efeeeb]">
@@ -39,9 +52,9 @@ export function DoctorsSection() {
         )}
 
         {/* Doctors Grid */}
-        {!isLoading && doctors && doctors.length > 0 && (
+        {!isLoading && orderedDoctors && orderedDoctors.length > 0 && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {doctors.slice(0, 6).map((item, idx) => {
+            {orderedDoctors.slice(0, 6).map((item, idx) => {
               const docInfo = item.doctor;
               const cardBg = idx % 3 === 0 ? "bg-[#fffefc]" : idx % 3 === 1 ? "bg-[#e1f4df]/30" : "bg-[#b6ced5]/20";
               return (
