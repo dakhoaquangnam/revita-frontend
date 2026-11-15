@@ -1,0 +1,25 @@
+<svg width="240" height="64" viewBox="0 0 240 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Biểu tượng Monogram TS -->
+  <g transform="translate(6, 6)">
+    <rect width="52" height="52" rx="12" fill="#0F3E17" />
+    <!-- Vòng hào quang phục hồi chức năng -->
+    <circle cx="26" cy="26" r="22" stroke="#B1DBB8" stroke-width="2" stroke-dasharray="3 3" stroke-opacity="0.5" />
+    <!-- Chữ T đỡ vòm trên -->
+    <path d="M13 16C19 15 33 15 39 16" stroke="#E1F4DF" stroke-width="3.5" stroke-linecap="round" />
+    <!-- Chữ S uốn lượn phục hồi vận động -->
+    <path d="M26 16V24C26 27.5 31 28.5 33 31C35 34 33.5 37.5 29.5 39C24.5 40.5 19 38 18 33" stroke="#B1DBB8" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" />
+    <!-- Vòm khép góc -->
+    <path d="M19.5 23C20.5 19.5 23.5 18 26 18" stroke="#E1F4DF" stroke-width="2.8" stroke-linecap="round" />
+    <!-- Điểm nhấn tâm vận động -->
+    <circle cx="26" cy="16" r="2.5" fill="#E1F4DF" />
+    <circle cx="18" cy="33" r="2" fill="#CFE7D3" />
+  </g>
+
+  <!-- Typography: THANH SANG PHỤC HỒI CHỨC NĂNG -->
+  <text x="70" y="32" font-family="'Be Vietnam Pro', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-weight="800" font-size="20" fill="#0F3E17" letter-spacing="-0.02em">
+    THANH SANG
+  </text>
+  <text x="70" y="48" font-family="'Be Vietnam Pro', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-weight="600" font-size="10.5" fill="#0F3E17" fill-opacity="0.8" letter-spacing="0.12em">
+    PHỤC HỒI CHỨC NĂNG
+  </text>
+</svg>

@@ -1,0 +1,166 @@
+@import "tailwindcss";
+
+:root {
+  /* Ease Health Botanical Greenhouse Palette */
+  --color-forest-ink: #0f3e17;
+  --color-forest-shadow: #0c2f10;
+  --color-sage-mist: #b1dbb8;
+  --color-keylime-wash: #e1f4df;
+  --color-mint-veil: #cfe7d3;
+  --color-slate-hush: #b6ced5;
+  --color-cream-paper: #fffefc;
+  --color-charcoal: #222222;
+  --color-border-mist: #efeeeb;
+
+  /* App Theme mapping */
+  --background: var(--color-cream-paper);
+  --foreground: var(--color-charcoal);
+  --border: var(--color-border-mist);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-border: var(--border);
+
+  --color-forest-ink: var(--color-forest-ink);
+  --color-forest-shadow: var(--color-forest-shadow);
+  --color-sage-mist: var(--color-sage-mist);
+  --color-keylime-wash: var(--color-keylime-wash);
+  --color-mint-veil: var(--color-mint-veil);
+  --color-slate-hush: var(--color-slate-hush);
+  --color-cream-paper: var(--color-cream-paper);
+  --color-charcoal: var(--color-charcoal);
+  --color-border-mist: var(--color-border-mist);
+
+  --font-sans: var(--font-be-vietnam-pro), sans-serif;
+}
+
+body {
+  background: var(--color-cream-paper);
+  color: var(--color-charcoal);
+  font-family: var(--font-be-vietnam-pro), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Botanical Utility Classes */
+.bg-forest-ink {
+  background-color: #0f3e17;
+}
+
+.text-forest-ink {
+  color: #0f3e17;
+}
+
+.border-forest-ink {
+  border-color: #0f3e17;
+}
+
+.bg-cream-paper {
+  background-color: #fffefc;
+}
+
+.text-cream-paper {
+  color: #fffefc;
+}
+
+.bg-keylime-wash {
+  background-color: #e1f4df;
+}
+
+.bg-sage-mist {
+  background-color: #b1dbb8;
+}
+
+.bg-mint-veil {
+  background-color: #cfe7d3;
+}
+
+.bg-slate-hush {
+  background-color: #b6ced5;
+}
+
+.text-charcoal {
+  color: #222222;
+}
+
+.border-mist {
+  border-color: #efeeeb;
+}
+
+/* Primary Forest Button (14px radius, flat, #0f3e17 fill, cream text) */
+.btn-forest {
+  background-color: #0f3e17;
+  color: #fffefc;
+  border-radius: 14px;
+  padding: 12px 24px;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+  box-shadow: none;
+}
+
+.btn-forest:hover {
+  background-color: #0c2f10;
+}
+
+/* Pill Badge (Cream or Tinted background, Forest text, 999px radius) */
+.badge-pill {
+  border-radius: 999px;
+  padding: 6px 14px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.badge-pill-forest {
+  background-color: #e1f4df;
+  color: #0f3e17;
+  border: 1px solid rgba(15, 62, 23, 0.15);
+}
+
+.badge-pill-cream {
+  background-color: #fffefc;
+  color: #0f3e17;
+  border: 1px solid #efeeeb;
+}
+
+/* Botanical Card Panels (Flat, 14px radius, generous padding) */
+.card-botanical {
+  border-radius: 14px;
+  box-shadow: none;
+  transition: all 0.2s ease;
+}
+
+.card-keylime {
+  background-color: #e1f4df;
+  border-radius: 14px;
+}
+
+.card-sage {
+  background-color: #b1dbb8;
+  border-radius: 14px;
+}
+
+.card-slate {
+  background-color: #b6ced5;
+  border-radius: 14px;
+}
+
+/* Ẩn cuộn nhưng vẫn cuộn được mượt mà */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
