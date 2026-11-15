@@ -171,14 +171,15 @@ export default function TvDisplayPage() {
     if (latestCalledTicket) {
       const qNum = String(latestCalledTicket.ticketNumber || "A-001");
       const pName = (latestCalledTicket.patientName || "BỆNH NHÂN").toUpperCase();
-      const cName = latestCalledTicket.counterNumber
-        ? `Quầy Tiếp Nhận ${latestCalledTicket.counterNumber}`
-        : latestCalledTicket.roomName || "Quầy Tiếp Nhận 1";
+      const cName =
+        latestCalledTicket.counterName ||
+        latestCalledTicket.roomName ||
+        "Quầy Tiếp Nhận 1";
 
       triggerNewCall({
         queueNumber: qNum,
         patientName: pName,
-        counterCode: latestCalledTicket.counterId || "CTR",
+        counterCode: latestCalledTicket.counterCode || "CTR",
         counterName: cName,
         roomName: latestCalledTicket.roomName || "Sảnh Chính - Tầng 1",
         calledAt: latestCalledTicket.calledAt

@@ -31,6 +31,10 @@ export function useQueueEvents(counterId?: string) {
         queueNumber: patient?.queueNumber,
         counterId: data?.counterId ?? patient?.counterId,
         counterNumber: data?.counterId ?? patient?.counterId,
+        // Ten that + ma quay (VD "Quay Tiep Nhan 3" / "CTR003") nam trong
+        // patient — dung de hien thi, KHONG dung counterId (UUID) lam ten.
+        counterName: patient?.counterName,
+        counterCode: patient?.counterCode,
         patientName: patient?.patientName,
         calledAt: msg?.timestamp ?? new Date().toISOString(),
       };

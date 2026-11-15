@@ -54,6 +54,8 @@ export interface TicketCalledPayload {
   queueNumber?: string | number;
   counterId?: string;
   counterNumber?: string | number;
+  counterName?: string;
+  counterCode?: string;
   roomName?: string;
   patientName?: string;
   doctorName?: string;
