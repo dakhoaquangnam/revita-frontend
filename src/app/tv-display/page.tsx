@@ -189,11 +189,13 @@ export default function TvDisplayPage() {
     }
   }, [latestCalledTicket]);
 
-  // TV mở sau khi đã gọi (hoặc tải lại trang): chưa có sự kiện WS nào thì
-  // lấy bệnh nhân đang phục vụ hiện tại làm spotlight — chỉ hiển thị, không
-  // chuông, không đọc loa.
+  // Đồng bộ spotlight theo bệnh nhân đang phục vụ thật (poll 15 giây).
+  // - TV mở sau khi đã gọi (hoặc tải lại trang): lấy người đang phục vụ làm
+  //   spotlight thay vì "Chưa có lượt gọi nào".
+  // - Lỡ mất sự kiện WebSocket lúc đang gọi: spotlight vẫn tự sửa theo đúng
+  //   người đang phục vụ trong vòng 15 giây (chỉ cập nhật lặng, không chuông,
+  //   không đọc loa — chuông/loa chỉ phát khi nhận được sự kiện gọi trực tiếp).
   useEffect(() => {
-    if (spotlight) return;
     let best: { t: QueuePatient; c: CounterItem } | null = null;
     for (const c of counters) {
       const cur = counterQueues[c.counterId]?.current;
@@ -203,17 +205,17 @@ export default function TvDisplayPage() {
         }
       }
     }
-    if (best) {
-      setSpotlight({
-        queueNumber: best.t.queueNumber,
-        patientName: best.t.patientName.toUpperCase(),
-        counterCode: best.t.counterCode || best.c.counterCode,
-        counterName: best.t.counterName || best.c.counterName,
-        roomName: "Sảnh Chính - Tầng 1",
-        calledAt: new Date(best.t.assignedAt).toLocaleTimeString("vi-VN"),
-        isPriority: false,
-      });
-    }
+    if (!best) return;
+    if (spotlight && spotlight.queueNumber === best.t.queueNumber) return;
+    setSpotlight({
+      queueNumber: best.t.queueNumber,
+      patientName: best.t.patientName.toUpperCase(),
+      counterCode: best.t.counterCode || best.c.counterCode,
+      counterName: best.t.counterName || best.c.counterName,
+      roomName: "Sảnh Chính - Tầng 1",
+      calledAt: new Date(best.t.assignedAt).toLocaleTimeString("vi-VN"),
+      isPriority: false,
+    });
   }, [counterQueues, counters, spotlight]);
 
   const toggleFullscreen = () => {
