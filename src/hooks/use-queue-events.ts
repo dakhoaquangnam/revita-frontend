@@ -54,12 +54,24 @@ export function useQueueEvents(counterId?: string) {
     socket.on("next_patient_called", handleNextPatientCalled);
     socket.on("counter_status", handleCounterStatus);
 
+    // Backend còn phát một bản sao tới TOÀN BỘ namespace dưới tên event
+    // "broadcast" (WebSocketService.broadcastToAllCounters: server.emit
+    // ("broadcast", message)). Trang TV không join phòng quầy nào nên chỉ
+    // nhận được bản này — không nghe "broadcast" thì TV mãi hiển thị
+    // "Chưa có lượt gọi nào" dù lễ tân đã bấm gọi.
+    const handleBroadcast = (msg: any) => {
+      if (msg?.type !== "NEXT_PATIENT_CALLED") return;
+      handleNextPatientCalled(msg);
+    };
+    socket.on("broadcast", handleBroadcast);
+
     return () => {
       if (counterId) {
         socket.emit("leave_counter", { counterId });
       }
       socket.off("next_patient_called", handleNextPatientCalled);
       socket.off("counter_status", handleCounterStatus);
+      socket.off("broadcast", handleBroadcast);
     };
   }, [socket, isConnected, counterId]);
 

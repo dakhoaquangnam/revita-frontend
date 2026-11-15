@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { Be_Vietnam_Pro } from "next/font/google";
 import QueryProvider from "@/components/providers/query-provider";
-import { FloatingChatbot } from "@/components/chatbot/floating-chatbot";
+import { ConditionalChatbot } from "@/components/chatbot/conditional-chatbot";
 import "./globals.css";
 
 const beVietnamPro = Be_Vietnam_Pro({
@@ -49,7 +50,10 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col bg-[#fffefc] text-[#222222] font-sans">
         <QueryProvider>
           {children}
-          <FloatingChatbot />
+          {/* usePathname() cần Suspense để không chặn prerender trang tĩnh. */}
+          <Suspense fallback={null}>
+            <ConditionalChatbot />
+          </Suspense>
         </QueryProvider>
       </body>
     </html>

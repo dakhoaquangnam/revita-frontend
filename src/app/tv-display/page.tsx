@@ -18,6 +18,7 @@ import { ttsService } from "@/services/tts.service";
 import {
   receptionistService,
   CounterItem,
+  QueuePatient,
   QueueSnapshot,
 } from "@/services/receptionist.service";
 import { TsLogo } from "@/components/ui/ts-logo";
@@ -187,6 +188,33 @@ export default function TvDisplayPage() {
       });
     }
   }, [latestCalledTicket]);
+
+  // TV mở sau khi đã gọi (hoặc tải lại trang): chưa có sự kiện WS nào thì
+  // lấy bệnh nhân đang phục vụ hiện tại làm spotlight — chỉ hiển thị, không
+  // chuông, không đọc loa.
+  useEffect(() => {
+    if (spotlight) return;
+    let best: { t: QueuePatient; c: CounterItem } | null = null;
+    for (const c of counters) {
+      const cur = counterQueues[c.counterId]?.current;
+      if (cur && cur.status === "SERVING" && isTodayTicket(cur)) {
+        if (!best || cur.assignedAt > best.t.assignedAt) {
+          best = { t: cur, c };
+        }
+      }
+    }
+    if (best) {
+      setSpotlight({
+        queueNumber: best.t.queueNumber,
+        patientName: best.t.patientName.toUpperCase(),
+        counterCode: best.t.counterCode || best.c.counterCode,
+        counterName: best.t.counterName || best.c.counterName,
+        roomName: "Sảnh Chính - Tầng 1",
+        calledAt: new Date(best.t.assignedAt).toLocaleTimeString("vi-VN"),
+        isPriority: false,
+      });
+    }
+  }, [counterQueues, counters, spotlight]);
 
   const toggleFullscreen = () => {
     if (!document.fullscreenElement) {
