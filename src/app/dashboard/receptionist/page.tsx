@@ -15,13 +15,14 @@ import {
   AlertCircle,
   Check,
 } from "lucide-react";
-import { useAuth, REHAB_ROOMS } from "@/hooks/use-auth";
+import { useAuth } from "@/hooks/use-auth";
 import {
   receptionistService,
   CounterItem,
   QueueSnapshot,
+  RoomItem,
 } from "@/services/receptionist.service";
-import { appointmentService } from "@/services/appointment.service";
+import { appointmentService, normalizeAppointmentCode } from "@/services/appointment.service";
 import { useQueueEvents } from "@/hooks/use-queue-events";
 
 export default function ReceptionistWorkspacePage() {
@@ -70,9 +71,15 @@ export default function ReceptionistWorkspacePage() {
   const [walkInIsPregnant, setWalkInIsPregnant] = useState(false);
   const [walkInIsVip, setWalkInIsVip] = useState(false);
 
-  // Chỉ định buồng khám PHCN
-  const [selectedDestRoom, setSelectedDestRoom] = useState("ROOM-101");
+  // Chỉ định buồng khám PHCN — phòng thật từ GET /routing/rooms (GĐ2),
+  // không còn danh sách REHAB_ROOMS ghi cứng (ROOM-101... không khớp DB).
+  const [rooms, setRooms] = useState<RoomItem[]>([]);
+  const [roomsLoading, setRoomsLoading] = useState(false);
+  const [roomsError, setRoomsError] = useState("");
+  const [selectedDestRoom, setSelectedDestRoom] = useState("");
   const [transferSuccessMsg, setTransferSuccessMsg] = useState("");
+  const [transferErrorMsg, setTransferErrorMsg] = useState("");
+  const [transferLoading, setTransferLoading] = useState(false);
 
   // Modal in phiếu tiếp nhận STT
   const [printedTicket, setPrintedTicket] = useState<any | null>(null);
@@ -191,7 +198,31 @@ export default function ReceptionistWorkspacePage() {
 
   useEffect(() => {
     fetchCounters();
+    fetchRooms();
   }, []);
+
+  // Load danh sách phòng thật — lỗi thì báo lỗi, không tự bịa phòng giả.
+  const fetchRooms = async () => {
+    setRoomsLoading(true);
+    try {
+      setRoomsError("");
+      const data = await receptionistService.getRooms();
+      setRooms(data);
+      if (data.length > 0) {
+        setSelectedDestRoom((prev) =>
+          prev && data.some((r) => r.id === prev) ? prev : data[0].id,
+        );
+      }
+    } catch (err: any) {
+      setRooms([]);
+      setRoomsError(
+        err.response?.data?.message ||
+          "Không tải được danh sách phòng. Kiểm tra kết nối backend rồi thử lại.",
+      );
+    } finally {
+      setRoomsLoading(false);
+    }
+  };
 
   useEffect(() => {
     if (counters.length === 0) return;
@@ -510,7 +541,11 @@ export default function ReceptionistWorkspacePage() {
     }
   };
 
-  const handleTransferToRoom = () => {
+  // GĐ2 §4.4.2 — Chuyển bệnh nhân đang phục vụ ở quầy vào phòng thật qua
+  // POST /routing/transfer. Backend tự lấy phiếu chỉ định từ lịch hẹn.
+  // Bệnh nhân vãng lai (không có appointmentCode) chưa chuyển được vì vé
+  // quầy không mang theo dịch vụ — báo rõ thay vì "thành công giả".
+  const handleTransferToRoom = async () => {
     // Bệnh nhân đang phục vụ ở quầy của bạn (đọc từ state, đúng cả khi xem
     // "Tất cả quầy" vì khung phục vụ luôn gắn với quầy đang trực).
     const servingSnap = queueFilter === "ALL" ? allQueues[activeCounterId] ?? null : queueData;
@@ -521,15 +556,46 @@ export default function ReceptionistWorkspacePage() {
       alert("Hiện không có bệnh nhân nào đang phục vụ tại quầy để phân buồng.");
       return;
     }
-    const roomObj = REHAB_ROOMS.find((r) => r.id === selectedDestRoom);
-    // Ghi nhận tại quầy. Backend hiện chưa có endpoint đồng bộ phân buồng
-    // lên màn hình buồng khám, nên không báo là "đã cập nhật".
-    setTransferSuccessMsg(
-      `Đã ghi nhận chuyển bệnh nhân ${current.patientName} (${current.queueNumber}) vào ${roomObj?.name}. Báo cho buồng khám qua bộ đàm/loa nội bộ.`,
-    );
-    setTimeout(() => {
+    if (!selectedDestRoom) {
+      alert("Chưa chọn phòng. Tải lại danh sách phòng rồi chọn một phòng.");
+      return;
+    }
+    if (!current.appointmentCode) {
+      setTransferErrorMsg(
+        `Bệnh nhân ${current.patientName} (${current.queueNumber}) là vãng lai, chưa có lịch hẹn nên chưa biết chuyển vào phòng nào với dịch vụ gì. Tạo lịch hẹn cho bệnh nhân rồi gọi lại, hoặc để bác sĩ chỉ định dịch vụ trước.`,
+      );
       setTransferSuccessMsg("");
-    }, 5000);
+      return;
+    }
+    setTransferLoading(true);
+    setTransferErrorMsg("");
+    setTransferSuccessMsg("");
+    try {
+      const res = await receptionistService.transferToRoom({
+        appointmentCode: normalizeAppointmentCode(current.appointmentCode),
+        roomId: selectedDestRoom,
+      });
+      const staff = res.doctorName
+        ? `BS. ${res.doctorName}`
+        : res.technicianName
+          ? `KTV. ${res.technicianName}`
+          : "chưa có nhân viên trực";
+      setTransferSuccessMsg(
+        `Đã chuyển ${res.patientName} (${current.queueNumber}) vào ${res.roomName}` +
+          (res.boothCode ? ` — ${res.boothCode}` : "") +
+          ` (${staff}). Mã phiếu: ${res.prescriptionCode}.`,
+      );
+      setTimeout(() => {
+        setTransferSuccessMsg("");
+      }, 8000);
+    } catch (err: any) {
+      setTransferErrorMsg(
+        "Không chuyển được vào phòng: " +
+          (err.response?.data?.message || err.message || "Kiểm tra kết nối"),
+      );
+    } finally {
+      setTransferLoading(false);
+    }
   };
 
   // Bệnh nhân đang phục vụ ở quầy của bạn (chỉ tính vé hôm nay).
@@ -663,30 +729,64 @@ export default function ReceptionistWorkspacePage() {
                   <label className="block text-xs font-semibold text-[#0f3e17]">
                     Chỉ định Buồng khám / Phòng Trị liệu PHCN:
                   </label>
-                  <div className="flex gap-2">
-                    <select
-                      value={selectedDestRoom}
-                      onChange={(e) => setSelectedDestRoom(e.target.value)}
-                      className="flex-1 bg-[#fffefc] border border-[#efeeeb] rounded-[14px] px-3 py-2 text-xs text-[#222222] focus:outline-none focus:border-[#0f3e17]"
-                    >
-                      {REHAB_ROOMS.filter((r) => r.type !== "RECEPTION" && r.type !== "CASHIER").map((r) => (
-                        <option key={r.id} value={r.id}>
-                          {r.name}
-                        </option>
-                      ))}
-                    </select>
-                    <button
-                      type="button"
-                      onClick={handleTransferToRoom}
-                      className="px-4 py-2 rounded-[14px] bg-[#0f3e17] hover:bg-[#0c2f10] text-[#fffefc] text-xs font-semibold transition-colors"
-                    >
-                      Phân buồng
-                    </button>
-                  </div>
+                  {roomsError ? (
+                    <div className="p-2.5 rounded-[14px] bg-[#fdecea] border border-[#f5c6cb] text-[#721c24] text-xs flex items-center gap-1.5">
+                      <AlertCircle className="w-4 h-4 shrink-0" />
+                      <span>{roomsError}</span>
+                      <button
+                        type="button"
+                        onClick={fetchRooms}
+                        className="ml-auto px-2 py-1 rounded-[8px] bg-[#fffefc] border border-[#f5c6cb] text-[11px] font-semibold shrink-0"
+                      >
+                        Thử lại
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="flex gap-2">
+                      <select
+                        value={selectedDestRoom}
+                        onChange={(e) => setSelectedDestRoom(e.target.value)}
+                        disabled={roomsLoading || rooms.length === 0}
+                        className="flex-1 bg-[#fffefc] border border-[#efeeeb] rounded-[14px] px-3 py-2 text-xs text-[#222222] focus:outline-none focus:border-[#0f3e17] disabled:opacity-50"
+                      >
+                        {roomsLoading && (
+                          <option value="">Đang tải danh sách phòng...</option>
+                        )}
+                        {!roomsLoading && rooms.length === 0 && (
+                          <option value="">Không có phòng nào</option>
+                        )}
+                        {rooms.map((r) => {
+                          const onDuty = r.booths
+                            .map((b) => b.doctorName)
+                            .find(Boolean);
+                          return (
+                            <option key={r.id} value={r.id}>
+                              {r.roomName} ({r.roomCode})
+                              {onDuty ? ` — BS. ${onDuty}` : ""}
+                            </option>
+                          );
+                        })}
+                      </select>
+                      <button
+                        type="button"
+                        onClick={handleTransferToRoom}
+                        disabled={transferLoading || roomsLoading || rooms.length === 0}
+                        className="px-4 py-2 rounded-[14px] bg-[#0f3e17] hover:bg-[#0c2f10] text-[#fffefc] text-xs font-semibold transition-colors disabled:opacity-50"
+                      >
+                        {transferLoading ? "Đang chuyển..." : "Phân buồng"}
+                      </button>
+                    </div>
+                  )}
                   {transferSuccessMsg && (
                     <div className="p-2.5 rounded-[14px] bg-[#e1f4df] border border-[#cfe7d3] text-[#0f3e17] text-xs flex items-center gap-1.5">
                       <Check className="w-4 h-4 text-[#0f3e17]" />
                       <span>{transferSuccessMsg}</span>
+                    </div>
+                  )}
+                  {transferErrorMsg && (
+                    <div className="p-2.5 rounded-[14px] bg-[#fdecea] border border-[#f5c6cb] text-[#721c24] text-xs flex items-center gap-1.5">
+                      <AlertCircle className="w-4 h-4 shrink-0" />
+                      <span>{transferErrorMsg}</span>
                     </div>
                   )}
                 </div>

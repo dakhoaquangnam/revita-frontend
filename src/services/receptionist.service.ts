@@ -62,6 +62,42 @@ export interface TakeNumberPayload {
   counterCode?: string;
 }
 
+export interface RoomItem {
+  id: string;
+  roomCode: string;
+  roomName: string;
+  specialtyName: string | null;
+  services: { id: string; code: string; name: string }[];
+  booths: {
+    id: string;
+    boothCode: string;
+    name: string;
+    doctorId: string | null;
+    doctorCode: string | null;
+    doctorName: string | null;
+    nextAvailableAt: string | null;
+    sessionEndTime: string | null;
+  }[];
+}
+
+export interface TransferResult {
+  prescriptionId: string;
+  prescriptionCode: string;
+  patientProfileId: string;
+  patientName: string;
+  roomId: string;
+  roomCode: string;
+  roomName: string;
+  boothId: string | null;
+  boothCode: string | null;
+  doctorId: string | null;
+  doctorName: string | null;
+  technicianId: string | null;
+  technicianName: string | null;
+  workSessionId: string | null;
+  services: { serviceId: string; serviceName: string; status: string }[];
+}
+
 export const receptionistService = {
   /** Lấy danh sách quầy tiếp nhận */
   async getCounters(): Promise<CounterItem[]> {
@@ -126,6 +162,24 @@ export const receptionistService = {
   /** Gọi lại bệnh nhân vừa phục vụ */
   async rollbackPreviousPatient(counterId: string) {
     const res = await apiClient.post(`/counter-assignment/rollback/${counterId}`);
+    return res.data;
+  },
+
+  /** Danh sách phòng khám/trị liệu thật (kèm buồng + bác sĩ đang trực). */
+  async getRooms(): Promise<RoomItem[]> {
+    const res = await apiClient.get<RoomItem[]>("/routing/rooms");
+    return res.data;
+  },
+
+  /** Chuyển bệnh nhân đang phục vụ ở quầy vào phòng (GĐ2). Backend tự lấy
+   *  phiếu chỉ định từ lịch hẹn khi chỉ gửi appointmentCode. */
+  async transferToRoom(payload: {
+    appointmentCode: string;
+    roomId: string;
+    patientProfileId?: string;
+    serviceIds?: string[];
+  }): Promise<TransferResult> {
+    const res = await apiClient.post<TransferResult>("/routing/transfer", payload);
     return res.data;
   },
 
