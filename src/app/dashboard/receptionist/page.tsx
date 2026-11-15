@@ -414,6 +414,7 @@ export default function ReceptionistWorkspacePage() {
         serviceName: service?.serviceName ?? "Khám PHCN",
         specialty: apt.specialtyName ?? "",
         timeSlot: `${String(apt.date ?? "").substring(0, 10)} (${apt.startTime} - ${apt.endTime})`,
+        doctorId: apt.doctorId ?? "",
         doctorName: apt.doctorName ?? "",
         profile: apt.patientProfile ?? null,
       });
@@ -462,7 +463,13 @@ export default function ReceptionistWorkspacePage() {
           counters.find((c) => c.counterId === activeCounterId)?.counterName ??
           "",
         serviceName: foundAppointment.serviceName,
-        roomName: "Phòng 101: Khám Lượng giá & Bác sĩ trưởng",
+        // GĐ2 bước 6 — phòng thật của bác sĩ trong lịch hẹn (tra từ danh
+        // sách phòng đã tải), thay cho tên phòng ghi cứng "Phòng 101...".
+        // Không tra được thì để trống, không in tên phòng sai lên vé.
+        roomName:
+          rooms.find((r) =>
+            r.booths?.some((b) => b.doctorId === foundAppointment.doctorId),
+          )?.roomName ?? "",
       });
 
       setFoundAppointment(null);

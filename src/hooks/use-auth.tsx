@@ -21,7 +21,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<UserProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [selectedRoom, setSelectedRoom] = useState("ROOM-101");
+  const [selectedRoom, setSelectedRoom] = useState("");
   const router = useRouter();
 
   useEffect(() => {

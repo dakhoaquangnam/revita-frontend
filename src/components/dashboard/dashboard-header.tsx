@@ -35,14 +35,20 @@ export function DashboardHeader({
       .getRooms()
       .then((list) => {
         if (cancelled) return;
-        setRooms(
-          list.filter((r) => r.specialtyName === "Phục hồi chức năng"),
-        );
+        const phcn = list.filter((r) => r.specialtyName === "Phục hồi chức năng");
+        setRooms(phcn);
+        // Mã phòng cũ đã lưu (ROOM-101...) không có trong DB: sửa về phòng
+        // thật đầu tiên để dropdown không trống và lần sau không lưu mã sai.
+        if (phcn.length > 0 && !phcn.some((r) => r.id === selectedRoom)) {
+          setSelectedRoom(phcn[0].id);
+        }
       })
       .catch(() => {});
     return () => {
       cancelled = true;
     };
+    // Chỉ chạy 1 lần khi mở trang: sửa mã cũ đã lưu, không chạy lại mỗi lần chọn phòng.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   const activeRoom = rooms.find((r) => r.id === selectedRoom) ?? rooms[0];
 
