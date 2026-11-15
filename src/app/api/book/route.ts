@@ -58,6 +58,8 @@ export async function POST(req: NextRequest) {
   const phone = String(body?.phone ?? "").trim();
   const dateOfBirth = String(body?.dateOfBirth ?? "").trim();
   const gender = String(body?.gender ?? "").trim();
+  // GĐ4 — dị ứng thu ở form đặt lịch, lưu vào hồ sơ bệnh nhân.
+  const allergies = String(body?.allergies ?? "").trim() || undefined;
   const doctorId = String(body?.doctorId ?? "").trim();
   const serviceId = String(body?.serviceId ?? "").trim();
   const date = String(body?.date ?? "").trim();
@@ -86,6 +88,7 @@ export async function POST(req: NextRequest) {
       phone,
       dateOfBirth,
       gender,
+      allergies,
       emergencyContactName: name,
       emergencyContactPhone: phone,
     });

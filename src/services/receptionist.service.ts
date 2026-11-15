@@ -51,6 +51,7 @@ export interface TakeNumberPayload {
   birthYear?: number;
   appointmentCode?: string;
   patientProfileCode?: string;
+  allergies?: string; // GĐ4: dị ứng thuốc/thức ăn — thu ở form đăng ký
   isDisabled?: boolean;
   isElderly?: boolean;
   isPregnant?: boolean;

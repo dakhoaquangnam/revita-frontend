@@ -9,8 +9,6 @@ import {
   Pill,
   ShieldCheck,
   AlertTriangle,
-  Plus,
-  Trash2,
   Printer,
   Save,
   CheckCircle2,
@@ -20,14 +18,21 @@ import { ttsService } from "@/services/tts.service";
 import {
   doctorService,
   RomMeasurement,
-  PrescriptionItem,
-  HomeExercisePrescription,
+  DrugRow,
+  ExerciseRow,
+  MedicationPrescription,
 } from "@/services/doctor.service";
 import {
   assessmentService,
   type AssessmentRecord,
 } from "@/services/assessment.service";
+import { exerciseService } from "@/services/exercise.service";
 import AssessmentTab from "@/components/doctor/assessment-tab";
+import DrugForm from "@/components/doctor/drug-form";
+import ExerciseForm from "@/components/doctor/exercise-form";
+import PrescriptionHistory from "@/components/doctor/prescription-history";
+import { CLINIC } from "@/lib/clinic";
+import QRCode from "qrcode";
 import {
   appointmentService,
   PatientProfileSummary,
@@ -52,6 +57,9 @@ interface DoctorQueueItem {
   symptoms: string;
   metalImplant: boolean;
   pacemaker: boolean;
+  // GĐ4 — dị ứng ghi ở form đăng ký (kiosk/lễ tân/đặt lịch), dùng để cảnh
+  // báo khi kê thuốc ở tab RX.
+  allergies: string;
   status: "SERVING" | "WAITING" | "COMPLETED";
 }
 
@@ -87,41 +95,9 @@ const ROM_TEMPLATE: RomMeasurement[] = [
   },
 ];
 
-const DRUGS_TEMPLATE: PrescriptionItem[] = [
-  {
-    id: "med-1",
-    name: "Tolperisone 150mg (Mydocalm)",
-    dosage: "150mg",
-    quantity: "20 viên",
-    usage: "Uống 1 viên x 2 lần/ngày sau ăn sáng, tối (Giãn cơ giảm co cứng)",
-  },
-  {
-    id: "med-2",
-    name: "Mecobalamin 500mcg (Methycobal)",
-    dosage: "500mcg",
-    quantity: "30 viên",
-    usage: "Uống 1 viên x 3 lần/ngày sau bữa ăn (Bổ thần kinh)",
-  },
-];
-
-const EXERCISES_TEMPLATE: HomeExercisePrescription[] = [
-  {
-    id: "ex-1",
-    name: "Tập đứng chịu trọng lượng & Dồn trọng lượng chân liệt",
-    category: "Dáng đi & Thăng bằng",
-    sets: "3 lần/ngày, mỗi lần 15 phút",
-    frequency: "Mỗi ngày",
-    precautions: "Người nhà đứng bên cạnh hỗ trợ, có thanh vịn vững chắc.",
-  },
-  {
-    id: "ex-2",
-    name: "Bài tập mở rộng tầm vận động cổ tay & ngón tay",
-    category: "Hoạt động trị liệu",
-    sets: "10 nhịp gập duỗi, giữ 5 giây",
-    frequency: "2 lần/ngày (Sáng - Tối)",
-    precautions: "Tránh kéo giật ngón tay quá mạnh gây đau khớp bàn ngón.",
-  },
-];
+// GĐ4: mẫu thuốc/bài tập ghi cứng đã bỏ — đơn thuốc kê từ danh mục Dược
+// thư (724 thuốc), bài tập kê từ danh mục bài tập PHCN (38 bài). Không
+// còn số liệu mẫu lọt vào đơn thật.
 
 export default function DoctorWorkspacePage() {
   const { user } = useAuth();
@@ -186,6 +162,7 @@ export default function DoctorWorkspacePage() {
               symptoms: "",
               metalImplant: false,
               pacemaker: false,
+              allergies: profile.allergies ?? "",
               status:
                 apt.status === "COMPLETED"
                   ? "COMPLETED"
@@ -291,10 +268,27 @@ export default function DoctorWorkspacePage() {
   // còn ghi romList (GĐ3 §5.4).
   const [romList, setRomList] = useState<RomMeasurement[]>([...ROM_TEMPLATE]);
 
-  // Đơn thuốc & Bài tập PHCN tại nhà
-  const [prescriptions, setPrescriptions] = useState<PrescriptionItem[]>([...DRUGS_TEMPLATE]);
+  // GĐ4 — đơn thuốc & bài tập kê từ danh mục thật (Dược thư 724 thuốc,
+  // 38 bài tập PHCN), không còn mẫu ghi cứng. Bắt đầu rỗng cho mỗi bệnh nhân.
+  const [drugRows, setDrugRows] = useState<DrugRow[]>([]);
+  const [exerciseRows, setExerciseRows] = useState<ExerciseRow[]>([]);
+  // Đơn vừa lưu trong phiên (để hiện mã + nút Ký/Phát và để in phiếu).
+  const [savedMp, setSavedMp] = useState<MedicationPrescription | null>(null);
+  const [savedExpCode, setSavedExpCode] = useState("");
+  const [savedExpRows, setSavedExpRows] = useState<ExerciseRow[]>([]);
+  const [mpActionBusy, setMpActionBusy] = useState(false);
+  // Dị ứng của bệnh nhân đang khám (sửa được tại chỗ — lưu vào hồ sơ).
+  const [allergyDraft, setAllergyDraft] = useState("");
+  const [allergySaving, setAllergySaving] = useState(false);
+  const [allergySavedAt, setAllergySavedAt] = useState(0);
+  // Phiếu in được chọn trong khung in: phiếu lượng giá / đơn thuốc / bài tập.
+  const [printTarget, setPrintTarget] = useState<"assessment" | "medication" | "exercise">("assessment");
+  const [qrDataUrl, setQrDataUrl] = useState("");
 
-  const [exercises, setExercises] = useState<HomeExercisePrescription[]>([...EXERCISES_TEMPLATE]);
+  // Đồng bộ ô dị ứng theo bệnh nhân đang khám.
+  useEffect(() => {
+    setAllergyDraft(currentPatient?.allergies ?? "");
+  }, [currentPatient?.patientProfileId]);
 
   // Đặt lại phiếu khám về mẫu khi chuyển bệnh nhân.
   const resetExamForm = () => {
@@ -304,8 +298,11 @@ export default function DoctorWorkspacePage() {
     setSessionAssessmentIds([]);
     setPrintAssessments([]);
     setRomList([...ROM_TEMPLATE]);
-    setPrescriptions([...DRUGS_TEMPLATE]);
-    setExercises([...EXERCISES_TEMPLATE]);
+    setDrugRows([]);
+    setExerciseRows([]);
+    setSavedMp(null);
+    setSavedExpCode("");
+    setSavedExpRows([]);
     setSelectedServiceIds([]);
     setServiceNote("");
     setCreatedPrescriptionCode("");
@@ -430,28 +427,75 @@ export default function DoctorWorkspacePage() {
     }
   };
 
-  const handleAddSampleDrug = () => {
-    const newDrug: PrescriptionItem = {
-      id: "med-" + Date.now(),
-      name: "Celecoxib 200mg",
-      dosage: "200mg",
-      quantity: "14 viên",
-      usage: "Uống 1 viên/ngày sau bữa ăn sáng (Kháng viêm giảm đau khớp)",
-    };
-    setPrescriptions([...prescriptions, newDrug]);
+  // GĐ4 — lưu dị ứng của bệnh nhân đang khám vào hồ sơ (PATCH profile).
+  const handleSaveAllergies = async () => {
+    if (!currentPatient?.patientProfileId) return;
+    setAllergySaving(true);
+    try {
+      await doctorService.updatePatientProfile(currentPatient.patientProfileId, {
+        allergies: allergyDraft.trim(),
+      });
+      setQueue((prev) =>
+        prev.map((p) =>
+          p.patientProfileId === currentPatient.patientProfileId
+            ? { ...p, allergies: allergyDraft.trim() }
+            : p,
+        ),
+      );
+      setAllergySavedAt(Date.now());
+      setTimeout(() => setAllergySavedAt(0), 3000);
+    } catch (err: unknown) {
+      alert("Lưu dị ứng thất bại: " + getApiErrorMessage(err, "Vui lòng thử lại."));
+    } finally {
+      setAllergySaving(false);
+    }
   };
 
-  const handleAddSampleExercise = () => {
-    const newEx: HomeExercisePrescription = {
-      id: "ex-" + Date.now(),
-      name: "Bài tập ưỡn cột sống McKenzie",
-      category: "Cột sống thắt lưng",
-      sets: "10 lần duỗi (giữ 3 giây)",
-      frequency: "Mỗi 2 giờ khi làm việc ngồi nhiều",
-      precautions: "Dừng lại ngay nếu đau lan xuống bàn chân.",
-    };
-    setExercises([...exercises, newEx]);
+  // GĐ4 — ký đơn thuốc vừa lưu (DRAFT → SIGNED).
+  const handleSignMp = async () => {
+    if (!savedMp) return;
+    setMpActionBusy(true);
+    try {
+      const updated = await doctorService.signMedicationPrescription(savedMp.id);
+      setSavedMp(updated);
+    } catch (err: unknown) {
+      alert("Ký đơn thất bại: " + getApiErrorMessage(err, "Vui lòng thử lại."));
+    } finally {
+      setMpActionBusy(false);
+    }
   };
+
+  // GĐ4 — phát thuốc (SIGNED → DISPENSED, bác sĩ bấm theo Q3).
+  const handleDispenseMp = async () => {
+    if (!savedMp) return;
+    setMpActionBusy(true);
+    try {
+      const updated = await doctorService.dispenseMedicationPrescription(savedMp.id);
+      setSavedMp(updated);
+    } catch (err: unknown) {
+      alert("Phát thuốc thất bại: " + getApiErrorMessage(err, "Vui lòng thử lại."));
+    } finally {
+      setMpActionBusy(false);
+    }
+  };
+
+  // GĐ4 — tạo mã QR cho phiếu bài tập (trỏ trang tài khoản bệnh nhân; video
+  // xem bài tập sẽ gắn khi có mediaUrl — đợt sau).
+  useEffect(() => {
+    if (!showPrintModal || printTarget !== "exercise" || !savedExpCode) {
+      setQrDataUrl("");
+      return;
+    }
+    let cancelled = false;
+    QRCode.toDataURL(`${window.location.origin}/tai-khoan`, { width: 160, margin: 1 })
+      .then((url) => {
+        if (!cancelled) setQrDataUrl(url);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [showPrintModal, printTarget, savedExpCode]);
 
   const toggleService = (serviceId: string) => {
     setSelectedServiceIds((prev) =>
@@ -506,6 +550,9 @@ export default function DoctorWorkspacePage() {
       // GĐ3: content chỉ còn assessmentIds (thang điểm thật ở bảng
       // Assessment) — ngừng ghi fim/fimTotal/romList (đọc bệnh án cũ vẫn
       // tương thích vì content là JSON tự do).
+      // GĐ4: content không còn ghi prescriptions/exercises — đơn thuốc và
+      // đơn bài tập nay là bảng riêng có mã MP/EXP, không nằm trong JSON
+      // bệnh án mã hóa.
       const record = await doctorService.createMedicalRecord({
         patientProfileId: currentPatient.patientProfileId,
         appointmentCode: currentPatient.appointmentCode,
@@ -514,27 +561,60 @@ export default function DoctorWorkspacePage() {
           diagnosis,
           painScale,
           assessmentIds,
-          prescriptions,
-          exercises,
           doctorNotes,
         },
         status: "COMPLETED",
       });
 
-      // 2. Tạo đơn thuốc thật từ danh sách thuốc đã kê.
-      const drugItems = prescriptions
+      // 2. Tạo đơn thuốc thật từ danh sách thuốc đã kê (đủ trường liều —
+      // GĐ4 §3.1: trước đây chỉ map 3 trường nên mất số lượng/số ngày/
+      // đường dùng). Đơn mới luôn ở trạng thái DRAFT; ký/phát bằng nút
+      // ở tab RX (bác sĩ bấm theo Q3).
+      const drugItems = drugRows
         .filter((d) => d.name.trim())
         .map((d) => ({
+          drugId: d.drugId,
           name: d.name.trim(),
-          strength: d.dosage || undefined,
-          frequency: d.usage || undefined,
+          strength: d.strength || undefined,
+          dosageForm: d.dosageForm || undefined,
+          route: d.route || undefined,
+          dose: d.dose,
+          doseUnit: d.doseUnit || undefined,
+          frequency: d.frequency || undefined,
+          durationDays: d.durationDays,
+          quantity: d.quantity,
+          quantityUnit: d.quantityUnit || undefined,
+          instructions: d.instructions || undefined,
         }));
       if (drugItems.length > 0) {
-        await doctorService.createMedicationPrescription({
+        const mp = await doctorService.createMedicationPrescription({
           patientProfileId: currentPatient.patientProfileId,
           medicalRecordId: record?.id,
           items: drugItems,
         });
+        setSavedMp(mp);
+      }
+
+      // 2b. Tạo đơn bài tập thật từ danh sách bài đã kê (GĐ4 — trước đây
+      // chỉ lưu vào JSON bệnh án, không có đơn). KTV cũng kê được (Q2).
+      const exerciseItems = exerciseRows.filter((e) => e.exerciseId);
+      if (exerciseItems.length > 0) {
+        const exp = await exerciseService.createExercisePrescription({
+          patientProfileId: currentPatient.patientProfileId,
+          medicalRecordId: record?.id,
+          appointmentId: currentPatient.id,
+          items: exerciseItems.map((e) => ({
+            exerciseId: e.exerciseId,
+            sets: e.sets,
+            reps: e.reps,
+            holdSec: e.holdSec,
+            frequency: e.frequency,
+            durationDays: e.durationDays,
+            note: e.note,
+          })),
+        });
+        setSavedExpCode(exp.code);
+        setSavedExpRows([...exerciseItems]);
       }
 
       // 3. Tạo phiếu chỉ định dịch vụ thật từ các dịch vụ bác sĩ đã tick
@@ -913,44 +993,48 @@ export default function DoctorWorkspacePage() {
             {/* TAB 3: KÊ ĐƠN THUỐC & BÀI TẬP PHCN TẠI NHÀ */}
             {activeTab === "RX" && (
               <div className="space-y-6">
-                {/* Phần 1: Đơn thuốc điện tử */}
+                {/* Phần 1: Đơn thuốc — kê từ danh mục Dược thư (GĐ4) */}
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
                     <h4 className="text-xs font-bold text-[#0f3e17] uppercase tracking-wider flex items-center gap-2">
                       <Pill className="w-4 h-4 text-[#0f3e17]" />
-                      <span>Đơn thuốc Hỗ trợ Điều trị ({prescriptions.length})</span>
+                      <span>Đơn thuốc Hỗ trợ Điều trị ({drugRows.length})</span>
                     </h4>
-                    <button
-                      type="button"
-                      onClick={handleAddSampleDrug}
-                      className="text-xs text-[#0f3e17] hover:text-[#0c2f10] font-semibold inline-flex items-center gap-1"
-                    >
-                      <Plus className="w-3.5 h-3.5" /> Thêm thuốc
-                    </button>
                   </div>
 
-                  <div className="space-y-2">
-                    {prescriptions.map((rx, idx) => (
-                      <div
-                        key={rx.id}
-                        className="p-3 rounded-[14px] bg-[#fffefc] border border-[#efeeeb] flex items-center justify-between text-xs"
+                  {/* Dị ứng — thu ở form đăng ký, sửa được tại chỗ (GĐ4 Q7) */}
+                  <div className="p-3 rounded-[14px] bg-[#fffefc] border border-[#efeeeb] text-xs">
+                    <label className="block text-xs font-semibold text-[#0f3e17] mb-1">
+                      Dị ứng thuốc/thức ăn của bệnh nhân:
+                    </label>
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        value={allergyDraft}
+                        onChange={(e) => setAllergyDraft(e.target.value)}
+                        placeholder="Ví dụ: Penicillin — nổi mề đay 2023 (để trống nếu không có)"
+                        className="flex-1 px-3 py-2 rounded-[10px] bg-[#fffefc] border border-[#efeeeb] text-xs text-[#222222] focus:outline-none focus:border-[#0f3e17]"
+                      />
+                      <button
+                        type="button"
+                        onClick={handleSaveAllergies}
+                        disabled={allergySaving || allergyDraft.trim() === (currentPatient?.allergies ?? "")}
+                        className="px-3 py-2 rounded-[10px] bg-[#0f3e17] text-[#fffefc] font-semibold disabled:opacity-40 shrink-0"
                       >
-                        <div>
-                          <div className="font-bold text-[#0f3e17]">
-                            {idx + 1}. {rx.name} - <span className="text-[#222222]/60">{rx.quantity}</span>
-                          </div>
-                          <div className="text-[#222222]/70 text-[11px] mt-0.5">{rx.usage}</div>
-                        </div>
-                        <button
-                          type="button"
-                          onClick={() => setPrescriptions(prescriptions.filter((p) => p.id !== rx.id))}
-                          className="text-[#222222]/40 hover:text-rose-600 p-1"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </div>
-                    ))}
+                        {allergySaving ? "Đang lưu..." : allergySavedAt ? "Đã lưu ✓" : "Lưu dị ứng"}
+                      </button>
+                    </div>
                   </div>
+
+                  <DrugForm
+                    rows={drugRows}
+                    onChange={setDrugRows}
+                    allergies={currentPatient?.allergies}
+                    savedMp={savedMp}
+                    onSign={handleSignMp}
+                    onDispense={handleDispenseMp}
+                    actionBusy={mpActionBusy}
+                  />
                 </div>
 
                 {/* Phần 2: Chỉ định Dịch vụ điều trị (tạo phiếu thật cho thu ngân) */}
@@ -1045,45 +1129,16 @@ export default function DoctorWorkspacePage() {
                   )}
                 </div>
 
-                {/* Phần 3: Chỉ định Bài tập PHCN tại nhà */}
+                {/* Phần 3: Chỉ định Bài tập PHCN tại nhà — kê từ danh mục (GĐ4) */}
                 <div className="space-y-3 pt-4 border-t border-[#efeeeb]">
                   <div className="flex items-center justify-between">
                     <h4 className="text-xs font-bold text-[#0f3e17] uppercase tracking-wider flex items-center gap-2">
                       <Stethoscope className="w-4 h-4 text-[#0f3e17]" />
-                      <span>Chỉ định Gói Bài tập PHCN tại nhà ({exercises.length})</span>
+                      <span>Chỉ định Gói Bài tập PHCN tại nhà ({exerciseRows.length})</span>
                     </h4>
-                    <button
-                      type="button"
-                      onClick={handleAddSampleExercise}
-                      className="text-xs text-[#0f3e17] hover:text-[#0c2f10] font-semibold inline-flex items-center gap-1"
-                    >
-                      <Plus className="w-3.5 h-3.5" /> Thêm bài tập
-                    </button>
                   </div>
 
-                  <div className="space-y-2">
-                    {exercises.map((ex, idx) => (
-                      <div
-                        key={ex.id}
-                        className="p-3.5 rounded-[14px] bg-[#e1f4df]/30 border border-[#cfe7d3] text-xs space-y-1.5"
-                      >
-                        <div className="flex items-center justify-between">
-                          <strong className="text-[#0f3e17] text-sm">
-                            {idx + 1}. {ex.name}
-                          </strong>
-                          <span className="text-[10px] px-2 py-0.5 rounded-[6px] bg-[#fffefc] text-[#0f3e17] border border-[#cfe7d3]">
-                            {ex.category}
-                          </span>
-                        </div>
-                        <div className="text-[#222222]/80">
-                          • Liều lượng tập: <strong>{ex.sets}</strong> • Tần suất: {ex.frequency}
-                        </div>
-                        <div className="text-[#0f3e17] text-[11px] font-medium">
-                          • Lưu ý kỹ thuật: {ex.precautions}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
+                  <ExerciseForm rows={exerciseRows} onChange={setExerciseRows} savedExpCode={savedExpCode} />
                 </div>
 
                 {/* Phần 4: Lời dặn Bác sĩ */}
@@ -1098,6 +1153,15 @@ export default function DoctorWorkspacePage() {
                     className="w-full p-3 rounded-[14px] bg-[#fffefc] border border-[#efeeeb] text-xs text-[#222222] focus:outline-none focus:border-[#0f3e17]"
                   />
                 </div>
+
+                {/* Phần 5: Đơn cũ của bệnh nhân (GĐ4) */}
+                {currentPatient?.patientProfileId && (
+                  <PrescriptionHistory
+                    patientProfileId={currentPatient.patientProfileId}
+                    onReprescribeDrugs={(rows) => setDrugRows([...drugRows, ...rows])}
+                    onReprescribeExercises={(rows) => setExerciseRows([...exerciseRows, ...rows])}
+                  />
+                )}
               </div>
             )}
 
@@ -1133,147 +1197,382 @@ export default function DoctorWorkspacePage() {
       </div>
       )}
 
-      {/* Modal In Bệnh án & Phiếu Lượng giá PHCN */}
+      {/* Modal In — 3 phiếu riêng (GĐ4): phiếu lượng giá / đơn thuốc /
+          phiếu bài tập. Chỉ phiếu đang chọn được in (CSS @media print). */}
       {showPrintModal && (
         <div className="fixed inset-0 z-50 bg-[#0f3e17]/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <style>{`@media print { body * { visibility: hidden !important; } .print-area, .print-area * { visibility: visible !important; } .print-area { position: absolute !important; left: 0; top: 0; width: 100%; background: #fff; } }`}</style>
           <div className="bg-[#fffefc] text-[#222222] rounded-[14px] max-w-2xl w-full p-8 border border-[#efeeeb] max-h-[90vh] overflow-y-auto">
-            <div className="border-b pb-4 border-[#efeeeb] flex justify-between items-start">
-              <div>
-                <div className="text-xs font-bold text-[#0f3e17] uppercase">
-                  PHÒNG KHÁM CHUYÊN KHOA PHỤC HỒI CHỨC NĂNG BÁC SĨ THANH SANG
-                </div>
-                <div className="text-[11px] text-[#222222]/60">
-                  Địa chỉ: 193 Quang Trung, Đại Lộc, Đà Nẵng • Hotline: 0369.117.117
-                </div>
-              </div>
-              <div className="text-right">
-                <span className="text-xs font-mono font-bold px-2 py-0.5 rounded-[7px] bg-[#e1f4df] border border-[#cfe7d3] text-[#0f3e17]">
-                  Mã BA: TS-2026-{currentPatient.queueNumber}
-                </span>
-                <div className="text-[11px] text-[#222222]/50 mt-1">
-                  Ngày khám: {new Date().toLocaleDateString("vi-VN")}
-                </div>
-              </div>
+            {/* Chọn phiếu in */}
+            <div className="flex gap-2 mb-4">
+              {(
+                [
+                  ["assessment", "Phiếu lượng giá"],
+                  ["medication", "Đơn thuốc"],
+                  ["exercise", "Phiếu bài tập"],
+                ] as const
+              ).map(([key, label]) => (
+                <button
+                  key={key}
+                  type="button"
+                  onClick={() => setPrintTarget(key)}
+                  className={`flex-1 px-3 py-2 rounded-[10px] text-xs font-bold ${
+                    printTarget === key
+                      ? "bg-[#0f3e17] text-[#fffefc]"
+                      : "bg-[#fffefc] border border-[#efeeeb] text-[#222222] hover:bg-[#efeeeb]/40"
+                  }`}
+                >
+                  {label}
+                </button>
+              ))}
             </div>
 
-            <div className="my-4 text-center">
-              <h2 className="text-lg font-black text-[#0f3e17] uppercase">
-                PHIẾU LƯỢNG GIÁ CHỨC NĂNG & CHỈ ĐỊNH ĐIỀU TRỊ
-              </h2>
-            </div>
-
-            {/* Thông tin bệnh nhân */}
-            <div className="grid grid-cols-2 gap-2 text-xs py-3 border-y border-[#efeeeb]">
-              <div>
-                Họ và tên: <strong className="text-[#0f3e17]">{currentPatient.name}</strong>
-              </div>
-              <div>
-                Năm sinh: <strong>{currentPatient.birthYear}</strong> • Giới tính: {currentPatient.gender}
-              </div>
-              <div>
-                Số điện thoại: <strong>{currentPatient.phone}</strong>
-              </div>
-              <div>
-                Chẩn đoán lâm sàng: <strong>{diagnosis}</strong>
-              </div>
-            </div>
-
-            {/* Kết quả thang điểm (GĐ3) — đọc từ Assessment đã lưu, không còn
-                đọc fimTotal/romList trong state form. */}
-            <div className="my-4 space-y-3 text-xs">
-              <div className="p-3.5 bg-[#e1f4df]/40 rounded-[14px] border border-[#cfe7d3]">
-                <div className="flex justify-between font-bold text-[#0f3e17]">
-                  <span>1. Kết quả thang điểm PHCN:</span>
-                  <span>{printAssessments.length > 0 ? `${printAssessments.length} lần đánh giá` : "Chưa có lần đánh giá nào trong phiên này"}</span>
-                </div>
-                <div className="space-y-1 mt-1">
-                  {printAssessments.map((a) => (
-                    <div key={a.id} className="flex justify-between text-[11px] text-[#222222]/80">
-                      <span>
-                        • {a.scaleNameVi} ({new Date(a.assessedAt).toLocaleDateString("vi-VN")}
-                        {a.timepoint === "BASELINE" ? " — Đầu vào" : a.timepoint === "REASSESSMENT" ? " — Tái đánh giá" : " — Ra viện"}):
-                      </span>
-                      <strong>
-                        {a.totalScore ?? a.value ?? a.level ?? "—"}
-                        {a.interpretation ? ` — ${a.interpretation}` : ""}
-                      </strong>
+            {/* ===== PHIẾU LƯỢNG GIÁ ===== */}
+            {printTarget === "assessment" && (
+              <div className="print-area">
+                <div className="border-b pb-4 border-[#efeeeb] flex justify-between items-start">
+                  <div>
+                    <div className="text-xs font-bold text-[#0f3e17] uppercase">
+                      {CLINIC.name.toUpperCase()}
                     </div>
-                  ))}
-                </div>
-                <div className="text-[11px] text-[#222222]/70 mt-1">
-                  Thang đo mức độ đau VAS: {painScale}/10.
-                </div>
-              </div>
-
-              {/* Bài tập về nhà */}
-              <div className="p-3.5 bg-[#e1f4df]/30 rounded-[14px] border border-[#cfe7d3] text-[#0f3e17]">
-                <div className="font-bold mb-1">3. Bài tập Phục hồi Chức năng Hướng dẫn tại nhà:</div>
-                <div className="space-y-1 text-[11px] text-[#222222]/80">
-                  {exercises.map((ex, i) => (
-                    <div key={i}>
-                      • <strong>{ex.name}:</strong> {ex.sets} ({ex.frequency})
+                    <div className="text-[11px] text-[#222222]/60">
+                      Địa chỉ: {CLINIC.address} • Hotline: {CLINIC.phone}
                     </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Đơn thuốc */}
-              <div className="p-3.5 bg-[#fffefc] rounded-[14px] border border-[#efeeeb]">
-                <div className="font-bold text-[#0f3e17] mb-1">4. Đơn thuốc Hỗ trợ:</div>
-                <div className="space-y-1 text-[11px] text-[#222222]/80">
-                  {prescriptions.map((rx, i) => (
-                    <div key={i}>
-                      {i + 1}. <strong>{rx.name}</strong> - SL: {rx.quantity} ({rx.usage})
+                  </div>
+                  <div className="text-right">
+                    <span className="text-xs font-mono font-bold px-2 py-0.5 rounded-[7px] bg-[#e1f4df] border border-[#cfe7d3] text-[#0f3e17]">
+                      Mã BA: TS-2026-{currentPatient.queueNumber}
+                    </span>
+                    <div className="text-[11px] text-[#222222]/50 mt-1">
+                      Ngày khám: {new Date().toLocaleDateString("vi-VN")}
                     </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Phiếu chỉ định dịch vụ */}
-              {createdPrescriptionCode && (
-                <div className="p-3.5 bg-[#e1f4df]/40 rounded-[14px] border border-[#cfe7d3]">
-                  <div className="font-bold text-[#0f3e17] mb-1">5. Phiếu chỉ định Dịch vụ điều trị:</div>
-                  <div className="text-[11px] text-[#222222]/80 space-y-1">
-                    <div>
-                      Mã phiếu (thu ngân quét mã này):{" "}
-                      <strong className="font-mono text-[#0f3e17]">{createdPrescriptionCode}</strong>
-                    </div>
-                    {selectedServices.map((srv, i) => (
-                      <div key={srv.serviceId}>
-                        {i + 1}. <strong>{srv.serviceName}</strong>
-                        {srv.price != null && (
-                          <span> — {srv.price.toLocaleString("vi-VN")} đ</span>
-                        )}
-                      </div>
-                    ))}
-                    {selectedServicesTotal > 0 && (
-                      <div>
-                        Tạm tính: <strong className="text-[#0f3e17]">{selectedServicesTotal.toLocaleString("vi-VN")} đ</strong>
-                      </div>
-                    )}
-                    {serviceNote.trim() && (
-                      <div>Ghi chú chỉ định: {serviceNote.trim()}</div>
-                    )}
                   </div>
                 </div>
-              )}
 
-              <div className="p-3 rounded-[14px] bg-[#fffefc] border border-[#efeeeb] text-[11px] text-[#222222]/80">
-                <strong>Lời dặn Bác sĩ:</strong> {doctorNotes}
-              </div>
-            </div>
+                <div className="my-4 text-center">
+                  <h2 className="text-lg font-black text-[#0f3e17] uppercase">
+                    PHIẾU LƯỢNG GIÁ CHỨC NĂNG &amp; CHỈ ĐỊNH ĐIỀU TRỊ
+                  </h2>
+                </div>
 
-            {/* Chữ ký Bác sĩ */}
-            <div className="pt-4 flex justify-between items-end text-xs text-center">
-              <div>
-                <div className="text-[#222222]/60">Người bệnh / Thân nhân</div>
-                <div className="mt-12 font-medium">(Ký và ghi rõ họ tên)</div>
+                <div className="grid grid-cols-2 gap-2 text-xs py-3 border-y border-[#efeeeb]">
+                  <div>
+                    Họ và tên: <strong className="text-[#0f3e17]">{currentPatient.name}</strong>
+                  </div>
+                  <div>
+                    Năm sinh: <strong>{currentPatient.birthYear}</strong> • Giới tính: {currentPatient.gender}
+                  </div>
+                  <div>
+                    Số điện thoại: <strong>{currentPatient.phone}</strong>
+                  </div>
+                  <div>
+                    Chẩn đoán lâm sàng: <strong>{diagnosis}</strong>
+                  </div>
+                </div>
+
+                <div className="my-4 space-y-3 text-xs">
+                  <div className="p-3.5 bg-[#e1f4df]/40 rounded-[14px] border border-[#cfe7d3]">
+                    <div className="flex justify-between font-bold text-[#0f3e17]">
+                      <span>1. Kết quả thang điểm PHCN:</span>
+                      <span>{printAssessments.length > 0 ? `${printAssessments.length} lần đánh giá` : "Chưa có lần đánh giá nào trong phiên này"}</span>
+                    </div>
+                    <div className="space-y-1 mt-1">
+                      {printAssessments.map((a) => (
+                        <div key={a.id} className="flex justify-between text-[11px] text-[#222222]/80">
+                          <span>
+                            • {a.scaleNameVi} ({new Date(a.assessedAt).toLocaleDateString("vi-VN")}
+                            {a.timepoint === "BASELINE" ? " — Đầu vào" : a.timepoint === "REASSESSMENT" ? " — Tái đánh giá" : " — Ra viện"}):
+                          </span>
+                          <strong>
+                            {a.totalScore ?? a.value ?? a.level ?? "—"}
+                            {a.interpretation ? ` — ${a.interpretation}` : ""}
+                          </strong>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="text-[11px] text-[#222222]/70 mt-1">
+                      Thang đo mức độ đau VAS: {painScale}/10.
+                    </div>
+                  </div>
+
+                  {/* Bài tập — đọc từ đơn bài tập đã lưu (GĐ4), không còn
+                      đọc mẫu ghi cứng; đơn thuốc in ở phiếu riêng. */}
+                  {(savedExpRows.length > 0 || exerciseRows.length > 0) && (
+                    <div className="p-3.5 bg-[#e1f4df]/30 rounded-[14px] border border-[#cfe7d3] text-[#0f3e17]">
+                      <div className="font-bold mb-1">
+                        3. Bài tập Phục hồi Chức năng Hướng dẫn tại nhà
+                        {savedExpCode && (
+                          <span className="font-mono font-normal"> — Mã đơn: {savedExpCode}</span>
+                        )}
+                        :
+                      </div>
+                      <div className="space-y-1 text-[11px] text-[#222222]/80">
+                        {(savedExpRows.length > 0 ? savedExpRows : exerciseRows).map((ex, i) => (
+                          <div key={i}>
+                            • <strong>{ex.name}:</strong>{" "}
+                            {[ex.sets ? `${ex.sets} hiệp` : "", ex.reps ? `${ex.reps} lần` : "", ex.frequency ?? ""]
+                              .filter(Boolean)
+                              .join(" · ")}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {createdPrescriptionCode && (
+                    <div className="p-3.5 bg-[#e1f4df]/40 rounded-[14px] border border-[#cfe7d3]">
+                      <div className="font-bold text-[#0f3e17] mb-1">5. Phiếu chỉ định Dịch vụ điều trị:</div>
+                      <div className="text-[11px] text-[#222222]/80 space-y-1">
+                        <div>
+                          Mã phiếu (thu ngân quét mã này):{" "}
+                          <strong className="font-mono text-[#0f3e17]">{createdPrescriptionCode}</strong>
+                        </div>
+                        {selectedServices.map((srv, i) => (
+                          <div key={srv.serviceId}>
+                            {i + 1}. <strong>{srv.serviceName}</strong>
+                            {srv.price != null && (
+                              <span> — {srv.price.toLocaleString("vi-VN")} đ</span>
+                            )}
+                          </div>
+                        ))}
+                        {selectedServicesTotal > 0 && (
+                          <div>
+                            Tạm tính: <strong className="text-[#0f3e17]">{selectedServicesTotal.toLocaleString("vi-VN")} đ</strong>
+                          </div>
+                        )}
+                        {serviceNote.trim() && (
+                          <div>Ghi chú chỉ định: {serviceNote.trim()}</div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="p-3 rounded-[14px] bg-[#fffefc] border border-[#efeeeb] text-[11px] text-[#222222]/80">
+                    <strong>Lời dặn Bác sĩ:</strong> {doctorNotes}
+                  </div>
+                </div>
+
+                <div className="pt-4 flex justify-between items-end text-xs text-center">
+                  <div>
+                    <div className="text-[#222222]/60">Người bệnh / Thân nhân</div>
+                    <div className="mt-12 font-medium">(Ký và ghi rõ họ tên)</div>
+                  </div>
+                  <div>
+                    <div className="text-[#222222]/60">Bác sĩ Chuyên khoa PHCN</div>
+                    <div className="mt-12 font-bold text-[#0f3e17]">{user?.name || "BS.CKII Lâm Thanh Tú"}</div>
+                  </div>
+                </div>
               </div>
-              <div>
-                <div className="text-[#222222]/60">Bác sĩ Chuyên khoa PHCN</div>
-                <div className="mt-12 font-bold text-[#0f3e17]">{user?.name || "BS.CKII Lâm Thanh Tú"}</div>
+            )}
+
+            {/* ===== ĐƠN THUỐC RIÊNG ===== */}
+            {printTarget === "medication" && (
+              <div className="print-area relative">
+                {savedMp?.status === "DRAFT" && (
+                  <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                    <span className="text-5xl font-black text-rose-500/20 -rotate-[20deg] uppercase tracking-widest">
+                      Bản nháp
+                    </span>
+                  </div>
+                )}
+                <div className="border-b pb-4 border-[#efeeeb] flex justify-between items-start">
+                  <div>
+                    <div className="text-xs font-bold text-[#0f3e17] uppercase">
+                      {CLINIC.name.toUpperCase()}
+                    </div>
+                    <div className="text-[11px] text-[#222222]/60">
+                      Địa chỉ: {CLINIC.address} • Hotline: {CLINIC.phone}
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <span className="text-xs font-mono font-bold px-2 py-0.5 rounded-[7px] bg-[#e1f4df] border border-[#cfe7d3] text-[#0f3e17]">
+                      Mã đơn: {savedMp?.code ?? "—"}
+                    </span>
+                    <div className="text-[11px] text-[#222222]/50 mt-1">
+                      Ngày kê: {new Date().toLocaleDateString("vi-VN")} •{" "}
+                      {savedMp?.status === "DRAFT"
+                        ? "Bản nháp (chưa ký)"
+                        : savedMp?.status === "SIGNED"
+                          ? "Đã ký"
+                          : savedMp?.status === "DISPENSED"
+                            ? "Đã phát thuốc"
+                            : savedMp?.status ?? ""}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="my-4 text-center">
+                  <h2 className="text-lg font-black text-[#0f3e17] uppercase">ĐƠN THUỐC</h2>
+                </div>
+
+                <div className="grid grid-cols-2 gap-2 text-xs py-3 border-y border-[#efeeeb]">
+                  <div>
+                    Họ và tên: <strong className="text-[#0f3e17]">{currentPatient.name}</strong>
+                  </div>
+                  <div>
+                    Năm sinh: <strong>{currentPatient.birthYear}</strong> • Giới tính: {currentPatient.gender}
+                  </div>
+                  <div>
+                    Số điện thoại: <strong>{currentPatient.phone}</strong>
+                  </div>
+                  <div>
+                    Chẩn đoán: <strong>{diagnosis}</strong>
+                  </div>
+                  <div className="col-span-2">
+                    Dị ứng:{" "}
+                    <strong className="text-rose-700">{currentPatient.allergies || "Không ghi nhận"}</strong>
+                  </div>
+                </div>
+
+                <div className="my-4">
+                  {savedMp && savedMp.items.length > 0 ? (
+                    <table className="w-full text-[11px] border-collapse">
+                      <thead>
+                        <tr className="bg-[#e1f4df]/60 text-[#0f3e17]">
+                          <th className="border border-[#cfe7d3] px-2 py-1.5 text-left">#</th>
+                          <th className="border border-[#cfe7d3] px-2 py-1.5 text-left">Tên thuốc</th>
+                          <th className="border border-[#cfe7d3] px-2 py-1.5 text-left">Hàm lượng</th>
+                          <th className="border border-[#cfe7d3] px-2 py-1.5 text-left">Liều dùng</th>
+                          <th className="border border-[#cfe7d3] px-2 py-1.5 text-left">Tần suất</th>
+                          <th className="border border-[#cfe7d3] px-2 py-1.5 text-left">Số ngày</th>
+                          <th className="border border-[#cfe7d3] px-2 py-1.5 text-left">Số lượng</th>
+                          <th className="border border-[#cfe7d3] px-2 py-1.5 text-left">Cách dùng</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {savedMp.items.map((item, i) => (
+                          <tr key={item.id}>
+                            <td className="border border-[#efeeeb] px-2 py-1.5">{i + 1}</td>
+                            <td className="border border-[#efeeeb] px-2 py-1.5 font-bold">{item.name}</td>
+                            <td className="border border-[#efeeeb] px-2 py-1.5">{item.strength ?? "—"}</td>
+                            <td className="border border-[#efeeeb] px-2 py-1.5">
+                              {item.dose != null ? `${item.dose} ${item.doseUnit ?? ""}` : "—"}
+                              {item.route ? ` (${item.route})` : ""}
+                            </td>
+                            <td className="border border-[#efeeeb] px-2 py-1.5">{item.frequency ?? "—"}</td>
+                            <td className="border border-[#efeeeb] px-2 py-1.5">{item.durationDays ?? "—"}</td>
+                            <td className="border border-[#efeeeb] px-2 py-1.5">
+                              {item.quantity != null ? `${item.quantity} ${item.quantityUnit ?? ""}` : "—"}
+                            </td>
+                            <td className="border border-[#efeeeb] px-2 py-1.5">{item.instructions ?? "—"}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  ) : (
+                    <p className="text-xs text-[#222222]/70">
+                      Phiên này chưa kê thuốc nào. Kê thuốc ở tab “Kê đơn” rồi bấm “Hoàn tất Ca khám &amp; Lưu Bệnh án”.
+                    </p>
+                  )}
+                </div>
+
+                <div className="pt-4 flex justify-between items-end text-xs text-center">
+                  <div>
+                    <div className="text-[#222222]/60">Người bệnh / Thân nhân</div>
+                    <div className="mt-12 font-medium">(Ký và ghi rõ họ tên)</div>
+                  </div>
+                  <div>
+                    <div className="text-[#222222]/60">Bác sĩ kê đơn</div>
+                    <div className="mt-12 font-bold text-[#0f3e17]">{user?.name || "BS.CKII Lâm Thanh Tú"}</div>
+                  </div>
+                </div>
               </div>
-            </div>
+            )}
+
+            {/* ===== PHIẾU BÀI TẬP (kèm QR) ===== */}
+            {printTarget === "exercise" && (
+              <div className="print-area">
+                <div className="border-b pb-4 border-[#efeeeb] flex justify-between items-start">
+                  <div>
+                    <div className="text-xs font-bold text-[#0f3e17] uppercase">
+                      {CLINIC.name.toUpperCase()}
+                    </div>
+                    <div className="text-[11px] text-[#222222]/60">
+                      Địa chỉ: {CLINIC.address} • Hotline: {CLINIC.phone}
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <span className="text-xs font-mono font-bold px-2 py-0.5 rounded-[7px] bg-[#e1f4df] border border-[#cfe7d3] text-[#0f3e17]">
+                      Mã đơn: {savedExpCode || "—"}
+                    </span>
+                    <div className="text-[11px] text-[#222222]/50 mt-1">
+                      Ngày kê: {new Date().toLocaleDateString("vi-VN")}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="my-4 text-center">
+                  <h2 className="text-lg font-black text-[#0f3e17] uppercase">
+                    PHIẾU HƯỚNG DẪN BÀI TẬP TẠI NHÀ
+                  </h2>
+                </div>
+
+                <div className="grid grid-cols-2 gap-2 text-xs py-3 border-y border-[#efeeeb]">
+                  <div>
+                    Họ và tên: <strong className="text-[#0f3e17]">{currentPatient.name}</strong>
+                  </div>
+                  <div>
+                    Năm sinh: <strong>{currentPatient.birthYear}</strong> • Giới tính: {currentPatient.gender}
+                  </div>
+                  <div>
+                    Số điện thoại: <strong>{currentPatient.phone}</strong>
+                  </div>
+                  <div>
+                    Chẩn đoán: <strong>{diagnosis}</strong>
+                  </div>
+                </div>
+
+                <div className="my-4 space-y-2 text-xs">
+                  {(savedExpRows.length > 0 ? savedExpRows : exerciseRows).length === 0 && (
+                    <p className="text-[#222222]/70">
+                      Phiên này chưa kê bài tập nào. Chọn bài ở tab “Kê đơn” rồi bấm “Hoàn tất Ca khám &amp; Lưu Bệnh án”.
+                    </p>
+                  )}
+                  {(savedExpRows.length > 0 ? savedExpRows : exerciseRows).map((ex, i) => (
+                    <div key={i} className="p-3.5 bg-[#e1f4df]/30 rounded-[14px] border border-[#cfe7d3]">
+                      <div className="font-bold text-[#0f3e17] text-sm">
+                        {i + 1}. {ex.name}
+                      </div>
+                      <div className="text-[11px] text-[#222222]/80 mt-0.5">
+                        • Liều tập:{" "}
+                        <strong>
+                          {[ex.sets ? `${ex.sets} hiệp` : "", ex.reps ? `${ex.reps} lần` : "", ex.holdSec ? `giữ ${ex.holdSec} giây` : "", ex.frequency ?? ""]
+                            .filter(Boolean)
+                            .join(" · ")}
+                        </strong>
+                        {ex.durationDays ? ` • Trong ${ex.durationDays} ngày` : ""}
+                      </div>
+                      {ex.precautions && (
+                        <div className="text-[11px] text-amber-800 mt-0.5">• Lưu ý: {ex.precautions}</div>
+                      )}
+                      {ex.note && (
+                        <div className="text-[11px] text-[#222222]/80 mt-0.5">• Ghi chú: {ex.note}</div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+
+                {qrDataUrl && (
+                  <div className="my-4 flex flex-col items-center gap-1">
+                    <img src={qrDataUrl} alt="Mã QR xem bài tập" className="w-40 h-40" />
+                    <div className="text-[11px] text-[#222222]/70">
+                      Quét mã để xem bài tập của bạn trên trang tài khoản
+                    </div>
+                  </div>
+                )}
+
+                <div className="pt-4 flex justify-between items-end text-xs text-center">
+                  <div>
+                    <div className="text-[#222222]/60">Người bệnh / Thân nhân</div>
+                    <div className="mt-12 font-medium">(Ký và ghi rõ họ tên)</div>
+                  </div>
+                  <div>
+                    <div className="text-[#222222]/60">Bác sĩ / KTV kê đơn</div>
+                    <div className="mt-12 font-bold text-[#0f3e17]">{user?.name || "BS.CKII Lâm Thanh Tú"}</div>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Modal Actions */}
             <div className="mt-6 pt-4 border-t border-[#efeeeb] flex justify-end gap-3">
@@ -1290,7 +1589,14 @@ export default function DoctorWorkspacePage() {
                 className="px-5 py-2 bg-[#0f3e17] hover:bg-[#0c2f10] text-[#fffefc] rounded-[14px] text-xs font-semibold flex items-center gap-1.5 transition-colors"
               >
                 <Printer className="w-4 h-4" />
-                <span>In Phiếu Lượng giá</span>
+                <span>
+                  In{" "}
+                  {printTarget === "assessment"
+                    ? "Phiếu Lượng giá"
+                    : printTarget === "medication"
+                      ? "Đơn thuốc"
+                      : "Phiếu bài tập"}
+                </span>
               </button>
             </div>
           </div>

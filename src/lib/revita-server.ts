@@ -101,6 +101,8 @@ export interface BookingPatientInput {
   phone: string;
   dateOfBirth: string; // YYYY-MM-DD
   gender: string;
+  // GĐ4 — dị ứng thu ở form đăng ký, lưu vào hồ sơ bệnh nhân.
+  allergies?: string;
   emergencyContactName: string;
   emergencyContactPhone: string;
 }
@@ -117,6 +119,7 @@ export async function createPatientProfileAsService(
       phone: input.phone,
       dateOfBirth: input.dateOfBirth,
       gender: input.gender,
+      allergies: input.allergies,
       emergencyContact: {
         name: input.emergencyContactName,
         phone: input.emergencyContactPhone,

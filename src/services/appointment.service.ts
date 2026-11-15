@@ -83,6 +83,7 @@ export interface PatientProfileSummary {
   gender?: string;
   dateOfBirth?: string;
   phone?: string | null;
+  allergies?: string | null; // GĐ4: dị ứng thuốc/thức ăn
   isPregnant?: boolean;
   isDisabled?: boolean;
 }

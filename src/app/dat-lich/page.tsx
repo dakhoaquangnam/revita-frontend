@@ -61,6 +61,8 @@ export default function DatLichPage() {
     symptoms: "",
     hasMetalImplant: "Không",
     hasPacemaker: "Không",
+    // GĐ4 — dị ứng thu ở form đăng ký (Q7), lưu vào hồ sơ bệnh nhân.
+    allergies: "",
   });
 
   // Kết quả đặt lịch thật
@@ -152,6 +154,8 @@ export default function DatLichPage() {
           phone: patientInfo.phone,
           dateOfBirth: patientInfo.dateOfBirth,
           gender: patientInfo.gender,
+          // GĐ4 — dị ứng thu ở form đăng ký, lưu vào hồ sơ bệnh nhân.
+          allergies: patientInfo.allergies.trim() || undefined,
           doctorId: selectedDoctorId,
           serviceId: selectedServiceId,
           date: selectedDate,
@@ -609,6 +613,22 @@ export default function DatLichPage() {
                       </label>
                     </div>
                   </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-[#0f3e17] mb-1">
+                    Dị ứng thuốc / thức ăn (nếu có)
+                  </label>
+                  <input
+                    type="text"
+                    value={patientInfo.allergies}
+                    onChange={(e) => setPatientInfo({ ...patientInfo, allergies: e.target.value })}
+                    placeholder="Ví dụ: Penicillin — nổi mề đay 2023 (để trống nếu không có)"
+                    className="w-full px-3.5 py-2.5 text-sm bg-[#fffefc] border border-[#efeeeb] rounded-[14px] focus:outline-none focus:border-[#0f3e17]"
+                  />
+                  <p className="text-[11px] text-[#222222]/60 mt-1">
+                    * Dị ứng được lưu vào hồ sơ của bạn — bác sĩ dùng để kiểm tra trước khi kê thuốc.
+                  </p>
                 </div>
 
                 <div>

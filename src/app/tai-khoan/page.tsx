@@ -68,6 +68,9 @@ export default function TaiKhoanPage() {
   const [myProfileCode, setMyProfileCode] = useState("");
   const [myRecords, setMyRecords] = useState<any[]>([]);
   const [myPrescriptions, setMyPrescriptions] = useState<any[]>([]);
+  // GĐ4 — đơn thuốc + đơn bài tập của bệnh nhân (xem ở tab Đơn thuốc).
+  const [myMedicationPrescriptions, setMyMedicationPrescriptions] = useState<any[]>([]);
+  const [myExercisePrescriptions, setMyExercisePrescriptions] = useState<any[]>([]);
   const [myInvoices, setMyInvoices] = useState<any[]>([]);
   const [portalLoading, setPortalLoading] = useState(false);
   const [portalError, setPortalError] = useState("");
@@ -114,10 +117,13 @@ export default function TaiKhoanPage() {
       if (profileId) {
         setMyProfileId(profileId);
         setMyProfileCode(profileCode);
-        const [recordsRes, rxRes, invRes] = await Promise.allSettled([
+        const [recordsRes, rxRes, invRes, medRes, exRes] = await Promise.allSettled([
           apiClient.get(`/medical-records/patient-profile/${profileId}`),
           apiClient.get(`/prescriptions/my/profile/${profileId}`),
           apiClient.get(`/invoice-payments/history/${profileId}`),
+          // GĐ4 — đơn thuốc + đơn bài tập đang hiệu lực của bệnh nhân.
+          apiClient.get(`/medication-prescriptions/mine/profiles/${profileId}`),
+          apiClient.get(`/exercise-prescriptions/patient/${profileId}?status=ACTIVE&limit=20`),
         ]);
         const unwrap = (r: any): any[] => {
           const d = r.status === "fulfilled" ? r.value?.data : null;
@@ -125,11 +131,14 @@ export default function TaiKhoanPage() {
           if (Array.isArray(d?.records)) return d.records;
           if (Array.isArray(d?.data)) return d.data;
           if (Array.isArray(d?.items)) return d.items;
+          if (Array.isArray(d?.results)) return d.results;
           return [];
         };
         setMyRecords(unwrap(recordsRes));
         setMyPrescriptions(unwrap(rxRes));
         setMyInvoices(unwrap(invRes));
+        setMyMedicationPrescriptions(unwrap(medRes));
+        setMyExercisePrescriptions(unwrap(exRes));
       }
     } catch (err: any) {
       setPortalError(
@@ -905,6 +914,98 @@ export default function TaiKhoanPage() {
                       ))}
                     </div>
                   )}
+
+                  {/* GĐ4 — Đơn thuốc của tôi */}
+                  <div className="pt-4 border-t border-[#efeeeb]">
+                    <h4 className="font-bold text-[#0f3e17] text-sm">Đơn thuốc của tôi</h4>
+                    <p className="text-xs text-[#222222]/70 mb-3">
+                      Đơn thuốc bác sĩ đã kê — mang mã đơn ra quầy để nhận thuốc (thu tiền tại quầy).
+                    </p>
+                    {myMedicationPrescriptions.length === 0 ? (
+                      <p className="text-xs text-[#222222]/70">Chưa có đơn thuốc nào.</p>
+                    ) : (
+                      <div className="space-y-3">
+                        {myMedicationPrescriptions.map((mp: any) => (
+                          <div key={mp.id ?? mp.code} className="p-4 rounded-[14px] border border-[#efeeeb] space-y-2">
+                            <div className="flex flex-wrap justify-between items-center gap-2">
+                              <span className="font-bold text-[#0f3e17] text-sm">
+                                Đơn thuốc <span className="font-mono">{mp.code ?? ""}</span>
+                              </span>
+                              <span className="text-xs text-[#222222]/60">
+                                {String(mp.createdAt ?? "").substring(0, 10)} •{" "}
+                                {mp.status === "DRAFT"
+                                  ? "Bản nháp — chưa có giá trị phát thuốc"
+                                  : mp.status === "SIGNED"
+                                    ? "Đã ký"
+                                    : mp.status === "DISPENSED"
+                                      ? "Đã phát thuốc"
+                                      : mp.status === "CANCELLED"
+                                        ? "Đã hủy"
+                                        : mp.status ?? ""}
+                              </span>
+                            </div>
+                            {(mp.items ?? []).map((it: any, i: number) => (
+                              <div key={it.id ?? i} className="text-xs text-[#222222]/80 py-1 border-b border-[#efeeeb]/60">
+                                <strong className="text-[#0f3e17]">{it.name}</strong>
+                                {it.strength ? ` ${it.strength}` : ""}
+                                {it.dose != null ? ` — ${it.dose} ${it.doseUnit ?? ""}` : ""}
+                                {it.frequency ? `, ${it.frequency}` : ""}
+                                {it.durationDays ? ` trong ${it.durationDays} ngày` : ""}
+                                {it.quantity != null ? ` • SL: ${it.quantity} ${it.quantityUnit ?? ""}` : ""}
+                                {it.instructions ? (
+                                  <span className="block text-[11px] text-[#222222]/60 mt-0.5">
+                                    Cách dùng: {it.instructions}
+                                  </span>
+                                ) : null}
+                              </div>
+                            ))}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* GĐ4 — Bài tập của tôi (đang hiệu lực) */}
+                  <div className="pt-4 border-t border-[#efeeeb]">
+                    <h4 className="font-bold text-[#0f3e17] text-sm">Bài tập của tôi</h4>
+                    <p className="text-xs text-[#222222]/70 mb-3">
+                      Các bài tập bác sĩ/KTV đã kê và đang tập — tập đúng liều đã ghi, dừng lại nếu đau tăng.
+                    </p>
+                    {myExercisePrescriptions.length === 0 ? (
+                      <p className="text-xs text-[#222222]/70">Chưa có bài tập nào đang tập.</p>
+                    ) : (
+                      <div className="space-y-3">
+                        {myExercisePrescriptions.map((ep: any) => (
+                          <div key={ep.id ?? ep.code} className="p-4 rounded-[14px] border border-[#cfe7d3] bg-[#e1f4df]/30 space-y-1">
+                            <div className="flex flex-wrap justify-between items-center gap-2">
+                              <span className="font-bold text-[#0f3e17] text-sm">
+                                {ep.exercise?.name ?? ep.exerciseName ?? "Bài tập"}
+                              </span>
+                              <span className="text-xs text-[#222222]/60 font-mono">{ep.code ?? ""}</span>
+                            </div>
+                            <p className="text-xs text-[#222222]/80">
+                              Liều tập:{" "}
+                              <strong>
+                                {[ep.sets ? `${ep.sets} hiệp` : "", ep.reps ? `${ep.reps} lần` : "", ep.holdSec ? `giữ ${ep.holdSec} giây` : "", ep.frequency ?? ""]
+                                  .filter(Boolean)
+                                  .join(" · ")}
+                              </strong>
+                              {ep.durationDays ? ` • Trong ${ep.durationDays} ngày` : ""}
+                            </p>
+                            {ep.exercise?.instructions && (
+                              <p className="text-xs text-[#222222]/70">{ep.exercise.instructions}</p>
+                            )}
+                            {ep.exercise?.precautions && (
+                              <p className="text-xs text-amber-800">Lưu ý: {ep.exercise.precautions}</p>
+                            )}
+                            {ep.note && (
+                              <p className="text-xs text-[#222222]/70">Ghi chú: {ep.note}</p>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 </div>
               )}
 

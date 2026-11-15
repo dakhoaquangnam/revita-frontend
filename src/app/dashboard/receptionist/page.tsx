@@ -65,6 +65,8 @@ export default function ReceptionistWorkspacePage() {
   const [walkInName, setWalkInName] = useState("");
   const [walkInPhone, setWalkInPhone] = useState("");
   const [walkInBirthYear, setWalkInBirthYear] = useState<string>("1965");
+  // GĐ4 — dị ứng thu ở form tiếp đón (Q7), lưu vào hồ sơ nếu tra được hồ sơ.
+  const [walkInAllergies, setWalkInAllergies] = useState("");
   const [walkInService, setWalkInService] = useState("Kham-Luong-Gia");
   const [walkInIsDisabled, setWalkInIsDisabled] = useState(false);
   const [walkInIsElderly, setWalkInIsElderly] = useState(false);
@@ -502,6 +504,7 @@ export default function ReceptionistWorkspacePage() {
         patientName: walkInName.trim(),
         patientPhone: walkInPhone.trim(),
         birthYear: birth,
+        allergies: walkInAllergies.trim() || undefined,
         patientAge: age,
         isDisabled: walkInIsDisabled,
         isElderly: walkInIsElderly || age >= 75,
@@ -1170,6 +1173,19 @@ export default function ReceptionistWorkspacePage() {
                       <option value="Dien-Xung">Vật lý trị liệu Điện xung & Sóng ngắn</option>
                       <option value="Keo-Gian">Kéo giãn cột sống thắt lưng & Cổ</option>
                     </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-[#0f3e17] mb-1">
+                      Dị ứng thuốc / thức ăn (nếu có)
+                    </label>
+                    <input
+                      type="text"
+                      value={walkInAllergies}
+                      onChange={(e) => setWalkInAllergies(e.target.value)}
+                      placeholder="Ví dụ: Penicillin — nổi mề đay 2023 (để trống nếu không có)"
+                      className="w-full px-3.5 py-2.5 bg-[#fffefc] border border-[#efeeeb] rounded-[14px] text-xs text-[#222222] placeholder-[#222222]/40 focus:outline-none focus:border-[#0f3e17]"
+                    />
                   </div>
                 </div>
 

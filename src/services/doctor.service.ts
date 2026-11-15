@@ -38,6 +38,66 @@ export interface PrescriptionItem {
   usage: string;
 }
 
+// GĐ4 — 1 dòng thuốc trong đơn (đủ trường có cấu trúc, thay cho
+// PrescriptionItem cũ chỉ có tên/liều/cách dùng dạng text).
+export interface DrugRow {
+  id: string;
+  drugId?: string;
+  name: string;
+  strength?: string;
+  dosageForm?: string;
+  route?: string;
+  dose?: number;
+  doseUnit?: string;
+  frequency?: string;
+  durationDays?: number;
+  quantity?: number;
+  quantityUnit?: string;
+  instructions?: string;
+}
+
+// GĐ4 — 1 bài tập đã chọn trong đơn bài tập (liều ghi đè mặc định danh mục).
+export interface ExerciseRow {
+  exerciseId: string;
+  name: string;
+  category: string;
+  sets?: number;
+  reps?: number;
+  holdSec?: number;
+  frequency?: string;
+  durationDays?: number;
+  note?: string;
+  precautions?: string;
+}
+
+export interface MedicationPrescription {
+  id: string;
+  code: string;
+  doctorId: string;
+  patientProfileId: string;
+  medicalRecordId?: string | null;
+  note?: string | null;
+  status: "DRAFT" | "SIGNED" | "DISPENSED" | "CANCELLED";
+  signedAt?: string | null;
+  createdAt: string;
+  items: {
+    id: string;
+    name: string;
+    strength?: string | null;
+    dosageForm?: string | null;
+    route?: string | null;
+    dose?: number | null;
+    doseUnit?: string | null;
+    frequency?: string | null;
+    durationDays?: number | null;
+    quantity?: number | null;
+    quantityUnit?: string | null;
+    instructions?: string | null;
+    drugId?: string | null;
+  }[];
+  patientProfile?: { name?: string; profileCode?: string; allergies?: string | null };
+}
+
 export interface HomeExercisePrescription {
   id: string;
   name: string;
@@ -109,21 +169,83 @@ export const doctorService = {
 
   /**
    * Tạo đơn thuốc (POST /medication-prescriptions).
-   * Form thuốc của phòng khám nhập tự do nên chỉ map được tên/liều/cách dùng;
-   * các trường có cấu trúc (liều số, đơn vị, số ngày) để trống cho bác sĩ
-   * bổ sung sau, không tự suy diễn từ chữ.
+   * GĐ4: gửi đủ trường có cấu trúc (liều số, đường dùng, số ngày, số lượng,
+   * cách dùng, drugId từ danh mục) — không còn làm rơi số lượng/số ngày
+   * như bản cũ (chỉ map tên/liều/cách dùng). Đơn mới luôn DRAFT; ký qua
+   * signMedicationPrescription.
    */
   async createMedicationPrescription(payload: {
     patientProfileId: string;
     medicalRecordId?: string;
     note?: string;
     items: {
+      drugId?: string;
       name: string;
+      ndc?: string;
       strength?: string;
+      dosageForm?: string;
+      route?: string;
+      dose?: number;
+      doseUnit?: string;
       frequency?: string;
+      durationDays?: number;
+      quantity?: number;
+      quantityUnit?: string;
+      instructions?: string;
     }[];
   }) {
     const res = await apiClient.post("/medication-prescriptions", payload);
+    return res.data;
+  },
+
+  /** GĐ4 — ký đơn (DRAFT → SIGNED, chỉ bác sĩ kê đơn). */
+  async signMedicationPrescription(id: string) {
+    const res = await apiClient.patch(`/medication-prescriptions/${id}/sign`);
+    return res.data;
+  },
+
+  /** GĐ4 — phát thuốc (SIGNED → DISPENSED, bác sĩ bấm — Q3). */
+  async dispenseMedicationPrescription(id: string) {
+    const res = await apiClient.patch(`/medication-prescriptions/${id}/dispense`);
+    return res.data;
+  },
+
+  /** GĐ4 — hủy đơn (DRAFT|SIGNED → CANCELLED). */
+  async cancelMedicationPrescription(id: string) {
+    const res = await apiClient.post(`/medication-prescriptions/${id}/cancel`);
+    return res.data;
+  },
+
+  /** GĐ4 — đơn thuốc của bác sĩ đang đăng nhập (để hiện lịch sử đơn cũ). */
+  async listMyMedicationPrescriptions(limit = 20): Promise<{
+    results: MedicationPrescription[];
+    total: number;
+  }> {
+    const res = await apiClient.get("/medication-prescriptions/mine", {
+      params: { limit },
+    });
+    return res.data;
+  },
+
+  /** GĐ4 — đơn thuốc theo bệnh án. */
+  async listMedicationPrescriptionsByMedicalRecord(
+    medicalRecordId: string,
+  ): Promise<{ results: MedicationPrescription[]; total: number }> {
+    const res = await apiClient.get(
+      `/medication-prescriptions/medical-record/${medicalRecordId}`,
+    );
+    return res.data;
+  },
+
+  /** GĐ4 — cập nhật hồ sơ bệnh nhân (dị ứng...). */
+  async updatePatientProfile(
+    patientProfileId: string,
+    payload: { allergies?: string },
+  ) {
+    const res = await apiClient.patch(
+      `/patient-profiles/${patientProfileId}`,
+      payload,
+    );
     return res.data;
   },
 };

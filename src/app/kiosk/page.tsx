@@ -37,6 +37,8 @@ export default function KioskPage() {
   const [patientName, setPatientName] = useState("");
   const [patientPhone, setPatientPhone] = useState("");
   const [birthYear, setBirthYear] = useState("1960");
+  // GĐ4 — dị ứng thu ở form kiosk (Q7), lưu vào hồ sơ nếu tra được hồ sơ.
+  const [allergies, setAllergies] = useState("");
   const [selectedService, setSelectedService] = useState("Khám Lượng giá Chức năng Ban đầu");
   const [priorityType, setPriorityType] = useState<"ELDERLY" | "DISABLED" | "PREGNANT">("ELDERLY");
 
@@ -227,6 +229,7 @@ export default function KioskPage() {
         patientName: patientName.trim() || "Bệnh nhân Ưu tiên",
         patientPhone: patientPhone.trim() || undefined,
         birthYear: birth,
+        allergies: allergies.trim() || undefined,
         patientAge: age,
         isDisabled: priorityType === "DISABLED",
         isElderly: priorityType === "ELDERLY",
@@ -278,6 +281,7 @@ export default function KioskPage() {
         patientName: patientName.trim() || "Bệnh nhân Vãng lai",
         patientPhone: patientPhone.trim() || undefined,
         birthYear: birth,
+        allergies: allergies.trim() || undefined,
         patientAge: age,
         counterCode: "CTR002",
       });
@@ -646,6 +650,19 @@ export default function KioskPage() {
                       className="w-full px-4 py-3 bg-[#fffefc] border border-[#efeeeb] rounded-[14px] text-sm text-[#222222] font-mono focus:outline-none focus:border-[#0f3e17]"
                     />
                   </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-[#0f3e17] mb-1">
+                    Dị ứng thuốc / thức ăn (nếu có):
+                  </label>
+                  <input
+                    type="text"
+                    value={allergies}
+                    onChange={(e) => setAllergies(e.target.value)}
+                    placeholder="Ví dụ: Penicillin — nổi mề đay 2023 (để trống nếu không có)"
+                    className="w-full px-4 py-3 bg-[#fffefc] border border-[#efeeeb] rounded-[14px] text-sm text-[#222222] focus:outline-none focus:border-[#0f3e17]"
+                  />
                 </div>
               </div>
 
