@@ -56,6 +56,9 @@ export interface TakeNumberPayload {
   isVip?: boolean;
   isVIP?: boolean;
   note?: string;
+  // Quầy chỉ định theo loại luồng: hẹn trước CTR003, khám thường CTR002,
+  // ưu tiên CTR001. Để trống = backend tự chọn quầy ít người đợi nhất.
+  counterCode?: string;
 }
 
 export const receptionistService = {
@@ -108,6 +111,14 @@ export const receptionistService = {
   /** Bỏ qua bệnh nhân hiện tại (vắng mặt / gọi không tới) */
   async skipCurrentPatient(counterId: string) {
     const res = await apiClient.post(`/counter-assignment/skip-current/${counterId}`);
+    return res.data;
+  },
+
+  /** Gọi lại bệnh nhân đang phục vụ (bấm "Gọi lại" khi bệnh nhân chưa
+   *  nghe/chưa vào). Backend chỉ phát lại sự kiện gọi số, không đổi
+   *  trạng thái hàng đợi. */
+  async recallCurrentPatient(counterId: string) {
+    const res = await apiClient.post(`/counter-assignment/recall-current/${counterId}`);
     return res.data;
   },
 

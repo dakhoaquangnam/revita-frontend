@@ -120,21 +120,51 @@ export default function KioskPage() {
     if (key === "CLEAR") {
       setAppointmentCodeInput("");
     } else if (key === "BACK") {
-      setAppointmentCodeInput((prev) => prev.slice(0, -1));
+      // Xóa từng ký tự; đang chỉ còn tiền tố "APT-" thì xóa hẳn.
+      setAppointmentCodeInput((prev) => (prev === "APT-" ? "" : prev.slice(0, -1)));
+    } else if (key === "APT") {
+      // Chạm vào APT thì tự điền tiền tố "APT-" để bệnh nhân chỉ cần nhập thêm số.
+      setAppointmentCodeInput((prev) => (prev.startsWith("APT-") ? prev : "APT-"));
     } else {
-      if (appointmentCodeInput.length < 12) {
-        setAppointmentCodeInput((prev) => prev + key);
-      }
+      // Chỉ nhập số: sau "APT-" tối đa 13 số (APT- + timestamp), SĐT tối đa 11 số.
+      setAppointmentCodeInput((prev) => {
+        const maxLen = prev.startsWith("APT-") ? 17 : 11;
+        if (prev.length >= maxLen) return prev;
+        return prev + key;
+      });
     }
   };
 
   const handleConfirmAppointment = async () => {
-    if (!appointmentCodeInput.trim()) return;
+    const raw = appointmentCodeInput.trim();
+    if (!raw) return;
     setIsSubmitting(true);
     setErrorMsg("");
     try {
+      // Chỉ nhập số (không có tiền tố APT-) = số điện thoại -> lấy số theo SĐT.
+      if (/^[0-9]{9,11}$/.test(raw)) {
+        const res = await receptionistService.takeNumber({
+          patientPhone: raw,
+          counterCode: "CTR003",
+        });
+        if (!res?.ticket) {
+          throw new Error("Backend không trả về số thứ tự.");
+        }
+        const ticket = res.ticket;
+        setTicketResult({
+          ...ticket,
+          type: "APPOINTMENT",
+          typeName: "Khám theo lịch hẹn (tra cứu bằng SĐT)",
+          roomName: "Quầy Tiếp Nhận 3 — Đặt lịch trước",
+        });
+        setMode("SUCCESS");
+        speakVoice(
+          `Đã xác nhận lịch hẹn thành công. Số thứ tự của Quý khách là ${ticket.queueNumber}. Xin mời đến quầy tiếp đón.`,
+        );
+        return;
+      }
       // Tra cứu lịch hẹn thật trước để lấy đúng tên/SĐT/tuổi/ưu tiên của bệnh nhân.
-      const code = appointmentCodeInput.trim().toUpperCase();
+      const code = raw.toUpperCase();
       const apt = await appointmentService.getAppointmentByCode(code);
       const profile: PatientProfileSummary = apt.patientProfile ?? {
         id: "",
@@ -154,6 +184,7 @@ export default function KioskPage() {
         isDisabled: Boolean(profile.isDisabled),
         isPregnant: Boolean(profile.isPregnant),
         isElderly: age != null ? age >= 75 : undefined,
+        counterCode: "CTR003",
       });
 
       if (!res?.ticket) {
@@ -165,7 +196,7 @@ export default function KioskPage() {
         ...ticket,
         type: "APPOINTMENT",
         typeName: "Khám theo lịch hẹn trực tuyến",
-        roomName: "Phòng 101: Khám Lượng giá & Bác sĩ trưởng",
+        roomName: "Quầy Tiếp Nhận 3 — Đặt lịch trước",
       });
 
       setMode("SUCCESS");
@@ -177,7 +208,8 @@ export default function KioskPage() {
       const msg =
         err.response?.status === 404
           ? "Không tìm thấy lịch hẹn với mã này. Vui lòng kiểm tra lại mã vé hoặc đến quầy tiếp đón để được hỗ trợ."
-          : "Hệ thống đang bận, chưa cấp được số thứ tự. Vui lòng đến quầy tiếp đón để được hỗ trợ.";
+          : err.response?.data?.message ||
+              "Hệ thống đang bận, chưa cấp được số thứ tự. Vui lòng đến quầy tiếp đón để được hỗ trợ.";
       setErrorMsg(msg);
       speakVoice(msg);
     } finally {
@@ -199,6 +231,7 @@ export default function KioskPage() {
         isDisabled: priorityType === "DISABLED",
         isElderly: priorityType === "ELDERLY",
         isPregnant: priorityType === "PREGNANT",
+        counterCode: "CTR001",
       });
 
       if (!res?.ticket) {
@@ -246,6 +279,7 @@ export default function KioskPage() {
         patientPhone: patientPhone.trim() || undefined,
         birthYear: birth,
         patientAge: age,
+        counterCode: "CTR002",
       });
 
       if (!res?.ticket) {
@@ -257,7 +291,7 @@ export default function KioskPage() {
         ...ticket,
         type: "REGULAR",
         typeName: selectedService,
-        roomName: "Quầy Tiếp Nhận 1",
+        roomName: "Quầy Tiếp Nhận 2",
       });
 
       setMode("SUCCESS");
@@ -360,7 +394,7 @@ export default function KioskPage() {
                     ĐÃ ĐẶT LỊCH TRƯỚC
                   </h3>
                   <p className="text-xs text-[#222222]/80 leading-relaxed">
-                    Đã đăng ký qua Website hoặc có Mã vé hẹn (<strong className="text-[#0f3e17] font-mono">RV-...</strong>). Quét QR hoặc bấm SĐT.
+                    Đã đăng ký qua Website hoặc có Mã vé hẹn (<strong className="text-[#0f3e17] font-mono">APT-...</strong>). Quét QR hoặc bấm SĐT.
                   </p>
                 </div>
                 <div className="mt-6 inline-flex items-center gap-2 text-xs font-bold text-[#0f3e17]">
@@ -453,7 +487,7 @@ export default function KioskPage() {
                   Nhập Mã Vé Hẹn hoặc Số Điện Thoại
                 </h3>
                 <p className="text-xs text-[#222222]/70">
-                  Dùng bàn phím số bên dưới để nhập mã hẹn (Ví dụ: <strong className="text-[#0f3e17]">RV842</strong> hoặc <strong className="text-[#0f3e17]">0912345678</strong>)
+                  Dùng bàn phím số bên dưới để nhập mã hẹn (Ví dụ: <strong className="text-[#0f3e17]">APT-1794743712935</strong> hoặc <strong className="text-[#0f3e17]">0912345678</strong>)
                 </p>
               </div>
 
@@ -464,13 +498,13 @@ export default function KioskPage() {
 
               {/* On-Screen Touch Keypad */}
               <div className="grid grid-cols-3 gap-3 max-w-md mx-auto">
-                {["1", "2", "3", "4", "5", "6", "7", "8", "9", "RV", "0", "BACK"].map((key) => (
+                {["1", "2", "3", "4", "5", "6", "7", "8", "9", "APT", "0", "BACK"].map((key) => (
                   <button
                     key={key}
                     type="button"
                     onClick={() => handleKeypadPress(key)}
                     className={`h-16 rounded-[14px] text-xl font-bold flex items-center justify-center transition-colors ${
-                      key === "RV"
+                      key === "APT"
                         ? "bg-[#e1f4df] border border-[#cfe7d3] text-[#0f3e17] font-mono"
                         : key === "BACK"
                         ? "bg-rose-50 border border-rose-200 text-rose-800 text-sm font-semibold"

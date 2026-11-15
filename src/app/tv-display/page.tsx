@@ -15,6 +15,11 @@ import {
 } from "lucide-react";
 import { useQueueEvents } from "@/hooks/use-queue-events";
 import { ttsService } from "@/services/tts.service";
+import {
+  receptionistService,
+  CounterItem,
+  QueueSnapshot,
+} from "@/services/receptionist.service";
 import { TsLogo } from "@/components/ui/ts-logo";
 
 interface CalledPatient {
@@ -27,89 +32,60 @@ interface CalledPatient {
   isPriority?: boolean;
 }
 
-interface ActiveRoomStatus {
-  id: string;
-  name: string;
-  roomNumber: string;
-  doctorName: string;
-  currentNumber: string;
-  currentPatient: string;
-  nextNumber: string;
-  status: "CALLING" | "BUSY" | "AVAILABLE";
-}
-
-const INITIAL_ROOMS: ActiveRoomStatus[] = [
-  {
-    id: "CTR-01",
-    name: "Quầy Tiếp Nhận 1",
-    roomNumber: "Sảnh A - Tầng 1",
-    doctorName: "Lễ tân Lê Hoàng Khang",
-    currentNumber: "CTR001-008",
-    currentPatient: "LÊ VĂN TOÀN",
-    nextNumber: "CTR001-009",
-    status: "CALLING",
-  },
-  {
-    id: "ROOM-101",
-    name: "Phòng 101: Khám Lượng giá PHCN",
-    roomNumber: "Khu B - Tầng 1",
-    doctorName: "BS.CKII Lâm Thanh Tú",
-    currentNumber: "A-001",
-    currentPatient: "NGUYỄN VĂN AN",
-    nextNumber: "A-002",
-    status: "BUSY",
-  },
-  {
-    id: "ROOM-102",
-    name: "Phòng 102: Vật lý trị liệu (Điện xung)",
-    roomNumber: "Khu B - Tầng 1",
-    doctorName: "KTV. Lê Mai Lan",
-    currentNumber: "A-002",
-    currentPatient: "TRẦN THỊ LAN",
-    nextNumber: "A-003",
-    status: "BUSY",
-  },
-  {
-    id: "ROOM-201",
-    name: "Phòng 201: Vận động trị liệu 1:1",
-    roomNumber: "Khu C - Tầng 2",
-    doctorName: "KTV. Hoàng Minh Nam",
-    currentNumber: "A-003",
-    currentPatient: "PHẠM QUỐC HUY",
-    nextNumber: "A-004",
-    status: "BUSY",
-  },
-  {
-    id: "CTR-02",
-    name: "Quầy Thu Ngân & Viện phí",
-    roomNumber: "Cổng ra - Tầng 1",
-    doctorName: "Thu ngân Hồ Thị Như Tâm",
-    currentNumber: "INV-001",
-    currentPatient: "NGUYỄN VĂN AN",
-    nextNumber: "INV-002",
-    status: "AVAILABLE",
-  },
-];
-
 export default function TvDisplayPage() {
   const [currentTime, setCurrentTime] = useState("");
   const [currentDate, setCurrentDate] = useState("");
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [soundEnabled, setSoundEnabled] = useState(false);
 
-  // Bệnh nhân vừa được gọi (Spotlight)
-  const [spotlight, setSpotlight] = useState<CalledPatient>({
-    queueNumber: "CTR001-008",
-    patientName: "LÊ VĂN TOÀN",
-    counterCode: "CTR001",
-    counterName: "Quầy Tiếp Nhận 1",
-    roomName: "Sảnh Chính A - Tầng 1",
-    calledAt: "08:30:00",
-    isPriority: true,
-  });
-
-  const [rooms, setRooms] = useState<ActiveRoomStatus[]>(INITIAL_ROOMS);
+  // Bệnh nhân vừa được gọi (Spotlight) — null = chưa có lượt gọi nào hôm nay.
+  const [spotlight, setSpotlight] = useState<CalledPatient | null>(null);
   const [isFlashing, setIsFlashing] = useState(false);
+
+  // Hàng đợi thật từng quầy (đồng bộ từ backend, chỉ vé hôm nay).
+  const [counters, setCounters] = useState<CounterItem[]>([]);
+  const [counterQueues, setCounterQueues] = useState<Record<string, QueueSnapshot>>({});
+  // Ngày làm việc hiện tại — đọc trong useEffect (Next 16 cấm new Date()
+  // lúc render ở Client Component vì giá trị sẽ đóng cứng lúc prerender).
+  const [todayLabel, setTodayLabel] = useState("");
+  useEffect(() => {
+    setTodayLabel(new Date().toLocaleDateString("vi-VN"));
+  }, []);
+  const isTodayTicket = (t: { assignedAt?: string }) =>
+    !!todayLabel &&
+    !!t.assignedAt &&
+    new Date(t.assignedAt).toLocaleDateString("vi-VN") === todayLabel;
+
+  const fetchCounterQueues = async () => {
+    try {
+      const list = await receptionistService.getCounters();
+      setCounters(list);
+      const snaps = await Promise.all(
+        list.map(async (c) => {
+          try {
+            return [c.counterId, await receptionistService.getQueueSnapshot(c.counterId)] as const;
+          } catch {
+            return [c.counterId, null] as const;
+          }
+        }),
+      );
+      const next: Record<string, QueueSnapshot> = {};
+      snaps.forEach(([id, snap]) => {
+        if (snap) next[id] = snap;
+      });
+      setCounterQueues(next);
+    } catch {
+      // TV chỉ hiển thị: lỗi mạng thì giữ dữ liệu cũ, không báo giả.
+    }
+  };
+
+  useEffect(() => {
+    void fetchCounterQueues();
+    const t = setInterval(() => {
+      void fetchCounterQueues();
+    }, 15000);
+    return () => clearInterval(t);
+  }, []);
 
   // Cập nhật đồng hồ số
   useEffect(() => {
@@ -146,25 +122,6 @@ export default function TvDisplayPage() {
     setSpotlight(newCall);
     setIsFlashing(true);
 
-    setRooms((prev) =>
-      prev.map((r) => {
-        const isMatch =
-          r.id === newCall.counterCode ||
-          (newCall.counterCode === "ROOM-101" && r.id === "ROOM-101") ||
-          (newCall.counterCode === "CTR" && r.id === "CTR-01") ||
-          (newCall.counterName && (r.name.includes(newCall.counterName) || newCall.counterName.includes(r.name)));
-
-        return isMatch
-          ? {
-              ...r,
-              currentNumber: newCall.queueNumber,
-              currentPatient: newCall.patientName,
-              status: "CALLING" as const,
-            }
-          : r;
-      })
-    );
-
     setTimeout(() => {
       setIsFlashing(false);
     }, 6000);
@@ -174,6 +131,8 @@ export default function TvDisplayPage() {
         `Xin mời bệnh nhân ${newCall.patientName}, số thứ tự ${newCall.queueNumber}, đến ${newCall.counterName}!`
       );
     }
+    // Đồng bộ lại hàng đợi thật sau mỗi lượt gọi.
+    void fetchCounterQueues();
   };
 
   // Lắng nghe sự kiện gọi bệnh nhân từ Buồng khám Bác sĩ / Quầy tiếp đón (BroadcastChannel & localStorage)
@@ -218,10 +177,12 @@ export default function TvDisplayPage() {
       triggerNewCall({
         queueNumber: qNum,
         patientName: pName,
-        counterCode: "CTR",
+        counterCode: latestCalledTicket.counterId || "CTR",
         counterName: cName,
         roomName: latestCalledTicket.roomName || "Sảnh Chính - Tầng 1",
-        calledAt: "08:30:00",
+        calledAt: latestCalledTicket.calledAt
+          ? new Date(latestCalledTicket.calledAt).toLocaleTimeString("vi-VN")
+          : new Date().toLocaleTimeString("vi-VN"),
         isPriority: false,
       });
     }
@@ -237,30 +198,6 @@ export default function TvDisplayPage() {
         setIsFullscreen(false);
       }
     }
-  };
-
-  const handleSimulateCall = () => {
-    const sampleNumbers = ["A-001", "A-002", "A-003", "CTR001-008", "CTR001-009"];
-    const sampleNames = ["NGUYỄN VĂN AN", "TRẦN THỊ LAN", "PHẠM QUỐC HUY", "LÊ VĂN TOÀN", "HOÀNG MINH TRÍ"];
-    const sampleRooms = [
-      { name: "Phòng 101: Khám Lượng giá", location: "Khu B - Tầng 1" },
-      { name: "Phòng 102: Vật lý trị liệu (Điện xung)", location: "Khu B - Tầng 1" },
-      { name: "Phòng 201: Vận động trị liệu 1:1", location: "Khu C - Tầng 2" },
-      { name: "Quầy Tiếp Nhận 1", location: "Sảnh Chính - Tầng 1" },
-    ];
-
-    const randIdx = Math.floor(Math.random() * sampleNames.length);
-    const randRoom = sampleRooms[Math.floor(Math.random() * sampleRooms.length)];
-
-    triggerNewCall({
-      queueNumber: sampleNumbers[randIdx],
-      patientName: sampleNames[randIdx],
-      counterCode: "CTR001",
-      counterName: randRoom.name,
-      roomName: randRoom.location,
-      calledAt: "08:30:00",
-      isPriority: randIdx === 3,
-    });
   };
 
   return (
@@ -316,17 +253,6 @@ export default function TvDisplayPage() {
             <span className="hidden md:inline">{soundEnabled ? "LOA BẬT" : "BẬT LOA TV"}</span>
           </button>
 
-          {/* Call Patient Button */}
-          <button
-            type="button"
-            onClick={handleSimulateCall}
-            className="flex items-center gap-2 px-3.5 py-2.5 rounded-[14px] bg-[#fffefc] hover:bg-[#e1f4df]/40 border border-[#efeeeb] text-xs font-semibold text-[#0f3e17] transition-colors cursor-pointer"
-            title="Phát loa gọi lượt bệnh nhân tiếp theo vào khám"
-          >
-            <Bell className="w-4 h-4 text-[#0f3e17]" />
-            <span className="hidden md:inline">Gọi bệnh nhân</span>
-          </button>
-
           {/* Fullscreen Button */}
           <button
             type="button"
@@ -361,10 +287,10 @@ export default function TvDisplayPage() {
                   }`}
                 >
                   <Bell className="w-4 h-4" />
-                  <span>{isFlashing ? "ĐANG PHÁT LOA GỌI SỐ" : "SỐ VỪA ĐƯỢC GỌI"}</span>
+                  <span>{isFlashing ? "ĐANG PHÁT LOA GỌI SỐ" : spotlight ? "SỐ VỪA ĐƯỢC GỌI" : "CHỜ LƯỢT GỌI"}</span>
                 </span>
 
-                {spotlight.isPriority && (
+                {spotlight?.isPriority && (
                   <span className="px-2.5 py-1 rounded-[6px] bg-[#fffefc] border border-[#cfe7d3] text-[#0f3e17] text-xs font-bold">
                     ƯU TIÊN Y TẾ
                   </span>
@@ -373,7 +299,7 @@ export default function TvDisplayPage() {
 
               <div className="text-xs text-[#222222]/70 flex items-center gap-1 font-mono">
                 <Clock className="w-4 h-4 text-[#0f3e17]" />
-                <span>Thời gian: {spotlight.calledAt}</span>
+                <span>Thời gian: {spotlight?.calledAt ?? "--:--:--"}</span>
               </div>
             </div>
 
@@ -388,11 +314,11 @@ export default function TvDisplayPage() {
                   isFlashing ? "scale-105" : ""
                 }`}
               >
-                {spotlight.queueNumber}
+                {spotlight?.queueNumber ?? "—"}
               </div>
 
               <div className="text-2xl sm:text-4xl font-extrabold text-[#0f3e17] tracking-wide uppercase pt-2">
-                {spotlight.patientName}
+                {spotlight?.patientName ?? "Chưa có lượt gọi nào"}
               </div>
             </div>
 
@@ -407,10 +333,10 @@ export default function TvDisplayPage() {
                     VUI LÒNG ĐẾN
                   </div>
                   <div className="text-xl sm:text-2xl font-black text-[#0f3e17]">
-                    {spotlight.counterName}
+                    {spotlight?.counterName ?? "Màn hình sẽ tự cập nhật khi lễ tân gọi số"}
                   </div>
                   <div className="text-xs text-[#0f3e17] font-medium">
-                    {spotlight.roomName}
+                    {spotlight?.roomName ?? ""}
                   </div>
                 </div>
               </div>
@@ -434,41 +360,72 @@ export default function TvDisplayPage() {
                 <div className="flex items-center gap-2">
                   <Tv className="w-5 h-5 text-[#0f3e17]" />
                   <h3 className="text-sm font-black text-[#0f3e17] uppercase tracking-wider">
-                    TÌNH TRẠNG CÁC BUỒNG KHÁM & QUẦY TRỰC
+                    HÀNG ĐỢI CÁC QUẦY TIẾP NHẬN
                   </h3>
                 </div>
-                <span className="text-xs text-[#222222]/60">Tầng 1 & Tầng 2</span>
+                <span className="text-xs text-[#222222]/60">Hôm nay • tự cập nhật 15 giây</span>
               </div>
 
-              {/* Room Status Cards */}
+              {/* Hàng đợi thật từng quầy (đồng bộ từ lễ tân/kiosk) */}
               <div className="space-y-3 mt-4">
-                {rooms.map((room) => (
-                  <div
-                    key={room.id}
-                    className="p-3.5 rounded-[14px] bg-[#fffefc] border border-[#efeeeb] flex items-center justify-between hover:bg-[#e1f4df]/20 transition-colors"
-                  >
-                    <div className="space-y-1 max-w-[240px]">
-                      <div className="font-bold text-[#0f3e17] text-xs sm:text-sm truncate">
-                        {room.name}
-                      </div>
-                      <div className="text-[11px] text-[#222222]/60 flex items-center gap-2">
-                        <span>{room.roomNumber}</span>
-                        <span>•</span>
-                        <span className="text-[#0f3e17] font-medium truncate">{room.doctorName}</span>
-                      </div>
-                    </div>
-
-                    <div className="text-right">
-                      <div className="text-xs text-[#222222]/60 font-medium">Đang phục vụ:</div>
-                      <div className="text-xl font-black font-mono text-[#0f3e17]">
-                        {room.currentNumber}
-                      </div>
-                      <div className="text-[10px] text-[#222222]/60 truncate max-w-[120px]">
-                        {room.currentPatient}
-                      </div>
-                    </div>
+                {counters.length === 0 && (
+                  <div className="p-4 rounded-[14px] bg-[#e1f4df]/20 text-center text-xs text-[#222222]/60">
+                    Đang tải hàng đợi các quầy...
                   </div>
-                ))}
+                )}
+                {counters.map((c) => {
+                  const snap = counterQueues[c.counterId];
+                  const current =
+                    snap?.current && isTodayTicket(snap.current) ? snap.current : null;
+                  const waiting = (snap?.queue ?? [])
+                    .filter((t) => isTodayTicket(t))
+                    .slice(0, 5);
+                  return (
+                    <div
+                      key={c.counterId}
+                      className="p-3.5 rounded-[14px] bg-[#fffefc] border border-[#efeeeb] hover:bg-[#e1f4df]/20 transition-colors"
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="font-bold text-[#0f3e17] text-xs sm:text-sm">
+                          {c.counterCode} - {c.counterName}
+                        </div>
+                        <span className="text-[11px] text-[#222222]/60">
+                          {waiting.length} đang đợi
+                        </span>
+                      </div>
+
+                      <div className="flex items-center justify-between mt-2">
+                        <div className="text-xs text-[#222222]/60 font-medium">Đang phục vụ:</div>
+                        <div className="text-right">
+                          <div className="text-xl font-black font-mono text-[#0f3e17]">
+                            {current?.queueNumber ?? "—"}
+                          </div>
+                          <div className="text-[10px] text-[#222222]/60 truncate max-w-[180px]">
+                            {current?.patientName ?? "Quầy đang trống"}
+                          </div>
+                        </div>
+                      </div>
+
+                      {waiting.length > 0 && (
+                        <div className="mt-2 pt-2 border-t border-[#efeeeb] space-y-1">
+                          {waiting.map((t, i) => (
+                            <div
+                              key={t.ticketId || i}
+                              className="flex items-center justify-between text-[11px]"
+                            >
+                              <span className="font-mono font-bold text-[#0f3e17]">
+                                {t.queueNumber}
+                              </span>
+                              <span className="text-[#222222]/70 truncate max-w-[180px]">
+                                {t.patientName}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             </div>
 

@@ -31,6 +31,21 @@ export default function ReceptionistWorkspacePage() {
   const [counters, setCounters] = useState<CounterItem[]>([]);
   const [activeCounterId, setActiveCounterId] = useState<string>("");
   const [queueData, setQueueData] = useState<QueueSnapshot | null>(null);
+  // Bộ lọc danh sách chờ: "ALL" = tất cả quầy, hoặc 1 counterId cụ thể.
+  const [queueFilter, setQueueFilter] = useState<string>("ALL");
+  // Hàng đợi từng quầy khi xem "Tất cả quầy".
+  const [allQueues, setAllQueues] = useState<Record<string, QueueSnapshot>>({});
+  // Danh sách chỉ hiển thị theo ngày đang làm việc (vé hôm nay).
+  // Ngày đọc trong useEffect (Next 16 cấm new Date() lúc render ở Client
+  // Component vì giá trị sẽ đóng cứng lúc prerender).
+  const [todayLabel, setTodayLabel] = useState("");
+  useEffect(() => {
+    setTodayLabel(new Date().toLocaleDateString("vi-VN"));
+  }, []);
+  const isTodayTicket = (t: { assignedAt?: string }) =>
+    !!todayLabel &&
+    !!t.assignedAt &&
+    new Date(t.assignedAt).toLocaleDateString("vi-VN") === todayLabel;
   const [isLoadingQueue, setIsLoadingQueue] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
   const [countersError, setCountersError] = useState("");
@@ -62,12 +77,12 @@ export default function ReceptionistWorkspacePage() {
   // Modal in phiếu tiếp nhận STT
   const [printedTicket, setPrintedTicket] = useState<any | null>(null);
 
-  // Thông báo khi tài khoản đang đăng nhập không có quyền lễ tân (403).
-  // Hay gặp khi trình duyệt đang giữ phiên của tài khoản bác sĩ/admin
-  // (tên hiển thị có thể vẫn là "Lễ tân" do dữ liệu cũ) — cách xử lý duy
-  // nhất là đăng xuất rồi đăng nhập lại bằng tài khoản lễ tân.
+  // Thông báo khi tài khoản đang đăng nhập không có quyền lễ tân/quản trị (403).
+  // Hay gặp khi trình duyệt đang giữ phiên của tài khoản bác sĩ/thu ngân/
+  // kỹ thuật viên — cách xử lý duy nhất là đăng xuất rồi đăng nhập lại bằng
+  // tài khoản lễ tân hoặc quản trị.
   const ROLE_ERROR_MESSAGE =
-    "Tài khoản đang đăng nhập không có quyền lễ tân nên không mở được quầy. Đăng xuất rồi đăng nhập lại bằng tài khoản lễ tân (dakhoaquangnam@gmail.com).";
+    "Tài khoản đang đăng nhập không có quyền lễ tân/quản trị nên không mở được quầy. Đăng xuất rồi đăng nhập lại bằng tài khoản lễ tân (dakhoaquangnam@gmail.com) hoặc quản trị (dakhoaquangnam+admin@gmail.com).";
 
   // Mở quầy cho ca làm việc: backend chỉ cấp số khi có phiên phân công
   // ACTIVE của lễ tân đang đăng nhập (POST /take-number/take tự chọn quầy
@@ -139,20 +154,100 @@ export default function ReceptionistWorkspacePage() {
     }
   };
 
+  // Load hàng đợi tất cả quầy (chế độ "Tất cả quầy"). Quầy nào lỗi thì bỏ
+  // qua quầy đó, không làm hỏng cả bảng.
+  const fetchAllQueues = async (list: CounterItem[]) => {
+    if (list.length === 0) return;
+    setIsLoadingQueue(true);
+    try {
+      setQueueError("");
+      const snaps = await Promise.all(
+        list.map(async (c) => {
+          try {
+            return [c.counterId, await receptionistService.getQueueSnapshot(c.counterId)] as const;
+          } catch {
+            return [c.counterId, null] as const;
+          }
+        }),
+      );
+      const next: Record<string, QueueSnapshot> = {};
+      snaps.forEach(([id, snap]) => {
+        if (snap) next[id] = snap;
+      });
+      setAllQueues(next);
+    } finally {
+      setIsLoadingQueue(false);
+    }
+  };
+
+  // Tải lại đúng danh sách đang hiển thị (1 quầy hoặc tất cả quầy).
+  const refreshDisplayedQueues = async () => {
+    if (queueFilter === "ALL") {
+      await fetchAllQueues(counters);
+    } else if (queueFilter) {
+      await fetchQueue(queueFilter);
+    }
+  };
+
   useEffect(() => {
     fetchCounters();
   }, []);
 
   useEffect(() => {
-    if (activeCounterId) {
-      fetchQueue(activeCounterId);
+    if (counters.length === 0) return;
+    if (queueFilter === "ALL") {
+      void fetchAllQueues(counters);
+    } else {
+      void fetchQueue(queueFilter);
     }
-  }, [activeCounterId]);
+  }, [queueFilter, counters.length]);
 
-  useQueueEvents(activeCounterId);
+  // Đồng bộ trực tiếp: có lượt gọi mới qua WebSocket thì tải lại danh sách,
+  // và tự cập nhật mỗi 20 giây để bắt vé mới từ kiosk hoặc quầy khác.
+  const { latestCalledTicket } = useQueueEvents(activeCounterId);
+  useEffect(() => {
+    if (latestCalledTicket) {
+      void refreshDisplayedQueues();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [latestCalledTicket]);
+  useEffect(() => {
+    if (counters.length === 0) return;
+    const t = setInterval(() => {
+      void refreshDisplayedQueues();
+    }, 20000);
+    return () => clearInterval(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [queueFilter, counters.length]);
+
+  // Quầy có bệnh nhân đợi lâu nhất trong ngày (để "Gọi tiếp theo" ở chế độ
+  // "Tất cả quầy" biết gọi ở quầy nào).
+  function findEarliestWaitingCounter(): string | null {
+    let best: { counterId: string; at: string } | null = null;
+    for (const c of counters) {
+      const snap = allQueues[c.counterId];
+      for (const item of snap?.queue ?? []) {
+        if (!isTodayTicket(item)) continue;
+        if (!best || item.assignedAt < best.at) {
+          best = { counterId: c.counterId, at: item.assignedAt };
+        }
+      }
+    }
+    return best?.counterId ?? null;
+  }
 
   const handleCallNext = async () => {
-    if (!activeCounterId) {
+    // Chế độ "Tất cả quầy": gọi ở quầy có bệnh nhân đợi lâu nhất hôm nay.
+    let targetCounterId = activeCounterId;
+    if (queueFilter === "ALL") {
+      const earliest = findEarliestWaitingCounter();
+      if (!earliest) {
+        alert("Hiện không có bệnh nhân nào đang đợi ở quầy nào.");
+        return;
+      }
+      targetCounterId = earliest;
+    }
+    if (!targetCounterId) {
       alert(
         "Chưa mở quầy nên chưa gọi được số. " +
           (counterSessionError ||
@@ -162,8 +257,8 @@ export default function ReceptionistWorkspacePage() {
     }
     setActionLoading(true);
     try {
-      await receptionistService.callNextPatient(activeCounterId);
-      await fetchQueue(activeCounterId);
+      await receptionistService.callNextPatient(targetCounterId);
+      await refreshDisplayedQueues();
     } catch (err: any) {
       alert(
         "Lỗi khi gọi số: " +
@@ -177,8 +272,8 @@ export default function ReceptionistWorkspacePage() {
   // Gọi một bệnh nhân cụ thể trong danh sách chờ (không nhất thiết là
   // người đầu hàng). Bệnh nhân đó chuyển lên khung "Đang phục vụ tại quầy",
   // phần còn lại của danh sách vẫn hiển thị nguyên vẹn.
-  const handleCallPatient = async (ticketId: string, queueNumber: string) => {
-    if (!activeCounterId) {
+  const handleCallPatient = async (counterId: string, ticketId: string, queueNumber: string) => {
+    if (!counterId) {
       alert(
         "Chưa mở quầy nên chưa gọi được số. " +
           (counterSessionError ||
@@ -188,14 +283,36 @@ export default function ReceptionistWorkspacePage() {
     }
     setActionLoading(true);
     try {
-      const res = await receptionistService.callPatientByTicket(activeCounterId, ticketId);
+      const res = await receptionistService.callPatientByTicket(counterId, ticketId);
       if (res?.message && !res?.patient && !res?.ok) {
         alert(res.message);
       }
-      await fetchQueue(activeCounterId);
+      await refreshDisplayedQueues();
     } catch (err: any) {
       alert(
         `Lỗi khi gọi số ${queueNumber}: ` +
+          (err.response?.data?.message || err.message || "Vui lòng kiểm tra lại"),
+      );
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  // Gọi lại bệnh nhân đang phục vụ ở quầy (bấm khi bệnh nhân chưa nghe/chưa
+  // vào). Bệnh nhân vẫn ở khung "Đang phục vụ", nút Gọi lại chuyển xanh lá
+  // nhạt và không biến mất để gọi lại được nhiều lần.
+  const handleRecallCurrent = async (counterId: string, queueNumber: string) => {
+    if (!counterId) return;
+    setActionLoading(true);
+    try {
+      const res = await receptionistService.recallCurrentPatient(counterId);
+      if (res?.message && !res?.patient) {
+        alert(res.message);
+      }
+      await refreshDisplayedQueues();
+    } catch (err: any) {
+      alert(
+        `Lỗi khi gọi lại số ${queueNumber}: ` +
           (err.response?.data?.message || err.message || "Vui lòng kiểm tra lại"),
       );
     } finally {
@@ -215,7 +332,7 @@ export default function ReceptionistWorkspacePage() {
     setActionLoading(true);
     try {
       await receptionistService.skipCurrentPatient(activeCounterId);
-      await fetchQueue(activeCounterId);
+      await refreshDisplayedQueues();
     } catch (err: any) {
       alert("Lỗi khi đánh dấu vắng: " + (err.message || ""));
     } finally {
@@ -235,7 +352,7 @@ export default function ReceptionistWorkspacePage() {
     setActionLoading(true);
     try {
       await receptionistService.rollbackPreviousPatient(activeCounterId);
-      await fetchQueue(activeCounterId);
+      await refreshDisplayedQueues();
     } catch (err: any) {
       alert("Lỗi khi gọi lại: " + (err.message || ""));
     } finally {
@@ -299,6 +416,7 @@ export default function ReceptionistWorkspacePage() {
         isDisabled: Boolean(profile.isDisabled),
         isPregnant: Boolean(profile.isPregnant),
         isElderly: age != null ? age >= 75 : undefined,
+        counterCode: "CTR003",
       });
 
       if (!res?.ticket) {
@@ -309,8 +427,8 @@ export default function ReceptionistWorkspacePage() {
       setPrintedTicket({
         ...ticket,
         counterName:
-          counters.find((c) => c.counterId === activeCounterId)?.counterName ??
           ticket.counterName ??
+          counters.find((c) => c.counterId === activeCounterId)?.counterName ??
           "",
         serviceName: foundAppointment.serviceName,
         roomName: "Phòng 101: Khám Lượng giá & Bác sĩ trưởng",
@@ -318,7 +436,7 @@ export default function ReceptionistWorkspacePage() {
 
       setFoundAppointment(null);
       setSearchQuery("");
-      await fetchQueue(activeCounterId);
+      await refreshDisplayedQueues();
     } catch (err: any) {
       alert(
         "Đã xảy ra lỗi khi tạo vé: " +
@@ -351,6 +469,7 @@ export default function ReceptionistWorkspacePage() {
         isElderly: walkInIsElderly || age >= 75,
         isPregnant: walkInIsPregnant,
         isVip: walkInIsVip,
+        counterCode: walkInIsVip ? "CTR001" : "CTR002",
       });
 
       if (!res?.ticket) {
@@ -380,7 +499,7 @@ export default function ReceptionistWorkspacePage() {
       setWalkInIsPregnant(false);
       setWalkInIsVip(false);
 
-      await fetchQueue(activeCounterId);
+      await refreshDisplayedQueues();
     } catch (err: any) {
       alert(
         "Lỗi khi cấp số: " +
@@ -392,7 +511,12 @@ export default function ReceptionistWorkspacePage() {
   };
 
   const handleTransferToRoom = () => {
-    const current = queueData?.current;
+    // Bệnh nhân đang phục vụ ở quầy của bạn (đọc từ state, đúng cả khi xem
+    // "Tất cả quầy" vì khung phục vụ luôn gắn với quầy đang trực).
+    const servingSnap = queueFilter === "ALL" ? allQueues[activeCounterId] ?? null : queueData;
+    const current = servingSnap?.current && isTodayTicket(servingSnap.current)
+      ? servingSnap.current
+      : null;
     if (!current) {
       alert("Hiện không có bệnh nhân nào đang phục vụ tại quầy để phân buồng.");
       return;
@@ -408,8 +532,27 @@ export default function ReceptionistWorkspacePage() {
     }, 5000);
   };
 
-  const currentPatient = queueData?.current;
-  const waitingQueue = queueData?.queue || [];
+  // Bệnh nhân đang phục vụ ở quầy của bạn (chỉ tính vé hôm nay).
+  const servingSnapshot = queueFilter === "ALL" ? allQueues[activeCounterId] ?? null : queueData;
+  const currentPatient =
+    servingSnapshot?.current && isTodayTicket(servingSnapshot.current)
+      ? servingSnapshot.current
+      : null;
+  // Nhóm hàng đợi hiển thị: "Tất cả" -> từng quầy; 1 quầy -> quầy đó.
+  // Mỗi nhóm giữ bệnh nhân đang phục vụ (để gọi lại) + danh sách đợi hôm nay.
+  const queueGroups = (queueFilter === "ALL"
+    ? counters
+    : counters.filter((c) => c.counterId === queueFilter)
+  ).map((c) => {
+    const snap = queueFilter === "ALL" ? allQueues[c.counterId] ?? null : queueData;
+    return {
+      counter: c,
+      current:
+        snap?.current && isTodayTicket(snap.current) ? snap.current : null,
+      waiting: (snap?.queue ?? []).filter((t) => isTodayTicket(t)),
+    };
+  });
+  const waitingQueue = queueGroups.flatMap((g) => g.waiting);
 
   return (
     <div className="space-y-6 text-[#222222]">
@@ -428,27 +571,33 @@ export default function ReceptionistWorkspacePage() {
           </p>
         </div>
 
-        {/* Counter Switcher */}
-        <div className="flex flex-wrap items-center gap-2 bg-[#fffefc] p-1.5 rounded-[14px] border border-[#efeeeb]">
+        {/* Counter Switcher: danh sách sổ xuống — Tất cả quầy hoặc 1 quầy.
+            Chọn 1 quầy = trực quầy đó (mở phiên phân công); chọn Tất cả =
+            xem hàng đợi cả 3 quầy, quầy trực giữ nguyên. */}
+        <div className="flex items-center gap-2 bg-[#fffefc] p-1.5 rounded-[14px] border border-[#efeeeb]">
           <span className="text-xs text-[#222222]/60 px-2 font-medium hidden sm:inline">Quầy của bạn:</span>
-          {counters.map((c) => (
-            <button
-              key={c.counterId}
-              type="button"
-              onClick={() => {
-                if (c.counterId !== activeCounterId) {
-                  void openCounterSession(c.counterId);
+          <select
+            value={queueFilter}
+            onChange={(e) => {
+              const v = e.target.value;
+              if (v === "ALL") {
+                setQueueFilter("ALL");
+              } else {
+                if (v !== activeCounterId) {
+                  void openCounterSession(v);
                 }
-              }}
-              className={`px-3 py-1.5 rounded-[8px] text-xs font-bold transition-colors ${
-                activeCounterId === c.counterId
-                  ? "bg-[#0f3e17] text-[#fffefc]"
-                  : "text-[#222222]/70 hover:text-[#0f3e17] hover:bg-[#e1f4df]/40"
-              }`}
-            >
-              {c.counterCode} - {c.counterName.split("(")[0]}
-            </button>
-          ))}
+                setQueueFilter(v);
+              }
+            }}
+            className="bg-[#fffefc] border border-[#efeeeb] rounded-[8px] px-3 py-1.5 text-xs font-bold text-[#0f3e17] focus:outline-none focus:border-[#0f3e17]"
+          >
+            <option value="ALL">Tất cả quầy</option>
+            {counters.map((c) => (
+              <option key={c.counterId} value={c.counterId}>
+                {c.counterCode} - {c.counterName}
+              </option>
+            ))}
+          </select>
         </div>
       </div>
 
@@ -461,7 +610,7 @@ export default function ReceptionistWorkspacePage() {
             type="button"
             onClick={() => {
               fetchCounters();
-              if (activeCounterId) fetchQueue(activeCounterId);
+              void refreshDisplayedQueues();
             }}
             className="ml-auto font-semibold underline"
           >
@@ -594,56 +743,109 @@ export default function ReceptionistWorkspacePage() {
                 <span>Danh sách đang đợi gọi số ({waitingQueue.length})</span>
               </h3>
               <span className="text-[11px] text-[#222222]/50">
-                {isLoadingQueue ? "Đang cập nhật..." : "Đồng bộ WebSocket"}
+                {isLoadingQueue ? "Đang cập nhật..." : "Đồng bộ WebSocket • cập nhật 20 giây"}
               </span>
             </div>
 
-            {waitingQueue.length === 0 ? (
+            {waitingQueue.length === 0 && !queueGroups.some((g) => g.current) ? (
               <div className="p-4 rounded-[14px] bg-[#e1f4df]/20 text-center text-xs text-[#222222]/60">
-                Hiện không còn bệnh nhân nào trong hàng đợi quầy này.
+                Hôm nay hiện không còn bệnh nhân nào trong hàng đợi
+                {queueFilter === "ALL" ? " các quầy." : " quầy này."}
               </div>
             ) : (
-              <div className="space-y-2 max-h-64 overflow-y-auto pr-1">
-                {waitingQueue.map((item, idx) => (
-                  <div
-                    key={item.ticketId || idx}
-                    className="p-3 rounded-[14px] bg-[#fffefc] border border-[#efeeeb] flex items-center justify-between text-xs"
-                  >
-                    <div className="flex items-center gap-3">
-                      <span className="w-6 text-center font-bold text-[#222222]/40">#{idx + 1}</span>
-                      <div>
-                        <div className="font-bold text-[#0f3e17] flex items-center gap-2">
-                          <span className="font-mono text-[#0f3e17]">{item.queueNumber}</span>
-                          <span>•</span>
-                          <span>{item.patientName}</span>
+              <div className="space-y-4 max-h-96 overflow-y-auto pr-1">
+                {queueGroups.map((group) => {
+                  const cur = group.current;
+                  return (
+                    <div key={group.counter.counterId} className="space-y-2">
+                      {queueFilter === "ALL" && (
+                        <div className="flex items-center justify-between pt-1">
+                          <span className="text-[11px] font-bold text-[#0f3e17] uppercase tracking-wider">
+                            {group.counter.counterCode} - {group.counter.counterName}
+                          </span>
+                          <span className="text-[11px] text-[#222222]/50">
+                            {group.waiting.length} đang đợi
+                          </span>
                         </div>
-                        <div className="text-[11px] text-[#222222]/60">
-                          Tuổi: {item.patientAge}
-                          {item.isDisabled && " • Khuyết tật / Liệt"}
-                          {item.isElderly && " • Người cao tuổi"}
-                        </div>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2 flex-shrink-0">
-                      {item.status === "PREPARING" ? (
-                        <span className="text-[10px] px-2 py-0.5 rounded-[6px] bg-[#e1f4df] text-[#0f3e17] font-semibold border border-[#cfe7d3]">
-                          Đang chuẩn bị
-                        </span>
-                      ) : (
-                        <button
-                          type="button"
-                          onClick={() => void handleCallPatient(item.ticketId, item.queueNumber)}
-                          disabled={actionLoading}
-                          className="px-3 py-1.5 rounded-[8px] bg-[#0f3e17] hover:bg-[#0c2f10] text-[#fffefc] text-[11px] font-bold flex items-center gap-1 transition-colors disabled:opacity-50"
-                          title={`Gọi ${item.patientName} (${item.queueNumber}) vào quầy`}
-                        >
-                          <Volume2 className="w-3.5 h-3.5" />
-                          <span>Gọi</span>
-                        </button>
                       )}
+                      {/* Bệnh nhân đang phục vụ: giữ lại trong danh sách, nút Gọi
+                          lại chuyển xanh lá nhạt để gọi lại khi chưa nghe thấy. */}
+                      {cur && (
+                        <div className="p-3 rounded-[14px] bg-[#e1f4df] border border-[#cfe7d3] flex items-center justify-between text-xs">
+                          <div className="flex items-center gap-3">
+                            <span className="w-6 text-center font-bold text-[#0f3e17]">
+                              <Volume2 className="w-4 h-4 mx-auto" />
+                            </span>
+                            <div>
+                              <div className="font-bold text-[#0f3e17] flex items-center gap-2">
+                                <span className="font-mono text-[#0f3e17]">{cur.queueNumber}</span>
+                                <span>•</span>
+                                <span>{cur.patientName}</span>
+                              </div>
+                              <div className="text-[11px] text-[#0f3e17]/70">
+                                Đang phục vụ • đã gọi {cur.callCount} lần
+                              </div>
+                            </div>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => void handleRecallCurrent(group.counter.counterId, cur.queueNumber)}
+                            disabled={actionLoading}
+                            className="px-3 py-1.5 rounded-[8px] bg-[#b1dbb8] hover:bg-[#9ecfa8] text-[#0f3e17] text-[11px] font-bold flex items-center gap-1 transition-colors disabled:opacity-50 flex-shrink-0"
+                            title={`Gọi lại ${cur.patientName} (${cur.queueNumber})`}
+                          >
+                            <Volume2 className="w-3.5 h-3.5" />
+                            <span>Gọi lại</span>
+                          </button>
+                        </div>
+                      )}
+                      {group.waiting.map((item, idx) => (
+                        <div
+                          key={item.ticketId || idx}
+                          className="p-3 rounded-[14px] bg-[#fffefc] border border-[#efeeeb] flex items-center justify-between text-xs"
+                        >
+                          <div className="flex items-center gap-3">
+                            <span className="w-6 text-center font-bold text-[#222222]/40">#{idx + 1}</span>
+                            <div>
+                              <div className="font-bold text-[#0f3e17] flex items-center gap-2">
+                                <span className="font-mono text-[#0f3e17]">{item.queueNumber}</span>
+                                <span>•</span>
+                                <span>{item.patientName}</span>
+                              </div>
+                              <div className="text-[11px] text-[#222222]/60">
+                                Tuổi: {item.patientAge}
+                                {item.isDisabled && " • Khuyết tật / Liệt"}
+                                {item.isElderly && " • Người cao tuổi"}
+                              </div>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2 flex-shrink-0">
+                            {item.status === "PREPARING" ? (
+                              <span className="text-[10px] px-2 py-0.5 rounded-[6px] bg-[#e1f4df] text-[#0f3e17] font-semibold border border-[#cfe7d3]">
+                                Đang chuẩn bị
+                              </span>
+                            ) : (
+                              <button
+                                type="button"
+                                onClick={() => void handleCallPatient(group.counter.counterId, item.ticketId, item.queueNumber)}
+                                disabled={actionLoading}
+                                className={`px-3 py-1.5 rounded-[8px] text-[11px] font-bold flex items-center gap-1 transition-colors disabled:opacity-50 ${
+                                  item.callCount > 0
+                                    ? "bg-[#b1dbb8] hover:bg-[#9ecfa8] text-[#0f3e17]"
+                                    : "bg-[#0f3e17] hover:bg-[#0c2f10] text-[#fffefc]"
+                                }`}
+                                title={`Gọi ${item.patientName} (${item.queueNumber}) vào quầy`}
+                              >
+                                <Volume2 className="w-3.5 h-3.5" />
+                                <span>{item.callCount > 0 ? "Đã gọi • Gọi lại" : "Gọi"}</span>
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      ))}
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>
@@ -712,10 +914,10 @@ export default function ReceptionistWorkspacePage() {
                     <span>Gợi ý test nhanh:</span>
                     <button
                       type="button"
-                      onClick={() => setSearchQuery("RV-842")}
+                      onClick={() => setSearchQuery("APT-1794743712935")}
                       className="underline hover:text-[#0f3e17]"
                     >
-                      RV-842
+                      APT-1794743712935
                     </button>
                     <span>•</span>
                     <button
