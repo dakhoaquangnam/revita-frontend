@@ -19,11 +19,15 @@ import { useAuth } from "@/hooks/use-auth";
 import { ttsService } from "@/services/tts.service";
 import {
   doctorService,
-  FimAssessment,
   RomMeasurement,
   PrescriptionItem,
   HomeExercisePrescription,
 } from "@/services/doctor.service";
+import {
+  assessmentService,
+  type AssessmentRecord,
+} from "@/services/assessment.service";
+import AssessmentTab from "@/components/doctor/assessment-tab";
 import {
   appointmentService,
   PatientProfileSummary,
@@ -54,27 +58,8 @@ interface DoctorQueueItem {
 // Mẫu khởi tạo phiếu khám — bác sĩ chỉnh theo từng bệnh nhân.
 // Khi chuyển sang bệnh nhân khác, phiếu được đặt lại mẫu này để số liệu
 // của bệnh nhân trước không lọt sang bệnh án bệnh nhân sau.
-const FIM_TEMPLATE: FimAssessment = {
-  eating: 6,
-  grooming: 5,
-  bathing: 4,
-  dressingUpper: 5,
-  dressingLower: 4,
-  toileting: 5,
-  bladder: 6,
-  bowel: 6,
-  bedChairTransfer: 5,
-  toiletTransfer: 5,
-  tubTransfer: 4,
-  locomotion: 4,
-  stairs: 4,
-  comprehension: 6,
-  expression: 5,
-  socialInteraction: 6,
-  problemSolving: 5,
-  memory: 6,
-};
-
+// GĐ3: FIM_TEMPLATE đã xóa — thang điểm FIM nay là Assessment có cấu trúc
+// (tab Thang điểm, mặc định trống, đủ 18 mục, không điền sẵn điểm).
 const ROM_TEMPLATE: RomMeasurement[] = [
   {
     joint: "Khớp Gối Phải",
@@ -295,10 +280,15 @@ export default function DoctorWorkspacePage() {
   const [painScale, setPainScale] = useState(0);
   const [doctorNotes, setDoctorNotes] = useState("");
 
-  // Thang điểm FIM (18 chỉ số, mỗi chỉ số 1-7 điểm, max = 126)
-  const [fim, setFim] = useState<FimAssessment>({ ...FIM_TEMPLATE });
+  // GĐ3 — id các Assessment tạo trong phiên khám (tab Thang điểm), để ghi
+  // vào content.assessmentIds khi lưu bệnh án. Thang điểm cũ (fim/fimTotal)
+  // đã bỏ: điểm FIM nay chỉ nằm ở bảng Assessment, không còn trong content.
+  const [sessionAssessmentIds, setSessionAssessmentIds] = useState<string[]>([]);
+  const [printAssessments, setPrintAssessments] = useState<AssessmentRecord[]>([]);
 
-  // Đo góc vận động khớp (ROM)
+  // Đo góc vận động khớp (ROM) — tab 2 giữ lại để nhập nhanh; số liệu ROM
+  // có cấu trúc nằm ở Assessment (tab Thang điểm), content bệnh án không
+  // còn ghi romList (GĐ3 §5.4).
   const [romList, setRomList] = useState<RomMeasurement[]>([...ROM_TEMPLATE]);
 
   // Đơn thuốc & Bài tập PHCN tại nhà
@@ -311,7 +301,8 @@ export default function DoctorWorkspacePage() {
     setDiagnosis("");
     setPainScale(0);
     setDoctorNotes("");
-    setFim({ ...FIM_TEMPLATE });
+    setSessionAssessmentIds([]);
+    setPrintAssessments([]);
     setRomList([...ROM_TEMPLATE]);
     setPrescriptions([...DRUGS_TEMPLATE]);
     setExercises([...EXERCISES_TEMPLATE]);
@@ -323,20 +314,21 @@ export default function DoctorWorkspacePage() {
   const [isSaved, setIsSaved] = useState(false);
   const [showPrintModal, setShowPrintModal] = useState(false);
 
-  // Tính tổng FIM
-  const fimTotal = Object.values(fim).reduce((sum, val) => sum + (val || 0), 0);
-
-  const getFimLevel = (total: number) => {
-    if (total >= 108) return { text: "Độc lập hoàn toàn hoặc có dụng cụ", color: "text-[#0f3e17]" };
-    if (total >= 90) return { text: "Độc lập có sửa đổi / Trợ giúp tối thiểu", color: "text-[#0f3e17]" };
-    if (total >= 72) return { text: "Phụ thuộc mức độ vừa (cần hỗ trợ 25-50%)", color: "text-amber-800" };
-    if (total >= 36) return { text: "Phụ thuộc tối đa (cần hỗ trợ 50-75%)", color: "text-amber-800" };
-    return { text: "Phụ thuộc hoàn toàn (cần trợ giúp 100%)", color: "text-rose-700" };
-  };
-
-  const handleFimChange = (key: keyof FimAssessment, val: number) => {
-    setFim((prev) => ({ ...prev, [key]: val }));
-  };
+  // GĐ3 — khi mở khung in, lấy các lần đánh giá trong phiên để in kết quả
+  // thang điểm thật (thay cho fimTotal/romList cũ trong state form).
+  useEffect(() => {
+    if (!showPrintModal || !currentPatient) return;
+    let cancelled = false;
+    assessmentService
+      .getPatientAssessments(currentPatient.patientProfileId, { limit: 10 })
+      .then((res) => {
+        if (!cancelled) setPrintAssessments(res.data);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [showPrintModal, currentPatient]);
 
   // GĐ2 §4.4.3 — Gọi bệnh nhân tiếp theo bằng API thật (không còn "thành
   // công giả": chỉ đổi trạng thái local + phát loa SAU khi API thành công).
@@ -481,8 +473,39 @@ export default function DoctorWorkspacePage() {
     if (!currentPatient) return;
     setIsSaved(true);
     try {
+      // GĐ3 §5.4 — VAS: slider đau ở đầu trang là nhập nhanh; nếu mức đau
+      // khác lần VAS gần nhất thì tạo 1 Assessment VAS kèm theo (không tạo
+      // trùng nếu đã có VAS trong phiên). Lỗi tạo VAS không chặn lưu bệnh án
+      // nhưng phải hiện rõ, không âm thầm bỏ qua.
+      const assessmentIds = [...sessionAssessmentIds];
+      let vasError = "";
+      try {
+        const latestVas = await assessmentService.getPatientAssessments(
+          currentPatient.patientProfileId,
+          { scaleCode: "VAS", limit: 1 },
+        );
+        const lastValue = latestVas.data[0]?.value;
+        if (lastValue !== painScale) {
+          const vas = await assessmentService.createAssessment({
+            patientProfileId: currentPatient.patientProfileId,
+            scaleCode: "VAS",
+            condition: "GENERAL",
+            specialty: "VLTL",
+            timepoint: latestVas.data[0] ? "REASSESSMENT" : "BASELINE",
+            appointmentId: currentPatient.id,
+            value: painScale,
+          });
+          assessmentIds.push(vas.id);
+        }
+      } catch (err: any) {
+        vasError = getApiErrorMessage(err, "Không lưu được điểm đau VAS.");
+      }
+
       // 1. Lưu bệnh án thật. Lỗi phải nổi lên — không được báo đã lưu
       // trong khi backend chưa ghi gì.
+      // GĐ3: content chỉ còn assessmentIds (thang điểm thật ở bảng
+      // Assessment) — ngừng ghi fim/fimTotal/romList (đọc bệnh án cũ vẫn
+      // tương thích vì content là JSON tự do).
       const record = await doctorService.createMedicalRecord({
         patientProfileId: currentPatient.patientProfileId,
         appointmentCode: currentPatient.appointmentCode,
@@ -490,9 +513,7 @@ export default function DoctorWorkspacePage() {
         content: {
           diagnosis,
           painScale,
-          fim,
-          fimTotal,
-          romList,
+          assessmentIds,
           prescriptions,
           exercises,
           doctorNotes,
@@ -537,6 +558,10 @@ export default function DoctorWorkspacePage() {
       setQueue((prev) =>
         prev.map((p, idx) => (idx === activePatientIndex ? { ...p, status: "COMPLETED" } : p))
       );
+
+      if (vasError) {
+        alert("Bệnh án đã lưu, nhưng " + vasError);
+      }
 
       setTimeout(() => {
         setIsSaved(false);
@@ -763,7 +788,7 @@ export default function DoctorWorkspacePage() {
                 }`}
               >
                 <ShieldCheck className="w-4 h-4" />
-                <span>1. Lượng giá Độc lập FIM ({fimTotal}/126)</span>
+                <span>1. Thang điểm PHCN</span>
               </button>
 
               <button
@@ -793,74 +818,21 @@ export default function DoctorWorkspacePage() {
               </button>
             </div>
 
-            {/* TAB 1: THANG ĐIỂM FIM */}
-            {activeTab === "FIM" && (
-              <div className="space-y-6">
-                <div className="p-4 rounded-[14px] bg-[#e1f4df]/40 border border-[#cfe7d3] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                  <div>
-                    <span className="text-xs text-[#0f3e17] font-semibold uppercase tracking-wider">
-                      Tổng điểm Độc lập Chức năng (FIM Score)
-                    </span>
-                    <div className="text-3xl font-black text-[#0f3e17] font-mono mt-0.5">
-                      {fimTotal} <span className="text-sm font-normal text-[#222222]/60">/ 126 điểm</span>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <span className="text-xs text-[#222222]/60">Phân loại mức độ độc lập:</span>
-                    <div className={`text-xs font-bold ${getFimLevel(fimTotal).color} mt-0.5`}>
-                      {getFimLevel(fimTotal).text}
-                    </div>
-                  </div>
-                </div>
-
-                {/* FIM Questions Grid */}
-                <div className="space-y-4">
-                  <div className="text-xs font-bold text-[#0f3e17] uppercase tracking-wide">
-                    I. Vận động & Tự Chăm sóc (Thang 1: Phụ thuộc ➔ 7: Độc lập hoàn toàn)
-                  </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-                    {[
-                      { key: "eating", label: "1. Ăn uống" },
-                      { key: "grooming", label: "2. Chải chuốt / Vệ sinh cá nhân" },
-                      { key: "bathing", label: "3. Tắm rửa" },
-                      { key: "dressingUpper", label: "4. Mặc áo thân trên" },
-                      { key: "dressingLower", label: "5. Mặc quần thân dưới" },
-                      { key: "toileting", label: "6. Đi vệ sinh" },
-                      { key: "bladder", label: "7. Kiểm soát tiểu tiện" },
-                      { key: "bowel", label: "8. Kiểm soát đại tiện" },
-                      { key: "bedChairTransfer", label: "9. Chuyển vị trí giường/ghế" },
-                      { key: "locomotion", label: "10. Di chuyển / Đi bộ" },
-                      { key: "stairs", label: "11. Lên xuống cầu thang" },
-                      { key: "comprehension", label: "12. Hiểu ngôn ngữ" },
-                      { key: "expression", label: "13. Diễn đạt / Nói" },
-                      { key: "socialInteraction", label: "14. Tương tác xã hội" },
-                    ].map((item) => (
-                      <div
-                        key={item.key}
-                        className="p-3 rounded-[14px] bg-[#fffefc] border border-[#efeeeb] flex items-center justify-between"
-                      >
-                        <span className="text-[#222222] font-medium">{item.label}</span>
-                        <select
-                          value={(fim as any)[item.key]}
-                          onChange={(e) =>
-                            handleFimChange(item.key as keyof FimAssessment, Number(e.target.value))
-                          }
-                          className="bg-[#fffefc] border border-[#efeeeb] rounded-[7px] px-2 py-1 text-xs text-[#0f3e17] font-bold focus:outline-none focus:border-[#0f3e17]"
-                        >
-                          <option value={1}>1 - Phụ thuộc 100%</option>
-                          <option value={2}>2 - Trợ giúp tối đa (75%)</option>
-                          <option value={3}>3 - Trợ giúp vừa (50%)</option>
-                          <option value={4}>4 - Trợ giúp tối thiểu (25%)</option>
-                          <option value={5}>5 - Cần giám sát / nhắc</option>
-                          <option value={6}>6 - Độc lập có dụng cụ</option>
-                          <option value={7}>7 - Độc lập hoàn toàn</option>
-                        </select>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
+            {/* TAB 1: THANG ĐIỂM PHCN (GĐ3) — form động từ catalog backend:
+                đủ 18 mục FIM, mặc định trống, tổng do server tính. */}
+            {activeTab === "FIM" && currentPatient && (
+              <AssessmentTab
+                patientProfileId={currentPatient.patientProfileId}
+                appointmentId={currentPatient.id}
+                onAssessmentCreated={(id) =>
+                  setSessionAssessmentIds((prev) => (prev.includes(id) ? prev : [...prev, id]))
+                }
+              />
+            )}
+            {activeTab === "FIM" && !currentPatient && (
+              <p className="text-xs text-[#222222]/70">
+                Chưa có bệnh nhân đang khám — gọi bệnh nhân vào phòng trước rồi mới chấm thang điểm.
+              </p>
             )}
 
             {/* TAB 2: ĐO GÓC VẬN ĐỘNG KHỚP (ROM) */}
@@ -1206,29 +1178,30 @@ export default function DoctorWorkspacePage() {
               </div>
             </div>
 
-            {/* Kết quả lượng giá FIM & ROM */}
+            {/* Kết quả thang điểm (GĐ3) — đọc từ Assessment đã lưu, không còn
+                đọc fimTotal/romList trong state form. */}
             <div className="my-4 space-y-3 text-xs">
               <div className="p-3.5 bg-[#e1f4df]/40 rounded-[14px] border border-[#cfe7d3]">
                 <div className="flex justify-between font-bold text-[#0f3e17]">
-                  <span>1. Thang điểm Độc lập Chức năng (FIM):</span>
-                  <span>{fimTotal} / 126 điểm</span>
+                  <span>1. Kết quả thang điểm PHCN:</span>
+                  <span>{printAssessments.length > 0 ? `${printAssessments.length} lần đánh giá` : "Chưa có lần đánh giá nào trong phiên này"}</span>
                 </div>
-                <div className="text-[11px] text-[#222222]/70 mt-1">
-                  Đánh giá: <strong>{getFimLevel(fimTotal).text}</strong>. Thang đo mức độ đau VAS: {painScale}/10.
-                </div>
-              </div>
-
-              <div className="p-3.5 bg-[#fffefc] rounded-[14px] border border-[#efeeeb]">
-                <div className="font-bold text-[#0f3e17] mb-1">2. Kết quả Đo Góc Khớp (ROM):</div>
-                <div className="space-y-1 text-[11px] text-[#222222]/80">
-                  {romList.map((r, i) => (
-                    <div key={i} className="flex justify-between">
-                      <span>• {r.joint} ({r.movement}):</span>
+                <div className="space-y-1 mt-1">
+                  {printAssessments.map((a) => (
+                    <div key={a.id} className="flex justify-between text-[11px] text-[#222222]/80">
+                      <span>
+                        • {a.scaleNameVi} ({new Date(a.assessedAt).toLocaleDateString("vi-VN")}
+                        {a.timepoint === "BASELINE" ? " — Đầu vào" : a.timepoint === "REASSESSMENT" ? " — Tái đánh giá" : " — Ra viện"}):
+                      </span>
                       <strong>
-                        Bên tổn thương: {r.rightAngle}° (Bên lành: {r.leftAngle}° • Mục tiêu: {r.targetAngle}°)
+                        {a.totalScore ?? a.value ?? a.level ?? "—"}
+                        {a.interpretation ? ` — ${a.interpretation}` : ""}
                       </strong>
                     </div>
                   ))}
+                </div>
+                <div className="text-[11px] text-[#222222]/70 mt-1">
+                  Thang đo mức độ đau VAS: {painScale}/10.
                 </div>
               </div>
 
