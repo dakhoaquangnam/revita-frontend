@@ -190,12 +190,13 @@ export default function TvDisplayPage() {
   }, [latestCalledTicket]);
 
   // Đồng bộ spotlight theo bệnh nhân đang phục vụ thật (poll 15 giây).
-  // - TV mở sau khi đã gọi (hoặc tải lại trang): lấy người đang phục vụ làm
-  //   spotlight thay vì "Chưa có lượt gọi nào".
-  // - Lỡ mất sự kiện WebSocket lúc đang gọi: spotlight vẫn tự sửa theo đúng
-  //   người đang phục vụ trong vòng 15 giây (chỉ cập nhật lặng, không chuông,
-  //   không đọc loa — chuông/loa chỉ phát khi nhận được sự kiện gọi trực tiếp).
+  // CHỈ SEED khi spotlight đang trống: TV mở sau khi đã gọi (hoặc tải lại
+  // trang) lấy người đang phục vụ làm spotlight thay vì "Chưa có lượt gọi nào".
+  // Sự kiện gọi trực tiếp qua WebSocket là nguồn thật cho spotlight; poll
+  // KHÔNG ghi đè spotlight nữa — trước đây poll kéo về người có assignedAt
+  // mới nhất (CTR002-011) và át mất sự kiện vừa gọi (CTR003-001).
   useEffect(() => {
+    if (spotlight) return;
     let best: { t: QueuePatient; c: CounterItem } | null = null;
     for (const c of counters) {
       const cur = counterQueues[c.counterId]?.current;
@@ -206,7 +207,6 @@ export default function TvDisplayPage() {
       }
     }
     if (!best) return;
-    if (spotlight && spotlight.queueNumber === best.t.queueNumber) return;
     setSpotlight({
       queueNumber: best.t.queueNumber,
       patientName: best.t.patientName.toUpperCase(),
