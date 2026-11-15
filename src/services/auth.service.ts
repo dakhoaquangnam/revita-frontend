@@ -20,6 +20,11 @@ export interface UserProfile {
   gender?: string;
   address?: string;
   dateOfBirth?: string;
+  // /auth/me trả về cả đối tượng theo role (để màn hình phòng lọc dịch vụ
+  // của kỹ thuật viên và chọn phòng theo ca trực của bác sĩ).
+  doctor?: { id: string; doctorCode?: string };
+  technician?: { id: string; technicianCode?: string };
+  receptionist?: { id: string };
 }
 
 export interface AuthResponse {

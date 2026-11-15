@@ -165,7 +165,7 @@ export default function TvDisplayPage() {
   }, []);
 
   // Lắng nghe WebSocket thời gian thực
-  const { latestCalledTicket, isConnected } = useQueueEvents();
+  const { latestCalledTicket, latestRoomCall, isConnected } = useQueueEvents();
 
   useEffect(() => {
     if (latestCalledTicket) {
@@ -189,6 +189,24 @@ export default function TvDisplayPage() {
       });
     }
   }, [latestCalledTicket]);
+
+  // GĐ2 §4.4.4 — lệnh gọi vào phòng: spotlight hiện tên phòng thay vì tên
+  // quầy (counterName = roomName), kèm mã phiếu/lịch hẹn làm số hiệu.
+  useEffect(() => {
+    if (!latestRoomCall) return;
+    triggerNewCall({
+      queueNumber: String(latestRoomCall.ticketNumber || "—"),
+      patientName: (latestRoomCall.patientName || "BỆNH NHÂN").toUpperCase(),
+      counterCode: latestRoomCall.counterCode || "PHÒNG",
+      counterName:
+        latestRoomCall.roomName || latestRoomCall.counterName || "Phòng khám",
+      roomName: latestRoomCall.roomName || "Phòng khám",
+      calledAt: latestRoomCall.calledAt
+        ? new Date(latestRoomCall.calledAt).toLocaleTimeString("vi-VN")
+        : new Date().toLocaleTimeString("vi-VN"),
+      isPriority: false,
+    });
+  }, [latestRoomCall]);
 
   // Đồng bộ spotlight theo bệnh nhân đang phục vụ thật (poll 15 giây).
   // CHỈ SEED khi spotlight đang trống: TV mở sau khi đã gọi (hoặc tải lại

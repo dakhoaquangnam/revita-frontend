@@ -7,6 +7,8 @@ import { TicketCalledPayload, NewTicketPayload, CounterStatusPayload } from "@/l
 export function useQueueEvents(counterId?: string) {
   const { socket, isConnected } = useSocket("/counters", true);
   const [latestCalledTicket, setLatestCalledTicket] = useState<TicketCalledPayload | null>(null);
+  // GĐ2 §4.4.4 — lượt gọi vào phòng gần nhất (để TV hiện tên phòng).
+  const [latestRoomCall, setLatestRoomCall] = useState<TicketCalledPayload | null>(null);
   const [calledHistory, setCalledHistory] = useState<TicketCalledPayload[]>([]);
   const [onlineCounters, setOnlineCounters] = useState<CounterStatusPayload[]>([]);
 
@@ -64,6 +66,24 @@ export function useQueueEvents(counterId?: string) {
     // nhận được bản này — không nghe "broadcast" thì TV mãi hiển thị
     // "Chưa có lượt gọi nào" dù lễ tân đã bấm gọi.
     const handleBroadcast = (msg: any) => {
+      // GĐ2 §4.4.4 — lệnh gọi vào phòng (PATIENT_CALLED_TO_ROOM): TV hiện
+      // tên phòng thay vì tên quầy. Tách riêng khỏi latestCalledTicket để
+      // trang lễ tân (cũng dùng hook này) không nhầm với lượt gọi ở quầy.
+      if (msg?.type === "PATIENT_CALLED_TO_ROOM") {
+        const d = msg?.data ?? {};
+        setLatestRoomCall({
+          ticketId: d.prescriptionId || d.appointmentCode,
+          ticketNumber: d.prescriptionCode || d.appointmentCode || "",
+          queueNumber: d.prescriptionCode || d.appointmentCode || "",
+          counterId: d.roomId,
+          counterName: d.roomName || d.counterName,
+          counterCode: d.roomCode || d.counterCode,
+          roomName: d.roomName,
+          patientName: d.patientName,
+          calledAt: msg?.timestamp ?? d.calledAt ?? new Date().toISOString(),
+        });
+        return;
+      }
       if (msg?.type !== "NEXT_PATIENT_CALLED") return;
       handleNextPatientCalled(msg);
     };
@@ -90,6 +110,7 @@ export function useQueueEvents(counterId?: string) {
     socket,
     isConnected,
     latestCalledTicket,
+    latestRoomCall,
     calledHistory,
     onlineCounters,
     sendPing,

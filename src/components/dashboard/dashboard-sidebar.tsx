@@ -15,6 +15,7 @@ import {
   MonitorSmartphone,
   LogOut,
   ExternalLink,
+  DoorOpen,
 } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { TsLogo } from "@/components/ui/ts-logo";
@@ -51,6 +52,12 @@ export function DashboardSidebar({
       href: "/dashboard/doctor",
       icon: Stethoscope,
       roles: ["ADMIN", "DOCTOR", "TECHNICIAN"],
+    },
+    {
+      name: "Màn hình phòng",
+      href: "/dashboard/room",
+      icon: DoorOpen,
+      roles: ["ADMIN", "DOCTOR", "TECHNICIAN", "RECEPTIONIST"],
     },
     {
       name: "Quầy Tiếp đón & Lễ tân",

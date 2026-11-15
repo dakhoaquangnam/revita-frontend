@@ -29,6 +29,11 @@ import {
   PatientProfileSummary,
   DoctorServiceItem,
 } from "@/services/appointment.service";
+import { receptionistService } from "@/services/receptionist.service";
+import {
+  roomService,
+  getApiErrorMessage,
+} from "@/services/room.service";
 
 interface DoctorQueueItem {
   id: string;
@@ -221,6 +226,32 @@ export default function DoctorWorkspacePage() {
   }, []);
   const [isCallingAudio, setIsCallingAudio] = useState(false);
   const [callToast, setCallToast] = useState("");
+  // GĐ2 §4.4.3 — phòng trực của bác sĩ (giải quyết từ GET /routing/rooms:
+  // buồng có doctorId trùng user) + trạng thái gọi thật qua API.
+  const [myRoomId, setMyRoomId] = useState("");
+  const [isCalling, setIsCalling] = useState(false);
+  const [callError, setCallError] = useState("");
+
+  useEffect(() => {
+    const myDoctorId = user?.doctor?.id;
+    if (!myDoctorId) return;
+    let cancelled = false;
+    receptionistService
+      .getRooms()
+      .then((list) => {
+        if (cancelled) return;
+        const mine = list.find((r) =>
+          r.booths?.some((b) => b.doctorId === myDoctorId),
+        );
+        if (mine) setMyRoomId(mine.id);
+      })
+      .catch(() => {
+        // Không xác định được phòng trực: nút gọi sẽ báo rõ lỗi, không gọi giả.
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [user?.doctor?.id]);
 
   // Dịch vụ bác sĩ được chỉ định trong ca hôm nay (lấy theo ca làm việc).
   const [doctorServices, setDoctorServices] = useState<DoctorServiceItem[]>([]);
@@ -304,65 +335,103 @@ export default function DoctorWorkspacePage() {
     setFim((prev) => ({ ...prev, [key]: val }));
   };
 
+  // GĐ2 §4.4.3 — Gọi bệnh nhân tiếp theo bằng API thật (không còn "thành
+  // công giả": chỉ đổi trạng thái local + phát loa SAU khi API thành công).
+  // Nếu bệnh nhân có dịch vụ trị liệu đang chờ trong phòng → gọi đúng dịch
+  // vụ đó (POST /prescriptions/call-patient); nếu không, gọi lịch khám vào
+  // phòng (POST /routing/rooms/:roomId/call-appointment).
   const handleCallNext = async () => {
-    if (queue.length === 0) return;
+    if (queue.length === 0 || isCalling) return;
     // Chuyển tới bệnh nhân tiếp theo trong danh sách hàng đợi
     const nextIdx = (activePatientIndex + 1) % queue.length;
     const nextPatient = queue[nextIdx];
-
-    setActivePatientIndex(nextIdx);
-    // Đặt lại phiếu khám về mẫu — số liệu bệnh nhân trước không được
-    // lọt sang bệnh án bệnh nhân sau.
-    resetExamForm();
-    setQueue((prev) =>
-      prev.map((p, idx) => {
-        if (idx === nextIdx) return { ...p, status: "SERVING" };
-        if (idx === activePatientIndex && p.status === "SERVING") return { ...p, status: "COMPLETED" };
-        return p;
-      })
-    );
-
-    const roomTitle = currentRoom.name || "Phòng 101: Khám Lượng giá PHCN";
-    const roomLocation = "Khu B - Tầng 1";
-
-    const callPayload = {
-      queueNumber: nextPatient.queueNumber,
-      patientName: nextPatient.name.toUpperCase(),
-      counterCode: currentRoom.id || "ROOM-101",
-      counterName: roomTitle,
-      roomName: roomLocation,
-      calledAt: new Date().toLocaleTimeString("vi-VN"),
-      isPriority: false,
-    };
-
-    // 1. Đồng bộ thời gian thực sang Màn hình TV sảnh chờ (tv-display) qua BroadcastChannel & localStorage
-    if (typeof window !== "undefined") {
-      try {
-        const channel = new BroadcastChannel("revita_tv_channel");
-        channel.postMessage({ type: "CALL_PATIENT", data: callPayload });
-        channel.close();
-      } catch {}
-      try {
-        localStorage.setItem("revita_tv_latest_call", JSON.stringify(callPayload));
-      } catch {}
+    setCallError("");
+    if (!myRoomId) {
+      setCallError(
+        "Chưa xác định được phòng trực của bạn (không thấy ca làm việc hôm nay). Kiểm tra ca trực rồi thử lại.",
+      );
+      return;
     }
-
-    // 2. Hiển thị thông báo trên màn hình Bác sĩ
-    setCallToast(`Đã phát loa gọi: ${nextPatient.name} (${nextPatient.queueNumber}) vào buồng khám`);
-    setTimeout(() => setCallToast(""), 4000);
-
-    // 3. Phát âm thanh giọng đọc tiếng Việt bằng VieNeu Cloud TTS.
-    // Không dùng giọng trình duyệt làm fallback (quyết định 13/11/2026):
-    // lỗi TTS phải hiện ra, không được đọc bằng giọng khác rồi tưởng là xong.
-    setIsCallingAudio(true);
-    const callText = `Xin mời bệnh nhân ${nextPatient.name}, số thứ tự ${nextPatient.queueNumber}, vào ${roomTitle}!`;
+    setIsCalling(true);
     try {
-      await ttsService.speak(callText, {
-        onEnd: () => setIsCallingAudio(false),
-        onError: () => setIsCallingAudio(false),
-      });
-    } catch {
-      setIsCallingAudio(false);
+      const roomQueue = await roomService.getRoomQueue(myRoomId);
+      const therapy = roomQueue.therapyQueue.find(
+        (t) =>
+          t.patientProfileId === nextPatient.patientProfileId &&
+          (t.status === "WAITING" ||
+            t.status === "PREPARING" ||
+            t.status === "RETURNING"),
+      );
+      if (therapy) {
+        const res = await roomService.callPatient(therapy.id);
+        if (!res.success) {
+          throw new Error(res.message || "Không gọi được bệnh nhân.");
+        }
+      } else {
+        await roomService.callAppointment(myRoomId, nextPatient.appointmentCode);
+      }
+
+      // Gọi thành công mới chuyển bệnh nhân + đổi trạng thái local.
+      setActivePatientIndex(nextIdx);
+      // Đặt lại phiếu khám về mẫu — số liệu bệnh nhân trước không được
+      // lọt sang bệnh án bệnh nhân sau.
+      resetExamForm();
+      setQueue((prev) =>
+        prev.map((p, idx) => {
+          if (idx === nextIdx) return { ...p, status: "SERVING" };
+          if (idx === activePatientIndex && p.status === "SERVING") return { ...p, status: "COMPLETED" };
+          return p;
+        })
+      );
+
+      const roomTitle = roomQueue.roomName || currentRoom.name || "Phòng khám";
+      const roomLocation = "Khu B - Tầng 1";
+
+      const callPayload = {
+        queueNumber: nextPatient.queueNumber,
+        patientName: nextPatient.name.toUpperCase(),
+        counterCode: myRoomId,
+        counterName: roomTitle,
+        roomName: roomLocation,
+        calledAt: new Date().toLocaleTimeString("vi-VN"),
+        isPriority: false,
+      };
+
+      // 1. Đồng bộ thời gian thực sang Màn hình TV sảnh chờ (tv-display) qua BroadcastChannel & localStorage
+      // (TV còn nhận thêm broadcast PATIENT_CALLED_TO_ROOM từ backend qua WebSocket.)
+      if (typeof window !== "undefined") {
+        try {
+          const channel = new BroadcastChannel("revita_tv_channel");
+          channel.postMessage({ type: "CALL_PATIENT", data: callPayload });
+          channel.close();
+        } catch {}
+        try {
+          localStorage.setItem("revita_tv_latest_call", JSON.stringify(callPayload));
+        } catch {}
+      }
+
+      // 2. Hiển thị thông báo trên màn hình Bác sĩ
+      setCallToast(`Đã gọi: ${nextPatient.name} (${nextPatient.queueNumber}) vào ${roomTitle}`);
+      setTimeout(() => setCallToast(""), 4000);
+
+      // 3. Phát âm thanh giọng đọc tiếng Việt bằng VieNeu Cloud TTS.
+      // Không dùng giọng trình duyệt làm fallback (quyết định 13/11/2026):
+      // lỗi TTS phải hiện ra, không được đọc bằng giọng khác rồi tưởng là xong.
+      setIsCallingAudio(true);
+      const callText = `Xin mời bệnh nhân ${nextPatient.name}, số thứ tự ${nextPatient.queueNumber}, vào ${roomTitle}!`;
+      try {
+        await ttsService.speak(callText, {
+          onEnd: () => setIsCallingAudio(false),
+          onError: () => setIsCallingAudio(false),
+        });
+      } catch {
+        setIsCallingAudio(false);
+      }
+    } catch (err: unknown) {
+      // Gọi thất bại: KHÔNG chuyển bệnh nhân, KHÔNG phát loa — báo đúng lỗi backend.
+      setCallError(getApiErrorMessage(err, "Không gọi được bệnh nhân."));
+    } finally {
+      setIsCalling(false);
     }
   };
 
@@ -508,14 +577,26 @@ export default function DoctorWorkspacePage() {
           <button
             type="button"
             onClick={handleCallNext}
-            disabled={isCallingAudio || queue.length === 0}
+            disabled={isCalling || isCallingAudio || queue.length === 0}
             className="flex items-center gap-2 px-5 py-3 rounded-[14px] bg-[#0f3e17] hover:bg-[#0c2f10] text-[#fffefc] text-xs font-semibold transition-colors disabled:opacity-75 cursor-pointer"
           >
             <Volume2 className={`w-4 h-4 ${isCallingAudio ? "animate-pulse text-[#b1dbb8]" : ""}`} />
-            <span>{isCallingAudio ? "Đang phát loa gọi bệnh nhân..." : "Mời bệnh nhân tiếp theo (Loa TV)"}</span>
+            <span>
+              {isCalling
+                ? "Đang gọi bệnh nhân..."
+                : isCallingAudio
+                  ? "Đang phát loa gọi bệnh nhân..."
+                  : "Mời bệnh nhân tiếp theo (Loa TV)"}
+            </span>
           </button>
         </div>
       </div>
+
+      {callError && (
+        <div className="rounded-[14px] border border-rose-200 bg-rose-50 p-3 text-sm text-rose-700">
+          {callError}
+        </div>
+      )}
 
       {/* Main Grid: Left = Queue & Admin Info, Right = Clinical Tabs */}
       {queueLoading ? (
