@@ -73,10 +73,23 @@ export const doctorService = {
   async createMedicalRecord(payload: {
     patientProfileId?: string;
     appointmentCode?: string;
+    templateId?: string;
     content: any;
     status: "DRAFT" | "IN_PROGRESS" | "COMPLETED";
   }) {
     const res = await apiClient.post("/medical-records", payload);
+    return res.data;
+  },
+
+  /**
+   * Lấy danh sách template bệnh án để tìm template PHCN
+   * (PHUC_HOI_CHUC_NANG) — bắt buộc khi tạo bệnh án (backend yêu cầu
+   * templateId; thiếu thì Prisma lỗi).
+   */
+  async getTemplates(): Promise<
+    { id: string; templateCode: string; name?: string }[]
+  > {
+    const res = await apiClient.get("/medical-records/templates");
     return res.data;
   },
 

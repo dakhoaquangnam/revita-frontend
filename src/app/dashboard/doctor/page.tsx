@@ -145,6 +145,24 @@ export default function DoctorWorkspacePage() {
   const currentPatient = queue[activePatientIndex] || queue[0];
   // Id bác sĩ đang đăng nhập — lấy từ lịch hẹn đầu trong hàng đợi.
   const [doctorId, setDoctorId] = useState("");
+  // Id template bệnh án PHCN — backend bắt buộc templateId khi tạo bệnh án.
+  const [phcnTemplateId, setPhcnTemplateId] = useState("");
+
+  useEffect(() => {
+    const loadTemplate = async () => {
+      try {
+        const templates = await doctorService.getTemplates();
+        const phcn = templates.find(
+          (t) => t.templateCode === "PHUC_HOI_CHUC_NANG",
+        );
+        if (phcn) setPhcnTemplateId(phcn.id);
+      } catch {
+        // Không tải được template thì backend tự mặc định template PHCN;
+        // nút Lưu vẫn hoạt động, không chặn khám.
+      }
+    };
+    loadTemplate();
+  }, []);
 
   useEffect(() => {
     const loadQueue = async () => {
@@ -396,6 +414,7 @@ export default function DoctorWorkspacePage() {
       const record = await doctorService.createMedicalRecord({
         patientProfileId: currentPatient.patientProfileId,
         appointmentCode: currentPatient.appointmentCode,
+        templateId: phcnTemplateId || undefined,
         content: {
           diagnosis,
           painScale,
