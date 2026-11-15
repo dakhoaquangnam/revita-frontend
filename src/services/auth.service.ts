@@ -1,4 +1,9 @@
 import { apiClient } from "@/lib/api";
+import {
+  clearSession,
+  readSession,
+  saveSession,
+} from "@/lib/session-store";
 
 export interface LoginPayload {
   identifier: string;
@@ -24,13 +29,21 @@ export interface AuthResponse {
 }
 
 export const authService = {
-  /** Đăng nhập */
-  async login(payload: LoginPayload): Promise<AuthResponse> {
+  /**
+   * Đăng nhập. remember=true (mặc định, theo ô "Ghi nhớ phiên làm việc"):
+   * phiên lưu vào localStorage, đóng trình duyệt mở lại vẫn còn. remember=false:
+   * phiên chỉ lưu vào sessionStorage, đóng tab là hết. Access token chỉ sống
+   * ~1 giờ; apiClient tự làm mới bằng refresh token khi gặp 401.
+   */
+  async login(payload: LoginPayload, remember = true): Promise<AuthResponse> {
     const res = await apiClient.post<AuthResponse>("/auth/login", payload);
     if (res.data.accessToken && typeof window !== "undefined") {
-      localStorage.setItem("revita_token", res.data.accessToken);
-      localStorage.setItem("revita_refresh_token", res.data.refreshToken);
-      localStorage.setItem("revita_user", JSON.stringify(res.data.user));
+      saveSession(
+        res.data.accessToken,
+        res.data.refreshToken,
+        res.data.user,
+        remember,
+      );
     }
     return res.data;
   },
@@ -69,30 +82,19 @@ export const authService = {
     return res.data;
   },
 
-  /** Đăng xuất */
+  /** Đăng xuất: xóa phiên ở cả localStorage lẫn sessionStorage. */
   logout(): void {
-    if (typeof window !== "undefined") {
-      localStorage.removeItem("revita_token");
-      localStorage.removeItem("revita_refresh_token");
-      localStorage.removeItem("revita_user");
-    }
+    clearSession();
   },
 
-  /** Lấy thông tin user hiện tại từ local storage */
+  /** Lấy thông tin user hiện tại từ kho phiên đã lưu. */
   getCurrentUser(): UserProfile | null {
-    if (typeof window === "undefined") return null;
-    const userStr = localStorage.getItem("revita_user");
-    if (!userStr) return null;
-    try {
-      return JSON.parse(userStr);
-    } catch {
-      return null;
-    }
+    const session = readSession();
+    return (session?.user as UserProfile | null) ?? null;
   },
 
-  /** Kiểm tra trạng thái đăng nhập */
+  /** Kiểm tra trạng thái đăng nhập (còn access token trong kho phiên). */
   isAuthenticated(): boolean {
-    if (typeof window === "undefined") return false;
-    return !!localStorage.getItem("revita_token");
+    return !!readSession()?.accessToken;
   },
 };

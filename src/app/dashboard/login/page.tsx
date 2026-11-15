@@ -26,6 +26,7 @@ export default function DashboardLoginPage() {
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [rememberMe, setRememberMe] = useState(true);
   const [errorMsg, setErrorMsg] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -60,7 +61,10 @@ export default function DashboardLoginPage() {
 
     try {
       setIsSubmitting(true);
-      const user = await login({ identifier: identifier.trim(), password });
+      const user = await login(
+        { identifier: identifier.trim(), password },
+        rememberMe,
+      );
       setSuccessMsg(`Đăng nhập thành công: ${user.name}`);
       setTimeout(() => {
         redirectByRole(user.role);
@@ -162,7 +166,8 @@ export default function DashboardLoginPage() {
               <label className="flex items-center gap-2 cursor-pointer text-[#222222]/70 hover:text-[#0f3e17]">
                 <input
                   type="checkbox"
-                  defaultChecked
+                  checked={rememberMe}
+                  onChange={(e) => setRememberMe(e.target.checked)}
                   className="rounded border-[#efeeeb] text-[#0f3e17] focus:ring-[#0f3e17]"
                 />
                 Ghi nhớ phiên làm việc trên máy này

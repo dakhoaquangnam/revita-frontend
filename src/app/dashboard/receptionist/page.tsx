@@ -316,7 +316,7 @@ export default function ReceptionistWorkspacePage() {
   return (
     <div className="space-y-6 text-[#222222]">
       {/* Header Banner & Counter Selector */}
-      <div className="bg-[#e1f4df] border border-[#cfe7d3] rounded-[14px] p-6 flex flex-col md:flex-row md:items-center justify-between gap-6">
+      <div className="bg-[#e1f4df] border border-[#cfe7d3] rounded-[14px] p-4 sm:p-6 flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-[6px] bg-[#fffefc] border border-[#cfe7d3] text-[#0f3e17] text-xs font-semibold mb-2">
             <Users className="w-4 h-4 text-[#0f3e17]" />
@@ -331,7 +331,7 @@ export default function ReceptionistWorkspacePage() {
         </div>
 
         {/* Counter Switcher */}
-        <div className="flex items-center gap-2 bg-[#fffefc] p-1.5 rounded-[14px] border border-[#efeeeb]">
+        <div className="flex flex-wrap items-center gap-2 bg-[#fffefc] p-1.5 rounded-[14px] border border-[#efeeeb]">
           <span className="text-xs text-[#222222]/60 px-2 font-medium hidden sm:inline">Quầy của bạn:</span>
           {counters.map((c) => (
             <button
@@ -536,7 +536,7 @@ export default function ReceptionistWorkspacePage() {
         <div className="lg:col-span-7 space-y-6">
           <div className="bg-[#fffefc] border border-[#efeeeb] rounded-[14px] p-6">
             {/* Mode Tabs */}
-            <div className="flex border-b border-[#efeeeb] pb-3 mb-6 gap-3">
+            <div className="flex flex-wrap border-b border-[#efeeeb] pb-3 mb-6 gap-3">
               <button
                 type="button"
                 onClick={() => setActiveTab("APPOINTMENT")}

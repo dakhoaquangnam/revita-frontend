@@ -10,10 +10,16 @@ import {
   Check,
   User,
   LogOut,
+  Menu,
 } from "lucide-react";
 import { useAuth, REHAB_ROOMS } from "@/hooks/use-auth";
 
-export function DashboardHeader() {
+export function DashboardHeader({
+  onMenuClick,
+}: {
+  // Mobile: mở ngăn kéo sidebar. Desktop không cần (sidebar luôn hiện).
+  onMenuClick?: () => void;
+}) {
   const { user, selectedRoom, setSelectedRoom, logout } = useAuth();
   const [showRoomDropdown, setShowRoomDropdown] = useState(false);
   const [showUserDropdown, setShowUserDropdown] = useState(false);
@@ -38,8 +44,16 @@ export function DashboardHeader() {
 
   return (
     <header className="h-16 bg-[#fffefc] border-b border-[#efeeeb] text-[#222222] flex items-center justify-between px-4 sm:px-6 z-30 sticky top-0">
-      {/* Left: Current Active Room Selector */}
+      {/* Left: Nút mở menu (chỉ mobile) + Buồng trực hiện tại */}
       <div className="flex items-center gap-3">
+        <button
+          type="button"
+          onClick={onMenuClick}
+          aria-label="Mở menu điều hướng"
+          className="lg:hidden flex items-center justify-center w-9 h-9 rounded-[14px] bg-[#fffefc] hover:bg-[#e1f4df]/40 border border-[#efeeeb] text-[#0f3e17] transition-colors"
+        >
+          <Menu className="w-5 h-5" />
+        </button>
         <div className="relative">
           <button
             type="button"

@@ -27,7 +27,15 @@ interface NavItem {
   badge?: string;
 }
 
-export function DashboardSidebar() {
+export function DashboardSidebar({
+  className,
+  onNavigate,
+}: {
+  // Mặc định: sidebar desktop (ẩn trên mobile, hiện từ lg trở lên).
+  // Khi dùng trong ngăn kéo mobile, layout truyền className riêng.
+  className?: string;
+  onNavigate?: () => void;
+}) {
   const pathname = usePathname();
   const { user, logout } = useAuth();
 
@@ -82,11 +90,16 @@ export function DashboardSidebar() {
   );
 
   return (
-    <aside className="w-64 bg-[#fffefc] border-r border-[#efeeeb] text-[#222222] flex flex-col justify-between h-[calc(100vh-4rem)] sticky top-16 select-none">
+    <aside
+      className={
+        className ??
+        "hidden lg:flex w-64 shrink-0 bg-[#fffefc] border-r border-[#efeeeb] text-[#222222] flex-col justify-between h-[calc(100vh-4rem)] sticky top-16 select-none"
+      }
+    >
       {/* Top section: Main Navigation */}
       <div className="p-4 space-y-6 overflow-y-auto">
         {/* Brand Clinic Info */}
-        <Link href="/" className="block">
+        <Link href="/" className="block" onClick={onNavigate}>
           <div className="flex items-center gap-2.5 px-3 py-2 bg-[#e1f4df]/40 rounded-[14px] border border-[#cfe7d3] hover:bg-[#e1f4df]/60 transition-colors">
             <TsLogo size="sm" showText={true} />
           </div>
@@ -105,6 +118,7 @@ export function DashboardSidebar() {
                 <Link
                   key={item.href}
                   href={item.href}
+                  onClick={onNavigate}
                   className={`flex items-center justify-between px-3.5 py-2.5 rounded-[14px] text-xs font-semibold transition-colors group ${
                     isActive
                       ? "bg-[#0f3e17] text-[#fffefc]"
@@ -145,6 +159,7 @@ export function DashboardSidebar() {
             <Link
               href="/kiosk"
               target="_blank"
+              onClick={onNavigate}
               className="flex items-center justify-between px-3.5 py-2 rounded-[14px] text-xs font-medium text-[#222222]/70 hover:text-[#0f3e17] hover:bg-[#e1f4df]/30 transition-colors"
             >
               <div className="flex items-center gap-2.5">
@@ -157,6 +172,7 @@ export function DashboardSidebar() {
             <Link
               href="/tv-display"
               target="_blank"
+              onClick={onNavigate}
               className="flex items-center justify-between px-3.5 py-2 rounded-[14px] text-xs font-medium text-[#222222]/70 hover:text-[#0f3e17] hover:bg-[#e1f4df]/30 transition-colors"
             >
               <div className="flex items-center gap-2.5">

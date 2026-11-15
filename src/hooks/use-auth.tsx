@@ -3,13 +3,15 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { authService, UserProfile, LoginPayload } from "@/services/auth.service";
+import { apiClient, ensureFreshToken } from "@/lib/api";
+import { readSession, updateStoredUser } from "@/lib/session-store";
 
 interface AuthContextType {
   user: UserProfile | null;
   isLoading: boolean;
   selectedRoom: string;
   setSelectedRoom: (room: string) => void;
-  login: (payload: LoginPayload) => Promise<UserProfile>;
+  login: (payload: LoginPayload, remember?: boolean) => Promise<UserProfile>;
   logout: () => void;
   hasRole: (roles: string[]) => boolean;
 }
@@ -33,16 +35,36 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const router = useRouter();
 
   useEffect(() => {
-    // Khôi phục thông tin user và buồng khám đã lưu từ localStorage
-    const savedUser = authService.getCurrentUser();
-    if (savedUser) {
-      setUser(savedUser);
-    }
-    const savedRoom = localStorage.getItem("revita_active_room");
-    if (savedRoom) {
-      setSelectedRoom(savedRoom);
-    }
-    setIsLoading(false);
+    // Khôi phục phiên đã lưu. Token hết hạn thì làm mới im lặng bằng refresh
+    // token (backend POST /auth/refresh); làm mới thất bại thì hết phiên thật.
+    const restore = async () => {
+      const savedUser = authService.getCurrentUser();
+      if (savedUser) {
+        setUser(savedUser);
+      }
+      const session = readSession();
+      if (session?.accessToken) {
+        const ok = await ensureFreshToken();
+        if (!ok) {
+          setUser(null);
+        } else if (!savedUser) {
+          // Có token còn hạn nhưng mất thông tin user (vd xóa tay): lấy lại.
+          try {
+            const res = await apiClient.get<UserProfile>("/auth/me");
+            setUser(res.data);
+            updateStoredUser(res.data);
+          } catch {
+            // Không lấy được thì giữ trạng thái chưa đăng nhập.
+          }
+        }
+      }
+      const savedRoom = localStorage.getItem("revita_active_room");
+      if (savedRoom) {
+        setSelectedRoom(savedRoom);
+      }
+      setIsLoading(false);
+    };
+    restore();
   }, []);
 
   const handleSetSelectedRoom = (roomId: string) => {
@@ -52,10 +74,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const login = async (payload: LoginPayload): Promise<UserProfile> => {
+  const login = async (
+    payload: LoginPayload,
+    remember = true,
+  ): Promise<UserProfile> => {
     setIsLoading(true);
     try {
-      const res = await authService.login(payload);
+      const res = await authService.login(payload, remember);
       setUser(res.user);
       return res.user;
     } finally {
