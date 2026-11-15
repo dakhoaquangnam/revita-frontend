@@ -96,6 +96,15 @@ export const receptionistService = {
     return res.data;
   },
 
+  // Gọi một bệnh nhân cụ thể trong hàng đợi (lễ tân chọn từ danh sách).
+  // Backend dùng chung luồng với next-patient, chỉ khác ở việc chọn ticketId.
+  async callPatientByTicket(counterId: string, ticketId: string) {
+    const res = await apiClient.post(`/counter-assignment/call-patient/${counterId}`, {
+      ticketId,
+    });
+    return res.data;
+  },
+
   /** Bỏ qua bệnh nhân hiện tại (vắng mặt / gọi không tới) */
   async skipCurrentPatient(counterId: string) {
     const res = await apiClient.post(`/counter-assignment/skip-current/${counterId}`);

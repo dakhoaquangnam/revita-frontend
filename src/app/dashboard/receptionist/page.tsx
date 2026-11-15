@@ -174,6 +174,35 @@ export default function ReceptionistWorkspacePage() {
     }
   };
 
+  // Gọi một bệnh nhân cụ thể trong danh sách chờ (không nhất thiết là
+  // người đầu hàng). Bệnh nhân đó chuyển lên khung "Đang phục vụ tại quầy",
+  // phần còn lại của danh sách vẫn hiển thị nguyên vẹn.
+  const handleCallPatient = async (ticketId: string, queueNumber: string) => {
+    if (!activeCounterId) {
+      alert(
+        "Chưa mở quầy nên chưa gọi được số. " +
+          (counterSessionError ||
+            "Tải lại trang để hệ thống tự mở quầy."),
+      );
+      return;
+    }
+    setActionLoading(true);
+    try {
+      const res = await receptionistService.callPatientByTicket(activeCounterId, ticketId);
+      if (res?.message && !res?.patient && !res?.ok) {
+        alert(res.message);
+      }
+      await fetchQueue(activeCounterId);
+    } catch (err: any) {
+      alert(
+        `Lỗi khi gọi số ${queueNumber}: ` +
+          (err.response?.data?.message || err.message || "Vui lòng kiểm tra lại"),
+      );
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
   const handleSkip = async () => {
     if (!activeCounterId) {
       alert(
@@ -595,9 +624,24 @@ export default function ReceptionistWorkspacePage() {
                         </div>
                       </div>
                     </div>
-                    <span className="text-[10px] px-2 py-0.5 rounded-[6px] bg-[#e1f4df] text-[#0f3e17] font-semibold border border-[#cfe7d3]">
-                      Chờ gọi
-                    </span>
+                    <div className="flex items-center gap-2 flex-shrink-0">
+                      {item.status === "PREPARING" ? (
+                        <span className="text-[10px] px-2 py-0.5 rounded-[6px] bg-[#e1f4df] text-[#0f3e17] font-semibold border border-[#cfe7d3]">
+                          Đang chuẩn bị
+                        </span>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => void handleCallPatient(item.ticketId, item.queueNumber)}
+                          disabled={actionLoading}
+                          className="px-3 py-1.5 rounded-[8px] bg-[#0f3e17] hover:bg-[#0c2f10] text-[#fffefc] text-[11px] font-bold flex items-center gap-1 transition-colors disabled:opacity-50"
+                          title={`Gọi ${item.patientName} (${item.queueNumber}) vào quầy`}
+                        >
+                          <Volume2 className="w-3.5 h-3.5" />
+                          <span>Gọi</span>
+                        </button>
+                      )}
+                    </div>
                   </div>
                 ))}
               </div>
