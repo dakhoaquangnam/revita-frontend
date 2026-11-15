@@ -112,6 +112,30 @@ export interface AppointmentDetail {
   createdAt: string;
 }
 
+  /**
+ * Chuẩn hoá mã vé trước khi tra cứu. Bàn phím điện thoại đôi khi gõ ra chữ
+ * Cyrillic trông giống hệt chữ Latin (Т thay cho T, А thay cho A...), khiến
+ * backend tra cứu chính xác theo mã và trả 404 dù mắt nhìn mã giống hệt.
+ * Hàm này đổi các chữ Cyrillic "giống hệt" về chữ Latin tương ứng và bỏ
+ * ký tự tàng hình (zero-width space, BOM) hay dính khi sao chép.
+ */
+const CYRILLIC_TO_LATIN: Record<string, string> = {
+  А: "A", а: "a", В: "B", в: "b", Е: "E", е: "e",
+  К: "K", к: "k", М: "M", м: "m", Н: "H", н: "h",
+  О: "O", о: "o", Р: "P", р: "p", С: "C", с: "c",
+  Т: "T", т: "t", Х: "X", х: "x", У: "Y", у: "y",
+  І: "I", і: "i", Ј: "J", ј: "j", Ѕ: "S", ѕ: "s",
+};
+
+export function normalizeAppointmentCode(code: string): string {
+  return code
+    .replace(/[\u200B-\u200D\uFEFF]/g, "")
+    .split("")
+    .map((ch) => CYRILLIC_TO_LATIN[ch] ?? ch)
+    .join("")
+    .trim();
+}
+
 export const appointmentService = {
   /** Bác sĩ có lịch làm việc trong ngày cụ thể theo chuyên khoa (public). */
   async getAvailableDoctors(params: {
@@ -189,10 +213,10 @@ export const appointmentService = {
     return res.data;
   },
 
-  /** Tra cứu lịch hẹn theo mã (public). */
+/** Tra cứu lịch hẹn theo mã (public). */
   async getAppointmentByCode(code: string): Promise<AppointmentDetail> {
     const res = await apiClient.get<AppointmentDetail>(
-      `/appointment-booking/appointments/code/${encodeURIComponent(code)}`,
+      `/appointment-booking/appointments/code/${encodeURIComponent(normalizeAppointmentCode(code))}`,
     );
     return res.data;
   },

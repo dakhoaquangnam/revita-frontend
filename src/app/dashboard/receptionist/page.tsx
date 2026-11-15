@@ -177,7 +177,7 @@ export default function ReceptionistWorkspacePage() {
     } catch (err: any) {
       setSearchError(
         err.response?.status === 404
-          ? `Không tìm thấy lịch hẹn có mã ${q}. Kiểm tra lại mã vé.`
+          ? `Không tìm thấy lịch hẹn có mã ${q}. Kiểm tra lại mã vé (nên sao chép mã từ tin nhắn xác nhận thay vì gõ tay — có chữ trông giống hệt nhưng khác mã).`
           : err.response?.data?.message ||
               "Không tra cứu được lịch hẹn. Vui lòng thử lại.",
       );
