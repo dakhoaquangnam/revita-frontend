@@ -65,6 +65,25 @@ export const receptionistService = {
     return res.data;
   },
 
+  /** Phiên làm việc hiện tại của lễ tân đang đăng nhập (null nếu chưa mở quầy). */
+  async getCurrentCounter(): Promise<{
+    counterId: string;
+    counterCode: string;
+    counterName: string;
+  } | null> {
+    const res = await apiClient.get("/receptionists/counters/current");
+    return res.data || null;
+  },
+
+  /** Mở quầy cho ca làm việc (tạo phiên phân công ACTIVE). Backend chỉ cấp số
+   *  khi có phiên ACTIVE của lễ tân đang đăng nhập. */
+  async openCounter(counterId: string) {
+    const res = await apiClient.post("/receptionists/counters/open", {
+      counterId,
+    });
+    return res.data;
+  },
+
   /** Lấy hàng đợi bệnh nhân tại quầy */
   async getQueueSnapshot(counterId: string): Promise<QueueSnapshot> {
     const res = await apiClient.get<QueueSnapshot>(`/counter-assignment/queue/${counterId}`);

@@ -35,6 +35,7 @@ export default function ReceptionistWorkspacePage() {
   const [actionLoading, setActionLoading] = useState(false);
   const [countersError, setCountersError] = useState("");
   const [queueError, setQueueError] = useState("");
+  const [counterSessionError, setCounterSessionError] = useState("");
 
   // Tabs tiếp đón: 'APPOINTMENT' | 'WALK_IN'
   const [activeTab, setActiveTab] = useState<"APPOINTMENT" | "WALK_IN">("APPOINTMENT");
@@ -61,15 +62,41 @@ export default function ReceptionistWorkspacePage() {
   // Modal in phiếu tiếp nhận STT
   const [printedTicket, setPrintedTicket] = useState<any | null>(null);
 
+  // Mở quầy cho ca làm việc: backend chỉ cấp số khi có phiên phân công
+  // ACTIVE của lễ tân đang đăng nhập (POST /take-number/take tự chọn quầy
+  // theo phiên này, không nhận counterId từ frontend). Nếu mở quầy lỗi thì
+  // báo rõ ngay ở đây, không để tới lúc cấp số mới lộ ra bằng lỗi 404.
+  const openCounterSession = async (counterId: string) => {
+    try {
+      setCounterSessionError("");
+      await receptionistService.openCounter(counterId);
+      setActiveCounterId(counterId);
+    } catch (err: any) {
+      setCounterSessionError(
+        err.response?.data?.message ||
+          "Không mở được quầy tiếp nhận. Cấp số sẽ lỗi — kiểm tra lại rồi thử lại.",
+      );
+    }
+  };
+
   // Load danh sách quầy — lỗi thì báo lỗi, không tự bịa quầy giả.
   const fetchCounters = async () => {
     try {
       setCountersError("");
       const data = await receptionistService.getCounters();
       setCounters(data);
-      if (data.length > 0 && !activeCounterId) {
-        setActiveCounterId(data[0].counterId);
+      if (data.length === 0 || activeCounterId) return;
+      // Kiểm tra phiên đang mở trước để không tạo phiên mới mỗi lần tải lại trang.
+      try {
+        const current = await receptionistService.getCurrentCounter();
+        if (current?.counterId) {
+          setActiveCounterId(current.counterId);
+          return;
+        }
+      } catch {
+        // Chưa có phiên đang mở thì mở quầy đầu tiên bên dưới.
       }
+      await openCounterSession(data[0].counterId);
     } catch (err: any) {
       setCounters([]);
       setCountersError(
@@ -287,7 +314,10 @@ export default function ReceptionistWorkspacePage() {
 
       await fetchQueue(activeCounterId);
     } catch (err: any) {
-      alert("Lỗi khi cấp số: " + (err.message || "Kiểm tra kết nối"));
+      alert(
+        "Lỗi khi cấp số: " +
+          (err.response?.data?.message || err.message || "Kiểm tra kết nối"),
+      );
     } finally {
       setActionLoading(false);
     }
@@ -337,7 +367,11 @@ export default function ReceptionistWorkspacePage() {
             <button
               key={c.counterId}
               type="button"
-              onClick={() => setActiveCounterId(c.counterId)}
+              onClick={() => {
+                if (c.counterId !== activeCounterId) {
+                  void openCounterSession(c.counterId);
+                }
+              }}
               className={`px-3 py-1.5 rounded-[8px] text-xs font-bold transition-colors ${
                 activeCounterId === c.counterId
                   ? "bg-[#0f3e17] text-[#fffefc]"
@@ -351,10 +385,10 @@ export default function ReceptionistWorkspacePage() {
       </div>
 
       {/* Main Grid: Left = Current Calling Desk, Right = Reception Forms */}
-      {(countersError || queueError) && (
+      {(countersError || queueError || counterSessionError) && (
         <div className="p-3.5 rounded-[14px] bg-rose-50 border border-rose-200 text-rose-800 text-xs flex items-center gap-2">
           <AlertCircle className="w-4 h-4 text-rose-600 flex-shrink-0" />
-          <span>{countersError || queueError}</span>
+          <span>{counterSessionError || countersError || queueError}</span>
           <button
             type="button"
             onClick={() => {
