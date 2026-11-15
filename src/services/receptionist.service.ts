@@ -23,6 +23,7 @@ export interface QueuePatient {
   counterCode: string;
   counterName: string;
   assignedAt: string;
+  preparingAt?: string;
   status: "WAITING" | "PREPARING" | "SERVING" | "COMPLETED" | "SKIPPED";
   callCount: number;
   priorityScore?: number;

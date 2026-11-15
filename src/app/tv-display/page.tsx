@@ -196,13 +196,17 @@ export default function TvDisplayPage() {
   // Sự kiện gọi trực tiếp qua WebSocket là nguồn thật cho spotlight; poll
   // KHÔNG ghi đè spotlight nữa — trước đây poll kéo về người có assignedAt
   // mới nhất (CTR002-011) và át mất sự kiện vừa gọi (CTR003-001).
+  // Chọn theo lần gọi gần nhất: preparingAt (lúc gọi, được làm mới mỗi lần
+  // gọi lại), không phải assignedAt (lúc tạo vé) — nếu không TV tải lại sẽ
+  // hiện vé cũ gọi từ 22:28 thay vì vé vừa gọi lại lúc 23:47.
+  const callTime = (t: QueuePatient) => t.preparingAt || t.assignedAt;
   useEffect(() => {
     if (spotlight) return;
     let best: { t: QueuePatient; c: CounterItem } | null = null;
     for (const c of counters) {
       const cur = counterQueues[c.counterId]?.current;
       if (cur && cur.status === "SERVING" && isTodayTicket(cur)) {
-        if (!best || cur.assignedAt > best.t.assignedAt) {
+        if (!best || callTime(cur) > callTime(best.t)) {
           best = { t: cur, c };
         }
       }
@@ -214,7 +218,7 @@ export default function TvDisplayPage() {
       counterCode: best.t.counterCode || best.c.counterCode,
       counterName: best.t.counterName || best.c.counterName,
       roomName: "Sảnh Chính - Tầng 1",
-      calledAt: new Date(best.t.assignedAt).toLocaleTimeString("vi-VN"),
+      calledAt: new Date(callTime(best.t)).toLocaleTimeString("vi-VN"),
       isPriority: false,
     });
   }, [counterQueues, counters, spotlight]);
