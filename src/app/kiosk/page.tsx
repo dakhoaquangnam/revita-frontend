@@ -394,7 +394,7 @@ export default function KioskPage() {
                   <span className="eyebrow block text-[#0f3e17]/80">
                     Bước 1
                   </span>
-                  <h3 className="font-display-serif text-2xl tracking-tight text-[#0f3e17]">
+                  <h3 className="font-display-serif-medium text-3xl tracking-tight text-[#0c2f10]">
                     ĐÃ ĐẶT LỊCH TRƯỚC
                   </h3>
                   <p className="text-xs text-[#222222]/80 leading-relaxed">
@@ -414,7 +414,7 @@ export default function KioskPage() {
                   setMode("PRIORITY");
                   speakVoice("Mời Quý khách chọn đối tượng ưu tiên để lấy số tiếp đón nhanh.");
                 }}
-                className="group relative flex flex-col items-center justify-between p-8 rounded-[14px] bg-[#b1dbb8]/40 text-center transition-colors min-h-[360px]"
+                className="group relative flex flex-col items-center justify-between p-8 rounded-[14px] bg-[#b1dbb8] text-center transition-colors min-h-[360px]"
               >
                 <div className="w-20 h-20 rounded-[14px] bg-[#fffefc] flex items-center justify-center text-[#0f3e17] mb-4 group-hover:scale-105 transition-transform">
                   <Accessibility className="w-10 h-10" />
@@ -423,7 +423,7 @@ export default function KioskPage() {
                   <span className="eyebrow block text-[#0f3e17]/80">
                     Lối Đi Riêng
                   </span>
-                  <h3 className="font-display-serif text-2xl tracking-tight text-[#0f3e17]">
+                  <h3 className="font-display-serif-medium text-3xl tracking-tight text-[#0c2f10]">
                     LẤY SỐ ƯU TIÊN
                   </h3>
                   <p className="text-xs text-[#222222]/80 leading-relaxed">
@@ -443,7 +443,7 @@ export default function KioskPage() {
                   setMode("REGULAR");
                   speakVoice("Mời Quý khách chọn dịch vụ khám phục hồi chức năng.");
                 }}
-                className="group relative flex flex-col items-center justify-between p-8 rounded-[14px] bg-[#b6ced5]/40 text-center transition-colors min-h-[360px]"
+                className="group relative flex flex-col items-center justify-between p-8 rounded-[14px] bg-[#b6ced5] text-center transition-colors min-h-[360px]"
               >
                 <div className="w-20 h-20 rounded-[14px] bg-[#fffefc] flex items-center justify-center text-[#0f3e17] mb-4 group-hover:scale-105 transition-transform">
                   <UserCheck className="w-10 h-10" />
@@ -452,7 +452,7 @@ export default function KioskPage() {
                   <span className="eyebrow block text-[#0f3e17]/80">
                     Lần Đầu Khám
                   </span>
-                  <h3 className="font-display-serif text-2xl tracking-tight text-[#0f3e17]">
+                  <h3 className="font-display-serif-medium text-3xl tracking-tight text-[#0c2f10]">
                     KHÁM THƯỜNG
                   </h3>
                   <p className="text-xs text-[#222222]/80 leading-relaxed">
@@ -496,7 +496,7 @@ export default function KioskPage() {
               </div>
 
               {/* Input Display */}
-              <div className="p-4 rounded-[14px] bg-[#e1f4df]/30 border border-[#efeeeb] text-center font-display-serif text-3xl sm:text-4xl tracking-tight text-[#0f3e17] min-h-[72px] flex items-center justify-center">
+              <div className="p-4 rounded-[14px] bg-[#e1f4df] border border-[#efeeeb] text-center font-display-serif-medium text-4xl sm:text-5xl tracking-tight text-[#0f3e17] min-h-[72px] flex items-center justify-center">
                 {appointmentCodeInput || <span className="text-[#222222]/40 text-xl font-sans font-normal">Chạm các phím bên dưới...</span>}
               </div>
 
@@ -779,9 +779,9 @@ export default function KioskPage() {
                 </h3>
               </div>
 
-              <div className="text-center py-4 bg-[#e1f4df]/40 rounded-[14px]">
+              <div className="text-center py-4 bg-[#e1f4df] rounded-[14px]">
                 <div className="text-xs text-[#0f3e17] font-semibold">SỐ THỨ TỰ TIẾP ĐÓN</div>
-                <div className="font-display-serif text-5xl tracking-[-0.03em] text-[#0f3e17] my-1">
+                <div className="font-display-serif-medium text-6xl tracking-[-0.03em] text-[#0f3e17] my-1">
                   {ticketResult.queueNumber}
                 </div>
                 <div className="text-xs font-semibold text-[#0f3e17]/80">

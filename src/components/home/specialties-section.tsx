@@ -20,7 +20,7 @@ const CORE_REHAB_SPECIALTIES = [
     icon: Bone,
     description: "Trị liệu không phẫu thuật cho thoái hóa cột sống, đau thần kinh tọa, viêm quanh khớp vai, thoái hóa khớp gối bằng máy kéo giãn và bài tập cơ lõi.",
     tag: "Phổ biến",
-    cardTone: "bg-[#b1dbb8]/40", // Soft Sage
+    cardTone: "bg-[#b1dbb8]", // Soft Sage
   },
   {
     code: "POST_SURGERY",
@@ -28,7 +28,7 @@ const CORE_REHAB_SPECIALTIES = [
     icon: HeartHandshake,
     description: "Phục hồi tầm vận động sau mổ tái tạo dây chằng chéo (ACL), gãy xương, thay khớp háng, khớp gối nhân tạo.",
     tag: "Liệu trình 1:1",
-    cardTone: "bg-[#b6ced5]/50", // Slate Hush
+    cardTone: "bg-[#b6ced5]", // Slate Hush
   },
   {
     code: "HAND_OT",
@@ -52,7 +52,7 @@ const CORE_REHAB_SPECIALTIES = [
     icon: Heart,
     description: "Rèn luyện thể lực an toàn theo phân tầng nguy cơ tim mạch, phục hồi thông khí phổi sau bệnh phổi mạn tính (COPD).",
     tag: "Theo dõi Monitor",
-    cardTone: "bg-[#b1dbb8]/40", // Soft Sage
+    cardTone: "bg-[#b1dbb8]", // Soft Sage
   },
 ];
 
@@ -98,7 +98,7 @@ export function SpecialtiesSection() {
                     </span>
                   </div>
 
-                  <h3 className="text-xl font-display-serif text-[#0f3e17] mb-2.5">
+                  <h3 className="text-2xl font-display-serif-medium text-[#0c2f10] mb-2.5">
                     {spec.name}
                   </h3>
 

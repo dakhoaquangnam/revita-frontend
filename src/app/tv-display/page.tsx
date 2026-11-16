@@ -327,7 +327,7 @@ export default function TvDisplayPage() {
         <div className="lg:col-span-7 flex flex-col justify-between">
           <div
             className={`h-full rounded-[14px] p-8 sm:p-10 flex flex-col justify-between transition-colors ${
-              isFlashing ? "bg-[#b1dbb8]/60" : "bg-[#e1f4df]"
+              isFlashing ? "bg-[#b1dbb8]" : "bg-[#e1f4df]"
             }`}
           >
             {/* Top Indicator */}
@@ -358,14 +358,14 @@ export default function TvDisplayPage() {
               </div>
 
               <div
-                className={`font-display-serif text-7xl sm:text-8xl lg:text-9xl tracking-[-0.03em] leading-none text-[#0f3e17] transition-transform ${
+                className={`font-display-serif-medium text-8xl sm:text-8xl lg:text-9xl tracking-[-0.03em] leading-none text-[#0f3e17] transition-transform ${
                   isFlashing ? "scale-105" : ""
                 }`}
               >
                 {spotlight?.queueNumber ?? "—"}
               </div>
 
-              <div className="font-display-serif text-3xl sm:text-5xl text-[#0f3e17] tracking-[-0.01em] uppercase pt-2">
+              <div className="font-display-serif-medium text-4xl sm:text-6xl text-[#0f3e17] tracking-[-0.01em] uppercase pt-2">
                 {spotlight?.patientName ?? "Chưa có lượt gọi nào"}
               </div>
             </div>
@@ -479,7 +479,7 @@ export default function TvDisplayPage() {
 
             {/* Quick Rehab Reminder — Sage Feature Card: phẳng, không viền */}
             <div className="mt-4 p-5 rounded-[14px] bg-[#b1dbb8] text-xs space-y-1.5 text-[#0f3e17]">
-              <div className="font-display-serif text-lg leading-snug flex items-center gap-1.5">
+              <div className="font-display-serif-medium text-xl leading-snug flex items-center gap-1.5 text-[#0c2f10]">
                 <Heart className="w-4 h-4 text-[#0f3e17] flex-shrink-0" />
                 <span>Lưu ý Phục hồi chức năng</span>
               </div>

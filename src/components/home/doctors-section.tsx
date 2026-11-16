@@ -56,7 +56,8 @@ export function DoctorsSection() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {orderedDoctors.slice(0, 6).map((item, idx) => {
               const docInfo = item.doctor;
-              const cardBg = idx % 3 === 0 ? "bg-[#fffefc]" : idx % 3 === 1 ? "bg-[#e1f4df]/30" : "bg-[#b6ced5]/20";
+              const cardBg = idx % 3 === 0 ? "bg-[#fffefc]" : idx % 3 === 1 ? "bg-[#e1f4df]" : "bg-[#b6ced5]";
+              const isTintedCard = cardBg !== "bg-[#fffefc]";
               return (
                 <div
                   key={item.id}
@@ -80,7 +81,7 @@ export function DoctorsSection() {
                           </div>
                         </div>
 
-                        <h3 className="text-lg font-display-serif text-[#0f3e17] mt-1.5 truncate">
+                        <h3 className={`mt-1.5 truncate ${isTintedCard ? "text-xl font-display-serif-medium text-[#0c2f10]" : "text-lg font-display-serif text-[#0f3e17]"}`}>
                           BS. {item.name}
                         </h3>
 

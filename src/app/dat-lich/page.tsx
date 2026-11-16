@@ -451,7 +451,7 @@ export default function DatLichPage() {
                           }}
                           className={`cursor-pointer p-4 rounded-[14px] border transition-colors flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${
                             selectedServiceId === srv.serviceId
-                              ? "bg-[#e1f4df]/60 border-[#efeeeb]"
+                              ? "bg-[#e1f4df] border-[#efeeeb]"
                               : "bg-[#fffefc] border-[#efeeeb] hover:bg-[#efeeeb]/30"
                           }`}
                         >
@@ -467,7 +467,7 @@ export default function DatLichPage() {
                             )}
                           </div>
                           <div className="text-right sm:shrink-0">
-                            <span className="text-base font-display-serif text-[#0f3e17]">
+                            <span className="text-lg font-display-serif-medium text-[#0f3e17]">
                               {srv.price != null ? `${srv.price.toLocaleString("vi-VN")} đ` : "Liên hệ"}
                             </span>
                           </div>

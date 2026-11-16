@@ -231,7 +231,7 @@ export function BookingSection() {
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
             {/* Left Info */}
             <div className="lg:col-span-5 space-y-6">
-              <h2 className="text-3xl sm:text-4xl font-display-serif text-[#0f3e17] tracking-[-0.01em] leading-tight">
+              <h2 className="text-4xl sm:text-5xl font-display-serif-medium text-[#0c2f10] tracking-[-0.01em] leading-tight">
                 Đặt lịch Khám lượng giá & Tư vấn phác đồ
               </h2>
 
@@ -282,11 +282,11 @@ export function BookingSection() {
                     đã được ghi vào hệ thống. Nhân viên y tế sẽ gọi điện thoại tới số{" "}
                     <strong>{formData.phone}</strong> để xác nhận trong ít phút.
                   </p>
-                  <div className="bg-[#e1f4df]/40 px-4 py-3 rounded-[14px] border border-[#efeeeb] inline-flex flex-col items-center gap-1">
+                  <div className="bg-[#e1f4df] px-4 py-3 rounded-[14px] border border-[#efeeeb] inline-flex flex-col items-center gap-1">
                     <span className="eyebrow text-[#0f3e17]/70">
                       Mã vé hẹn
                     </span>
-                    <span className="text-2xl font-display-serif tracking-widest text-[#0f3e17]">
+                    <span className="text-3xl font-display-serif-medium tracking-widest text-[#0f3e17]">
                       {ticket.appointmentCode}
                     </span>
                     <button

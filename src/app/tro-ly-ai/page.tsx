@@ -146,7 +146,7 @@ export default function TroLyAiPage() {
               </div>
               <div>
                 <div className="flex items-center gap-2.5">
-                  <h1 className="text-base sm:text-lg font-display-serif text-[#0f3e17] whitespace-nowrap">
+                  <h1 className="text-lg sm:text-xl font-display-serif-medium text-[#0c2f10] whitespace-nowrap">
                     Hỏi đáp
                   </h1>
                   <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold bg-[#0f3e17] text-[#e1f4df] px-2.5 py-0.5 rounded-full border border-transparent shrink-0">

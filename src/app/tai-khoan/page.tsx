@@ -694,7 +694,7 @@ export default function TaiKhoanPage() {
               {/* Patient Identity Profile Card */}
               <div className="bg-[#fffefc] rounded-[14px] p-6 sm:p-8 border border-[#efeeeb] flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
                 <div className="flex items-center gap-5">
-                  <div className="w-16 h-16 rounded-[14px] bg-[#e1f4df] text-[#0f3e17] flex items-center justify-center font-display-serif text-2xl">
+                  <div className="w-16 h-16 rounded-[14px] bg-[#e1f4df] text-[#0f3e17] flex items-center justify-center font-display-serif-medium text-3xl">
                     {currentUser?.name?.charAt(0) || "P"}
                   </div>
                   <div className="space-y-1">
@@ -938,21 +938,21 @@ export default function TaiKhoanPage() {
                               </p>
                             )}
                             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
-                              <div className="p-3 bg-[#e1f4df]/40 rounded-[14px]">
+                              <div className="p-3 bg-[#e1f4df] rounded-[14px]">
                                 <span className="text-[#222222]/70">Thang điểm FIM</span>
-                                <p className="font-display-serif text-xl tracking-tight text-[#0f3e17]">
+                                <p className="font-display-serif-medium text-2xl tracking-tight text-[#0f3e17]">
                                   {fimTotal != null ? `${fimTotal} / 126` : "—"}
                                 </p>
                               </div>
-                              <div className="p-3 bg-[#b6ced5]/30 rounded-[14px]">
+                              <div className="p-3 bg-[#b6ced5] rounded-[14px]">
                                 <span className="text-[#222222]/70">Mức đau (VAS)</span>
-                                <p className="font-display-serif text-xl tracking-tight text-[#0f3e17]">
+                                <p className="font-display-serif-medium text-2xl tracking-tight text-[#0f3e17]">
                                   {content.painScale != null ? `${content.painScale} / 10` : "—"}
                                 </p>
                               </div>
-                              <div className="p-3 bg-[#b1dbb8]/30 rounded-[14px]">
+                              <div className="p-3 bg-[#b1dbb8] rounded-[14px]">
                                 <span className="text-[#222222]/70">Số đo ROM</span>
-                                <p className="font-display-serif text-xl tracking-tight text-[#0f3e17]">
+                                <p className="font-display-serif-medium text-2xl tracking-tight text-[#0f3e17]">
                                   {romList.length > 0 ? `${romList.length} khớp` : "—"}
                                 </p>
                               </div>

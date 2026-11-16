@@ -175,7 +175,7 @@ function PostCard({ post, featured }: { post: PostItem; featured?: boolean }) {
     <Link
       href={`/bai-viet/${post.slug}`}
       className={`block bg-[#fffefc] rounded-[14px] border p-5 sm:p-6 ${
-        featured ? "border-[#efeeeb] bg-[#e1f4df]/30" : "border-[#efeeeb]"
+        featured ? "border-[#efeeeb] bg-[#e1f4df]" : "border-[#efeeeb]"
       }`}
     >
       {post.coverImage && (
@@ -200,7 +200,7 @@ function PostCard({ post, featured }: { post: PostItem; featured?: boolean }) {
           {formatDate(post.createdAt)}
         </span>
       </div>
-      <h3 className="font-display-serif text-[#0f3e17] text-lg leading-snug hover:underline">
+      <h3 className={`leading-snug hover:underline ${featured ? "font-display-serif-medium text-[#0c2f10] text-xl" : "font-display-serif text-[#0f3e17] text-lg"}`}>
         {post.title}
       </h3>
       {post.summary && (

@@ -183,9 +183,9 @@ function BaiVietDetailContent() {
               )}
 
               {/* CTA đặt lịch */}
-              <div className="mt-10 p-6 rounded-[14px] bg-[#e1f4df]/50 border border-[#efeeeb] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div className="mt-10 p-6 rounded-[14px] bg-[#e1f4df] border border-[#efeeeb] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
-                  <h2 className="font-display-serif text-[#0f3e17]">Cần tư vấn phục hồi chức năng?</h2>
+                  <h2 className="font-display-serif-medium text-[#0c2f10] text-lg">Cần tư vấn phục hồi chức năng?</h2>
                   <p className="text-xs text-[#222222]/70 mt-1">
                     Đặt lịch khám 1:1 với Bác sĩ Thanh Sang tại 193 Quang Trung, Đại Lộc, Đà Nẵng.
                   </p>

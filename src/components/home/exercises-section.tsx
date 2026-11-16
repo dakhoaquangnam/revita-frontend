@@ -33,7 +33,7 @@ const HOME_REHAB_EXERCISES = [
     summary:
       "Động tác ưỡn lưng McKenzie giúp đẩy nhân đệm về trung tâm, phối hợp bài tập Bird-Dog và Deadbug gia cố hệ thống cơ sàn chậu và cơ ngang bụng.",
     highlight: "Giảm chèn ép rễ thần kinh",
-    tone: "bg-[#b1dbb8]/40", // Sage Mist
+    tone: "bg-[#b1dbb8]", // Sage Mist
   },
   {
     id: "ex-knee-acl",
@@ -45,7 +45,7 @@ const HOME_REHAB_EXERCISES = [
     summary:
       "Rèn luyện gồng cơ tĩnh tứ đầu đùi (Quad sets), nâng chân thẳng có nẹp, trượt gót chân trên giường để đạt góc gập 90 độ an toàn.",
     highlight: "Chống teo cơ đùi",
-    tone: "bg-[#b6ced5]/50", // Slate Hush
+    tone: "bg-[#b6ced5]", // Slate Hush
   },
   {
     id: "ex-neck-shoulder",
@@ -119,7 +119,7 @@ export function ExercisesSection() {
                   </div>
                 </div>
 
-                <h3 className="text-xl font-display-serif text-[#0f3e17] leading-snug">
+                <h3 className="text-2xl font-display-serif-medium text-[#0c2f10] leading-snug">
                   {exercise.title}
                 </h3>
 
