@@ -10,7 +10,7 @@ const REHAB_STEPS = [
     description:
       "Bác sĩ chuyên khoa trực tiếp đo tầm vận động khớp (ROM), cơ lực (MMT), kiểm tra thăng bằng, phản xạ thần kinh và chấm điểm thang FIM / Barthel.",
     icon: ClipboardList,
-    bgClass: "bg-[#e1f4df] border-[#efeeeb]",
+    bgClass: "bg-[#d2edcb] border-[#efeeeb]",
     accentPill: "bg-[#0f3e17] text-[#fffefc]",
   },
   {
@@ -20,7 +20,7 @@ const REHAB_STEPS = [
     description:
       "Lập kế hoạch trị liệu theo từng tuần: Kiểm soát cơn đau, phục hồi chức năng vận động cơ bản và tiến tới tự chủ trong sinh hoạt cá nhân.",
     icon: Stethoscope,
-    bgClass: "bg-[#b1dbb8]/40 border-[#efeeeb]",
+    bgClass: "bg-[#b1dbb8] border-[#efeeeb]",
     accentPill: "bg-[#0f3e17] text-[#fffefc]",
   },
   {
@@ -30,7 +30,7 @@ const REHAB_STEPS = [
     description:
       "Kỹ thuật di động khớp bằng tay (Manual Therapy) kết hợp dàn máy hiện đại: Sóng xung kích Shockwave, Máy kéo giãn cột sống tự động, Laser công suất cao.",
     icon: Dumbbell,
-    bgClass: "bg-[#b6ced5]/40 border-[#efeeeb]",
+    bgClass: "bg-[#b6ced5] border-[#efeeeb]",
     accentPill: "bg-[#0f3e17] text-[#fffefc]",
   },
   {
@@ -40,7 +40,7 @@ const REHAB_STEPS = [
     description:
       "Lượng giá định kỳ sau mỗi 5 - 10 buổi. Hướng dẫn chi tiết bài tập tại nhà và cách chỉnh tư thế đúng để ngăn ngừa bệnh tái phát.",
     icon: Award,
-    bgClass: "bg-[#cfe7d3]/40 border-[#efeeeb]",
+    bgClass: "bg-[#cfe7d3] border-[#efeeeb]",
     accentPill: "bg-[#0f3e17] text-[#fffefc]",
   },
 ];
@@ -69,7 +69,7 @@ export function RehabProcessSection() {
               >
                 <div>
                   <div className="flex items-center justify-between mb-6">
-                    <span className="text-3xl font-display-serif text-[#0f3e17]/30 tracking-tight">
+                    <span className="text-4xl font-display-serif font-medium text-[#0f3e17] tracking-tight">
                       {item.step}
                     </span>
                     <div className="w-12 h-12 rounded-[14px] bg-[#fffefc] text-[#0f3e17] flex items-center justify-center border border-[#efeeeb]">
@@ -77,7 +77,7 @@ export function RehabProcessSection() {
                     </div>
                   </div>
 
-                  <h3 className="text-lg font-display-serif text-[#0f3e17]">
+                  <h3 className="text-lg font-display-serif font-medium text-[#0f3e17]">
                     {item.title}
                   </h3>
                   <p className="text-xs font-medium text-[#0f3e17]/70 mt-0.5">
@@ -99,9 +99,9 @@ export function RehabProcessSection() {
         </div>
 
         {/* Call to action card */}
-        <div className="mt-12 p-8 rounded-[14px] bg-[#e1f4df] border border-[#efeeeb] flex flex-col sm:flex-row items-center justify-between gap-6">
+        <div className="mt-12 p-8 rounded-[14px] bg-[#d2edcb] border border-[#efeeeb] flex flex-col sm:flex-row items-center justify-between gap-6">
           <div>
-            <h3 className="text-xl font-display-serif text-[#0f3e17]">
+            <h3 className="text-xl font-display-serif font-medium text-[#0f3e17]">
               Cần tư vấn trực tiếp lộ trình phục hồi phù hợp với bạn?
             </h3>
             <p className="text-sm text-[#222222]/80 mt-1">

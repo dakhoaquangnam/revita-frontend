@@ -14,10 +14,12 @@ const beVietnamPro = Be_Vietnam_Pro({
 
 // DESIGN.md (Ease Health): Faire Octave weight 300 cho mọi tiêu đề hiển thị;
 // Cormorant Garamond là bản thay thế được chỉ định, có subset tiếng Việt.
+// Weight 500 thêm theo yêu cầu của anh 16/11: số bước + tiêu đề thẻ ở mục
+// Quy trình cần đậm hơn (font-medium) để nổi trên nền màu nhạt.
 const displaySerif = Cormorant_Garamond({
   variable: "--font-display-serif",
   subsets: ["latin", "vietnamese"],
-  weight: ["300"],
+  weight: ["300", "500"],
   display: "swap",
 });
 
