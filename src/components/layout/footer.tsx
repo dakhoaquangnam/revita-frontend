@@ -70,7 +70,7 @@ export function Footer() {
               </li>
               <li>
                 <Link href="#chuyen-khoa" className="hover:text-[#fffefc] transition-colors">
-                  Phục hồi sau Phẫu thuật Dây chằng (ACL)
+                  Phục hồi sau Phẫu thuật Dây chằng
                 </Link>
               </li>
               <li>
@@ -81,7 +81,7 @@ export function Footer() {
               <li>
                 <Link href="/tro-ly-ai" className="hover:text-[#fffefc] transition-colors inline-flex items-center gap-1.5 text-[#e1f4df]">
                   <Bot className="w-3.5 h-3.5" />
-                  <span>Hỏi Bác sĩ AI (Tư vấn 24/7)</span>
+                  <span>Hỏi Bác sĩ AI</span>
                 </Link>
               </li>
             </ul>

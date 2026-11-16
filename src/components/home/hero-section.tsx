@@ -41,7 +41,7 @@ export function HeroSection() {
                   href="/tro-ly-ai"
                   className="inline-flex items-center justify-center gap-2 bg-[#fffefc] hover:bg-[#fffefc]/80 text-[#0f3e17] font-medium text-[15px] px-6 py-3 rounded-[14px] border border-[#efeeeb] transition-colors"
                 >
-                  <span>Hỏi Bác sĩ AI (24/7)</span>
+                  <span>Hỏi Bác sĩ AI</span>
                   <ArrowRight className="w-4 h-4 text-[#0f3e17]" />
                 </Link>
               </div>

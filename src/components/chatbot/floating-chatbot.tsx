@@ -32,7 +32,7 @@ function getLocalRehabAdvice(question: string): { reply: string; suggestBooking:
   if (q.includes("tai biến") || q.includes("đột quỵ") || q.includes("liệt")) {
     return {
       reply:
-        "Với người bệnh sau đột quỵ/tai biến, giai đoạn 3-6 tháng đầu là 'thời gian vàng' để phục hồi tính mềm dẻo của hệ thần kinh. Tại nhà, người nhà nên hỗ trợ tập kéo giãn ngón tay nhẹ nhàng, ức chế mẫu co cứng gấp và tập bài bắc cầu (Bridge) trên giường. Tuyệt đối không kéo giật tay bên liệt khi đỡ dậy. Bác sĩ Thanh Sang khuyến nghị người bệnh nên được lượng giá cơ lực định kỳ để điều chỉnh bài tập.",
+        "Với người bệnh sau đột quỵ/tai biến, giai đoạn 3-6 tháng đầu là 'thời gian vàng' để phục hồi tính mềm dẻo của hệ thần kinh. Tại nhà, người nhà nên hỗ trợ tập kéo giãn ngón tay nhẹ nhàng, ức chế mẫu co cứng gấp và tập bài bắc cầu trên giường. Tuyệt đối không kéo giật tay bên liệt khi đỡ dậy. Bác sĩ Thanh Sang khuyến nghị người bệnh nên được lượng giá cơ lực định kỳ để điều chỉnh bài tập.",
       suggestBooking: true,
     };
   }
@@ -40,7 +40,7 @@ function getLocalRehabAdvice(question: string): { reply: string; suggestBooking:
   if (q.includes("thoát vị") || q.includes("đau lưng") || q.includes("cột sống") || q.includes("thần kinh tọa")) {
     return {
       reply:
-        "Đau lưng hoặc thoát vị đĩa đệm (L4-L5, L5-S1) thường do áp lực đĩa đệm chèn ép rễ thần kinh tọa. Tại nhà, bạn nên tập chuỗi bài tập McKenzie (ưỡn ngực nằm sấp) và bài tập Bird-Dog để gia cố khối cơ lõi bảo vệ cột sống. Tránh cúi gập lưng bê vật nặng hoặc xoay vặn người đột ngột. Nếu tê bì lan xuống bàn chân, bạn nên đến phòng khám Bác sĩ Thanh Sang để đo độ chèn ép và kéo giãn giảm áp.",
+        "Đau lưng hoặc thoát vị đĩa đệm thường do áp lực đĩa đệm chèn ép rễ thần kinh tọa. Tại nhà, bạn nên tập chuỗi bài tập McKenzie và bài tập Bird-Dog để gia cố khối cơ lõi bảo vệ cột sống. Tránh cúi gập lưng bê vật nặng hoặc xoay vặn người đột ngột. Nếu tê bì lan xuống bàn chân, bạn nên đến phòng khám Bác sĩ Thanh Sang để đo độ chèn ép và kéo giãn giảm áp.",
       suggestBooking: true,
     };
   }
@@ -48,7 +48,7 @@ function getLocalRehabAdvice(question: string): { reply: string; suggestBooking:
   if (q.includes("dây chằng") || q.includes("gối") || q.includes("acl") || q.includes("mổ")) {
     return {
       reply:
-        "Sau mổ tái tạo dây chằng chéo trước (ACL), mục tiêu hàng đầu tuần 2-6 là đạt duỗi thẳng gối 0 độ và gập gối 90 độ, đồng thời gồng cơ tĩnh tứ đầu đùi (Quad sets) đều đặn để chống teo cơ. Khi đi lại cần khóa nẹp gối đúng hướng dẫn và kết hợp di động xương bánh chè chống dính khớp.",
+        "Sau mổ tái tạo dây chằng chéo trước, mục tiêu hàng đầu tuần 2-6 là đạt duỗi thẳng gối 0 độ và gập gối 90 độ, đồng thời gồng cơ tĩnh tứ đầu đùi đều đặn để chống teo cơ. Khi đi lại cần khóa nẹp gối đúng hướng dẫn và kết hợp di động xương bánh chè chống dính khớp.",
       suggestBooking: true,
     };
   }
@@ -56,7 +56,7 @@ function getLocalRehabAdvice(question: string): { reply: string; suggestBooking:
   if (q.includes("cổ") || q.includes("vai gáy") || q.includes("văn phòng")) {
     return {
       reply:
-        "Đau mỏi cổ vai gáy thường do co thắt cơ thang trên và tư thế đầu đưa ra trước. Động tác hữu hiệu là 'Thụt cằm' (Chin Tuck): ngồi thẳng lưng, dùng ngón tay ấn cằm thụt nhẹ về sau, giữ 5 giây rồi thả lỏng, lặp lại 10 lần mỗi ngày kết hợp nâng màn hình ngang tầm mắt.",
+        "Đau mỏi cổ vai gáy thường do co thắt cơ thang trên và tư thế đầu đưa ra trước. Động tác hữu hiệu là 'Thụt cằm': ngồi thẳng lưng, dùng ngón tay ấn cằm thụt nhẹ về sau, giữ 5 giây rồi thả lỏng, lặp lại 10 lần mỗi ngày kết hợp nâng màn hình ngang tầm mắt.",
       suggestBooking: false,
     };
   }
@@ -79,7 +79,7 @@ function getLocalRehabAdvice(question: string): { reply: string; suggestBooking:
 
   return {
     reply:
-      "Cảm ơn bạn đã chia sẻ. Tình trạng vận động của bạn cần được kiểm tra tầm vận động khớp (ROM) và cơ lực cụ thể để đưa ra phác đồ chính xác. Bạn có thể mô tả kỹ hơn vùng đau hoặc đăng ký buổi khám lượng giá cùng Bác sĩ Thanh Sang.",
+      "Cảm ơn bạn đã chia sẻ. Tình trạng vận động của bạn cần được kiểm tra tầm vận động khớp và cơ lực cụ thể để đưa ra phác đồ chính xác. Bạn có thể mô tả kỹ hơn vùng đau hoặc đăng ký buổi khám lượng giá cùng Bác sĩ Thanh Sang.",
     suggestBooking: true,
   };
 }
@@ -94,7 +94,7 @@ export function FloatingChatbot() {
     {
       id: "msg-welcome",
       sender: "ai",
-      text: "Xin chào! Tôi là Trợ lý AI Phục hồi chức năng • Phòng khám Bác sĩ Thanh Sang (193 Quang Trung, Đại Lộc, Đà Nẵng). Bạn hoặc người thân đang gặp khó khăn gì về vận động hay đau nhức? Hãy nhắn cho tôi nhé!",
+      text: "Xin chào! Tôi là Trợ lý AI Phục hồi chức năng • Phòng khám Bác sĩ Thanh Sang. Bạn hoặc người thân đang gặp khó khăn gì về vận động hay đau nhức? Hãy nhắn cho tôi nhé!",
       time: "Vừa xong",
     },
   ]);

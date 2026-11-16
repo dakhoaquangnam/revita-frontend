@@ -182,7 +182,7 @@ export default function PostsManagementPage() {
           showError(
             "Đã tạo bản nháp nhưng chưa lưu được nội dung: " +
               errorMessage(updateErr) +
-              " (mở lại bài nháp để sửa tiếp).",
+              ".",
           );
           setIsModalOpen(false);
           await loadData();

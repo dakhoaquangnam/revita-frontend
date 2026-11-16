@@ -1195,7 +1195,7 @@ export default function ReceptionistWorkspacePage() {
                 }`}
               >
                 <QrCode className="w-4 h-4" />
-                <span>1. Bệnh nhân hẹn trước (Check-in QR)</span>
+                <span>1. Bệnh nhân hẹn trước</span>
               </button>
 
               <button
@@ -1503,13 +1503,13 @@ export default function ReceptionistWorkspacePage() {
 
                   <div>
                     <label className="block text-xs font-semibold text-[#0f3e17] mb-1">
-                      Dị ứng thuốc / thức ăn (nếu có)
+                      Dị ứng thuốc / thức ăn
                     </label>
                     <input
                       type="text"
                       value={walkInAllergies}
                       onChange={(e) => setWalkInAllergies(e.target.value)}
-                      placeholder="Ví dụ: Penicillin — nổi mề đay 2023 (để trống nếu không có)"
+                      placeholder="Ví dụ: Penicillin — nổi mề đay 2023"
                       className="w-full px-3.5 py-2.5 bg-[#fffefc] border border-[#efeeeb] rounded-[14px] text-xs text-[#222222] placeholder-[#222222]/40 focus:outline-none focus:border-[#0f3e17]"
                     />
                   </div>
@@ -1538,7 +1538,7 @@ export default function ReceptionistWorkspacePage() {
                         onChange={(e) => setWalkInIsElderly(e.target.checked)}
                         className="rounded border-[#efeeeb] text-[#0f3e17] focus:ring-[#0f3e17]"
                       />
-                      <span>Người già (≥ 75t)</span>
+                      <span>Người già</span>
                     </label>
 
                     <label className="flex items-center gap-2 cursor-pointer text-[#222222]">

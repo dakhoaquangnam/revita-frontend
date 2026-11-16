@@ -270,7 +270,7 @@ export default function CashierWorkspacePage() {
                 type="text"
                 value={scanCode}
                 onChange={(e) => setScanCode(e.target.value)}
-                placeholder="Nhập mã phiếu chỉ định (RX-...)"
+                placeholder="Nhập mã phiếu chỉ định"
                 className="w-full pl-10 pr-3.5 py-2.5 bg-[#fffefc] border border-[#efeeeb] rounded-[14px] text-xs text-[#222222] placeholder-[#222222]/40 focus:outline-none focus:border-[#0f3e17]"
               />
             </div>
@@ -445,7 +445,7 @@ export default function CashierWorkspacePage() {
                   </div>
                   {activeBill.totalDiscountAmount > 0 && (
                     <div className="flex justify-between text-[#0f3e17] font-semibold">
-                      <span>Giảm giá (khuyến mãi / tích lũy):</span>
+                      <span>Giảm giá:</span>
                       <span className="">
                         - {activeBill.totalDiscountAmount.toLocaleString("vi-VN")} đ
                       </span>

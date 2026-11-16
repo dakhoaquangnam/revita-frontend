@@ -237,7 +237,7 @@ export default function ExerciseForm({ rows, onChange, savedExpCode }: ExerciseF
                 type="text"
                 value={row.note ?? ""}
                 onChange={(e) => updateRow(row.exerciseId, { note: e.target.value || undefined })}
-                placeholder="Ghi chú riêng cho bài này (nếu có)"
+                placeholder="Ghi chú riêng cho bài này"
                 className={inputCls}
               />
             </div>

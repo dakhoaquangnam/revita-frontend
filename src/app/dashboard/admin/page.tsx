@@ -22,7 +22,7 @@ const INITIAL_SERVICES: ServicePriceItem[] = [
   {
     id: "srv-01",
     code: "LG-01",
-    name: "Khám & Lượng giá Chức năng Ban đầu (Thang điểm FIM & Thước đo ROM)",
+    name: "Khám & Lượng giá Chức năng Ban đầu",
     category: "ASSESSMENT",
     durationMinutes: 45,
     price: 200000,
@@ -67,7 +67,7 @@ const INITIAL_SERVICES: ServicePriceItem[] = [
   {
     id: "srv-06",
     code: "HD-01",
-    name: "Hoạt động trị liệu phục hồi chức năng bàn tay và sinh hoạt hàng ngày (ADL)",
+    name: "Hoạt động trị liệu phục hồi chức năng bàn tay và sinh hoạt hàng ngày",
     category: "OCCUPATIONAL",
     durationMinutes: 45,
     price: 250000,
@@ -76,7 +76,7 @@ const INITIAL_SERVICES: ServicePriceItem[] = [
   {
     id: "srv-07",
     code: "AN-01",
-    name: "Âm ngữ trị liệu (ST) phục hồi phát âm & nuốt nghẹn sau đột quỵ",
+    name: "Âm ngữ trị liệu phục hồi phát âm & nuốt nghẹn sau đột quỵ",
     category: "SPEECH",
     durationMinutes: 45,
     price: 300000,
@@ -118,7 +118,7 @@ const INITIAL_STAFF: StaffScheduleItem[] = [
     role: "TECHNICIAN",
     specialty: "Kỹ thuật viên Điện trị liệu & Sóng ngắn",
     shift: "MORNING",
-    assignedRoom: "ROOM-102: Vật lý trị liệu (Điện xung / Sóng ngắn)",
+    assignedRoom: "ROOM-102: Vật lý trị liệu",
     status: "BUSY",
   },
   {
@@ -322,7 +322,7 @@ export default function AdminWorkspacePage() {
                     { week: "Tuần 1", rev: 82.5, percent: "65%" },
                     { week: "Tuần 2", rev: 94.0, percent: "75%" },
                     { week: "Tuần 3", rev: 98.5, percent: "82%" },
-                    { week: "Tuần 4 (HT)", rev: 110.0, percent: "92%" },
+                    { week: "Tuần 4", rev: 110.0, percent: "92%" },
                   ].map((item, idx) => (
                     <div key={idx} className="flex-1 flex flex-col items-center gap-2 h-full justify-end group">
                       <span className="text-[11px] font-semibold text-[#0f3e17] transition-colors">
@@ -364,7 +364,7 @@ export default function AdminWorkspacePage() {
 
                   <div>
                     <div className="flex justify-between text-[#222222] mb-1">
-                      <span>Vật lý trị liệu Giảm đau (Điện xung, Sóng ngắn, Kéo giãn)</span>
+                      <span>Vật lý trị liệu Giảm đau</span>
                       <strong className="text-[#0f3e17]">28% (107.8M)</strong>
                     </div>
                     <div className="w-full bg-[#efeeeb] rounded-full h-2">
@@ -374,7 +374,7 @@ export default function AdminWorkspacePage() {
 
                   <div>
                     <div className="flex justify-between text-[#222222] mb-1">
-                      <span>Khám Lượng giá Ban đầu (FIM / ROM)</span>
+                      <span>Khám Lượng giá Ban đầu</span>
                       <strong className="text-[#0f3e17]">18% (69.3M)</strong>
                     </div>
                     <div className="w-full bg-[#efeeeb] rounded-full h-2">
@@ -394,7 +394,7 @@ export default function AdminWorkspacePage() {
                 </div>
 
                 <div className="p-3.5 rounded-[14px] bg-[#e1f4df]/40 border border-[#efeeeb] text-[11px] text-[#0f3e17] leading-relaxed">
-                  💡 <strong>Gợi ý vận hành:</strong> Dịch vụ tập tai biến 1:1 có biên lợi nhuận và mức độ gắn kết tái khám cao nhất (trung bình 12 buổi/liệu trình).
+                  💡 <strong>Gợi ý vận hành:</strong> Dịch vụ tập tai biến 1:1 có biên lợi nhuận và mức độ gắn kết tái khám cao nhất.
                 </div>
               </div>
             </div>
@@ -644,7 +644,7 @@ export default function AdminWorkspacePage() {
                     <strong>107.800.000 đ (28%)</strong>
                   </div>
                   <div className="flex justify-between">
-                    <span>• Khám & Lượng giá Ban đầu (FIM / ROM):</span>
+                    <span>• Khám & Lượng giá Ban đầu:</span>
                     <strong>69.300.000 đ (18%)</strong>
                   </div>
                   <div className="flex justify-between">

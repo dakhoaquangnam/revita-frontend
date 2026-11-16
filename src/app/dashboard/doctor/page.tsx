@@ -413,7 +413,7 @@ export default function DoctorWorkspacePage() {
     setCallError("");
     if (!myRoomId) {
       setCallError(
-        "Chưa xác định được phòng trực của bạn (không thấy ca làm việc hôm nay). Kiểm tra ca trực rồi thử lại.",
+        "Chưa xác định được phòng trực của bạn. Kiểm tra ca trực rồi thử lại.",
       );
       return;
     }
@@ -739,7 +739,7 @@ export default function DoctorWorkspacePage() {
                 ? "Đang gọi bệnh nhân..."
                 : isCallingAudio
                   ? "Đang phát loa gọi bệnh nhân..."
-                  : "Mời bệnh nhân tiếp theo (Loa TV)"}
+                  : "Mời bệnh nhân tiếp theo"}
             </span>
           </button>
         </div>
@@ -819,13 +819,13 @@ export default function DoctorWorkspacePage() {
               <div className="text-[#222222]/80 flex items-center justify-between">
                 <span>Dị vật kim loại / Nẹp vít:</span>
                 <strong className={currentPatient.metalImplant ? "text-amber-800" : "text-[#0f3e17]"}>
-                  {currentPatient.metalImplant ? "Có (Chống chỉ định Sóng ngắn)" : "Không có"}
+                  {currentPatient.metalImplant ? "Có" : "Không có"}
                 </strong>
               </div>
               <div className="text-[#222222]/80 flex items-center justify-between">
-                <span>Máy tạo nhịp tim (Pacemaker):</span>
+                <span>Máy tạo nhịp tim:</span>
                 <strong className={currentPatient.pacemaker ? "text-rose-700" : "text-[#0f3e17]"}>
-                  {currentPatient.pacemaker ? "Có (Cấm điện xung TENS)" : "Không có"}
+                  {currentPatient.pacemaker ? "Có" : "Không có"}
                 </strong>
               </div>
             </div>
@@ -865,7 +865,7 @@ export default function DoctorWorkspacePage() {
                     {" · "}
                     {completionCheck.hasDischargeAssessment
                       ? "✓ Đã có đánh giá kết thúc đợt"
-                      : "✗ Chưa có đánh giá kết thúc đợt (DISCHARGE)"}
+                      : "✗ Chưa có đánh giá kết thúc đợt"}
                   </p>
                   {completionCheck.unfinishedServices.length > 0 && (
                     <ul className="text-[#222222]/70 space-y-0.5">
@@ -915,7 +915,7 @@ export default function DoctorWorkspacePage() {
                         onClick={() => void handleCompleteIntervention(true)}
                         className="px-4 py-2 rounded-[14px] bg-amber-600 text-[#fffefc] font-semibold disabled:opacity-40"
                       >
-                        {completeBusy ? "Đang lưu..." : "Xác nhận hoàn thành (có lý do)"}
+                        {completeBusy ? "Đang lưu..." : "Xác nhận hoàn thành"}
                       </button>
                     </div>
                   )}
@@ -1046,7 +1046,7 @@ export default function DoctorWorkspacePage() {
                         type="text"
                         value={allergyDraft}
                         onChange={(e) => setAllergyDraft(e.target.value)}
-                        placeholder="Ví dụ: Penicillin — nổi mề đay 2023 (để trống nếu không có)"
+                        placeholder="Ví dụ: Penicillin — nổi mề đay 2023"
                         className="flex-1 px-3 py-2 rounded-[14px] bg-[#fffefc] border border-[#efeeeb] text-xs text-[#222222] focus:outline-none focus:border-[#0f3e17]"
                       />
                       <button
@@ -1424,7 +1424,7 @@ export default function DoctorWorkspacePage() {
                     <div className="text-[11px] text-[#222222]/50 mt-1">
                       Ngày kê: {new Date().toLocaleDateString("vi-VN")} •{" "}
                       {savedMp?.status === "DRAFT"
-                        ? "Bản nháp (chưa ký)"
+                        ? "Bản nháp"
                         : savedMp?.status === "SIGNED"
                           ? "Đã ký"
                           : savedMp?.status === "DISPENSED"

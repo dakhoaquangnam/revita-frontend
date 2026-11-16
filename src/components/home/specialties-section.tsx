@@ -10,7 +10,7 @@ const CORE_REHAB_SPECIALTIES = [
     code: "STROKE",
     name: "PHCN Sau Đột Quỵ & Tai Biến",
     icon: Brain,
-    description: "Tập luyện phục hồi liệt nửa người, rối loạn thăng bằng, tái rèn luyện dáng đi và hoạt động sinh hoạt hàng ngày (ADL).",
+    description: "Tập luyện phục hồi liệt nửa người, rối loạn thăng bằng, tái rèn luyện dáng đi và hoạt động sinh hoạt hàng ngày.",
     tag: "Chuyên sâu",
     cardTone: "bg-[#e1f4df]", // Keylime Wash
   },
@@ -26,7 +26,7 @@ const CORE_REHAB_SPECIALTIES = [
     code: "POST_SURGERY",
     name: "PHCN Sau Phẫu Thuật & Chấn Thương",
     icon: HeartHandshake,
-    description: "Phục hồi tầm vận động sau mổ tái tạo dây chằng chéo (ACL), gãy xương, thay khớp háng, khớp gối nhân tạo.",
+    description: "Phục hồi tầm vận động sau mổ tái tạo dây chằng chéo, gãy xương, thay khớp háng, khớp gối nhân tạo.",
     tag: "Liệu trình 1:1",
     cardTone: "bg-[#b6ced5]", // Slate Hush
   },
@@ -50,7 +50,7 @@ const CORE_REHAB_SPECIALTIES = [
     code: "CARDIAC_RESP",
     name: "PHCN Tim Mạch & Hô Hấp",
     icon: Heart,
-    description: "Rèn luyện thể lực an toàn theo phân tầng nguy cơ tim mạch, phục hồi thông khí phổi sau bệnh phổi mạn tính (COPD).",
+    description: "Rèn luyện thể lực an toàn theo phân tầng nguy cơ tim mạch, phục hồi thông khí phổi sau bệnh phổi mạn tính.",
     tag: "Theo dõi Monitor",
     cardTone: "bg-[#b1dbb8]", // Soft Sage
   },
@@ -67,7 +67,7 @@ export function SpecialtiesSection() {
               Các chuyên khoa Phục hồi chức năng
             </h2>
             <p className="text-[15px] text-[#222222]/80 max-w-2xl mt-2 font-normal leading-relaxed">
-              Trang bị hệ thống máy tập hiện đại kết hợp kỹ thuật nắn chỉnh tay (Manual Therapy) và phác đồ lượng giá FIM chuẩn y khoa cho từng bệnh lý.
+              Trang bị hệ thống máy tập hiện đại kết hợp kỹ thuật nắn chỉnh tay và phác đồ lượng giá FIM chuẩn y khoa cho từng bệnh lý.
             </p>
           </div>
           <Link

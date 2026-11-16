@@ -304,7 +304,7 @@ export default function TaiKhoanPage() {
     const pain =
       logPainDuring.trim() === "" ? undefined : Number(logPainDuring);
     if (pain !== undefined && (Number.isNaN(pain) || pain < 0 || pain > 10)) {
-      setLogError("Đau khi tập phải từ 0 đến 10 (hoặc để trống).");
+      setLogError("Đau khi tập phải từ 0 đến 10.");
       return;
     }
     setLogSaving(true);
@@ -682,7 +682,7 @@ export default function TaiKhoanPage() {
                     <ShieldCheck className="w-4 h-4 text-[#0f3e17]" />
                     <span>Lợi ích khi đăng nhập Cổng Bệnh nhân</span>
                   </h4>
-                  <p>✓ Lưu lại toàn bộ lịch sử đo góc gập duỗi khớp (ROM) qua các đợt khám.</p>
+                  <p>✓ Lưu lại toàn bộ lịch sử đo góc gập duỗi khớp qua các đợt khám.</p>
                   <p>✓ Nhận video bài tập trị liệu tại nhà được bác sĩ kê riêng cho từng bệnh nhân.</p>
                   <p>✓ Nhận thông báo nhắc lịch tập vật lý trị liệu định kỳ.</p>
                 </div>
@@ -962,7 +962,7 @@ export default function TaiKhoanPage() {
                                 {romList.map((r: any, i: number) => (
                                   <p key={i}>
                                     • {r.joint ?? ""} — {r.movement ?? ""}: trái {r.leftAngle ?? "?"}° / phải{" "}
-                                    {r.rightAngle ?? "?"}° (chuẩn {r.normalRange ?? ""})
+                                    {r.rightAngle ?? "?"}°
                                   </p>
                                 ))}
                               </div>

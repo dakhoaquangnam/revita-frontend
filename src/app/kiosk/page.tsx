@@ -156,7 +156,7 @@ export default function KioskPage() {
         setTicketResult({
           ...ticket,
           type: "APPOINTMENT",
-          typeName: "Khám theo lịch hẹn (tra cứu bằng SĐT)",
+          typeName: "Khám theo lịch hẹn",
           roomName: "Quầy Tiếp Nhận 3 — Đặt lịch trước",
         });
         setMode("SUCCESS");
@@ -244,7 +244,7 @@ export default function KioskPage() {
 
       const priorityLabel =
         priorityType === "ELDERLY"
-          ? "Ưu tiên Người cao tuổi (≥ 75t)"
+          ? "Ưu tiên Người cao tuổi"
           : priorityType === "DISABLED"
           ? "Ưu tiên Người khuyết tật / Liệt"
           : "Ưu tiên Phụ nữ mang thai";
@@ -253,7 +253,7 @@ export default function KioskPage() {
         ...ticket,
         type: "PRIORITY",
         typeName: priorityLabel,
-        roomName: "Quầy Tiếp Nhận 1 (Ưu tiên)",
+        roomName: "Quầy Tiếp Nhận 1",
       });
 
       setMode("SUCCESS");
@@ -398,7 +398,7 @@ export default function KioskPage() {
                     ĐÃ ĐẶT LỊCH TRƯỚC
                   </h3>
                   <p className="text-xs text-[#222222]/80 leading-relaxed">
-                    Đã đăng ký qua Website hoặc có Mã vé hẹn (<strong className="text-[#0f3e17] font-semibold">APT-...</strong>). Quét QR hoặc bấm SĐT.
+                    Đã đăng ký qua Website hoặc có Mã vé hẹn. Quét QR hoặc bấm SĐT.
                   </p>
                 </div>
                 <div className="mt-6 inline-flex items-center gap-2 text-xs font-semibold text-[#0f3e17]">
@@ -427,7 +427,7 @@ export default function KioskPage() {
                     LẤY SỐ ƯU TIÊN
                   </h3>
                   <p className="text-xs text-[#222222]/80 leading-relaxed">
-                    Dành cho <strong>Người cao tuổi (≥ 75t)</strong>, <strong>Bệnh nhân liệt/khuyết tật</strong>, hoặc <strong>Phụ nữ có thai</strong>.
+                    Dành cho <strong>Người cao tuổi</strong>, <strong>Bệnh nhân liệt/khuyết tật</strong>, hoặc <strong>Phụ nữ có thai</strong>.
                   </p>
                 </div>
                 <div className="mt-6 inline-flex items-center gap-2 text-xs font-semibold text-[#0f3e17]">
@@ -491,7 +491,7 @@ export default function KioskPage() {
                   Nhập Mã Vé Hẹn hoặc Số Điện Thoại
                 </h3>
                 <p className="text-xs text-[#222222]/70">
-                  Dùng bàn phím số bên dưới để nhập mã hẹn (Ví dụ: <strong className="text-[#0f3e17]">APT-1794743712935</strong> hoặc <strong className="text-[#0f3e17]">0912345678</strong>)
+                  Dùng bàn phím số bên dưới để nhập mã hẹn
                 </p>
               </div>
 
@@ -621,7 +621,7 @@ export default function KioskPage() {
                     type="text"
                     value={patientName}
                     onChange={(e) => setPatientName(e.target.value)}
-                    placeholder="Nhập họ tên (Ví dụ: Nguyễn Văn Bình)"
+                    placeholder="Nhập họ tên"
                     className="w-full px-4 py-3 bg-[#fffefc] border border-[#efeeeb] rounded-[14px] text-sm text-[#222222] focus:outline-none focus:border-[#0f3e17]"
                   />
                 </div>
@@ -654,13 +654,13 @@ export default function KioskPage() {
 
                 <div>
                   <label className="block text-xs font-semibold text-[#0f3e17] mb-1">
-                    Dị ứng thuốc / thức ăn (nếu có):
+                    Dị ứng thuốc / thức ăn:
                   </label>
                   <input
                     type="text"
                     value={allergies}
                     onChange={(e) => setAllergies(e.target.value)}
-                    placeholder="Ví dụ: Penicillin — nổi mề đay 2023 (để trống nếu không có)"
+                    placeholder="Ví dụ: Penicillin — nổi mề đay 2023"
                     className="w-full px-4 py-3 bg-[#fffefc] border border-[#efeeeb] rounded-[14px] text-sm text-[#222222] focus:outline-none focus:border-[#0f3e17]"
                   />
                 </div>
@@ -738,7 +738,7 @@ export default function KioskPage() {
                   type="text"
                   value={patientName}
                   onChange={(e) => setPatientName(e.target.value)}
-                  placeholder="Nhập họ tên (Ví dụ: Trần Văn Nam)"
+                  placeholder="Nhập họ tên"
                   className="w-full px-4 py-3 bg-[#fffefc] border border-[#efeeeb] rounded-[14px] text-sm text-[#222222] focus:outline-none focus:border-[#0f3e17]"
                 />
               </div>

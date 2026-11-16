@@ -175,7 +175,7 @@ function PatientDetailPanel(props: {
                       type="text"
                       value={props.reviewNotes[log.id] ?? ""}
                       onChange={(e) => props.onReviewNoteChange(log.id, e.target.value)}
-                      placeholder="Ghi chú duyệt (tùy chọn)"
+                      placeholder="Ghi chú duyệt"
                       className="min-w-48 flex-1 rounded-[14px] border border-[#efeeeb] px-2 py-1 text-sm"
                     />
                     <button
@@ -1401,7 +1401,7 @@ export default function RoomWorkspacePage() {
                 type="text"
                 value={extraSearch}
                 onChange={(e) => setExtraSearch(e.target.value)}
-                placeholder="Tìm bài tập (gõ ≥ 2 ký tự)..."
+                placeholder="Tìm bài tập..."
                 className="min-w-56 flex-1 rounded-[14px] border border-[#efeeeb] px-3 py-2 text-sm"
               />
               <button
@@ -1525,7 +1525,7 @@ export default function RoomWorkspacePage() {
             onChange={(e) => setFinishNotes(e.target.value)}
             rows={2}
             className="mt-1 w-full rounded-[14px] border border-[#efeeeb] px-3 py-2 text-sm"
-            placeholder="Nhận xét chung về buổi tập (tùy chọn)"
+            placeholder="Nhận xét chung về buổi tập"
           />
           <label className="mt-2 flex items-center gap-2 text-sm text-[#222222]">
             <input
@@ -1540,7 +1540,7 @@ export default function RoomWorkspacePage() {
               type="text"
               value={finishAdverseEvent}
               onChange={(e) => setFinishAdverseEvent(e.target.value)}
-              placeholder="Mô tả sự cố (VD: đau tăng, chóng mặt) — bắt buộc khi đã tick"
+              placeholder="Mô tả sự cố — bắt buộc khi đã tick"
               className="mt-1 w-full rounded-[14px] border border-[#efeeeb] px-3 py-2 text-sm"
             />
           )}
@@ -1573,7 +1573,7 @@ export default function RoomWorkspacePage() {
             Ghi kết quả — {resultTarget.patientName} ({resultTarget.serviceName})
           </h3>
           <p className="mt-1 text-sm text-[#222222]/60">
-            Mỗi dòng là một kết quả (VD: &quot;Tập gập gối 3x10, không đau&quot;). Thang điểm sẽ có ở GĐ3.
+            Mỗi dòng là một kết quả. Thang điểm sẽ có ở GĐ3.
           </p>
           <div className="mt-3 space-y-2">
             {resultLines.map((line, idx) => (
@@ -1618,7 +1618,7 @@ export default function RoomWorkspacePage() {
             onChange={(e) => setResultNote(e.target.value)}
             rows={2}
             className="mt-1 w-full rounded-[14px] border border-[#efeeeb] px-3 py-2 text-sm"
-            placeholder="Ghi chú thêm (tùy chọn)"
+            placeholder="Ghi chú thêm"
           />
           <div className="mt-3 flex gap-2">
             <button

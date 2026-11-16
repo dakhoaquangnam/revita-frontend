@@ -693,7 +693,7 @@ export default function DatLichPage() {
                           checked={patientInfo.hasMetalImplant === "Có"}
                           onChange={() => setPatientInfo({ ...patientInfo, hasMetalImplant: "Có" })}
                         />
-                        <span>Có (Báo trước cho bác sĩ)</span>
+                        <span>Có</span>
                       </label>
                     </div>
                   </div>
@@ -722,7 +722,7 @@ export default function DatLichPage() {
                           checked={patientInfo.hasPacemaker === "Có"}
                           onChange={() => setPatientInfo({ ...patientInfo, hasPacemaker: "Có" })}
                         />
-                        <span>Có (Máy tạo nhịp)</span>
+                        <span>Có</span>
                       </label>
                     </div>
                   </div>
@@ -730,13 +730,13 @@ export default function DatLichPage() {
 
                 <div>
                   <label className="block text-xs font-semibold text-[#0f3e17] mb-1">
-                    Dị ứng thuốc / thức ăn (nếu có)
+                    Dị ứng thuốc / thức ăn
                   </label>
                   <input
                     type="text"
                     value={patientInfo.allergies}
                     onChange={(e) => setPatientInfo({ ...patientInfo, allergies: e.target.value })}
-                    placeholder="Ví dụ: Penicillin — nổi mề đay 2023 (để trống nếu không có)"
+                    placeholder="Ví dụ: Penicillin — nổi mề đay 2023"
                     className="w-full px-3.5 py-2.5 text-sm bg-[#fffefc] border border-[#efeeeb] rounded-[14px] focus:outline-none focus:border-[#0f3e17]"
                   />
                   <p className="text-[11px] text-[#222222]/60 mt-1">
@@ -752,7 +752,7 @@ export default function DatLichPage() {
                     rows={2}
                     value={patientInfo.symptoms}
                     onChange={(e) => setPatientInfo({ ...patientInfo, symptoms: e.target.value })}
-                    placeholder="Mô tả mức độ đau (thang điểm 1-10), thời gian bị bệnh, đã chụp phim MRI/X-quang chưa..."
+                    placeholder="Mô tả mức độ đau, thời gian bị bệnh, đã chụp phim MRI/X-quang chưa..."
                     className="w-full px-3.5 py-2.5 text-sm bg-[#fffefc] border border-[#efeeeb] rounded-[14px] focus:outline-none focus:border-[#0f3e17]"
                   ></textarea>
                   <p className="text-[11px] text-[#222222]/60 mt-1">
@@ -884,7 +884,7 @@ export default function DatLichPage() {
                 <div className="p-3.5 bg-[#e1f4df]/40 rounded-[14px] border border-[#efeeeb] text-xs text-[#222222]/80 space-y-1">
                   <p className="font-semibold text-[#0f3e17]">Hướng dẫn khi đến phòng khám:</p>
                   <p>1. Đến trước giờ hẹn 10 phút, đưa mã vé <strong>{ticketCode}</strong> tại quầy Lễ tân hoặc màn hình Kiosk để nhận số vào thẳng phòng khám.</p>
-                  <p>2. Mang theo phim chụp X-Quang / MRI hoặc giấy ra viện (nếu có).</p>
+                  <p>2. Mang theo phim chụp X-Quang / MRI hoặc giấy ra viện.</p>
                   <p>3. Thanh toán chi phí tại quầy thu ngân sau khi khám — hiện phòng khám chưa thu cọc online.</p>
                 </div>
 

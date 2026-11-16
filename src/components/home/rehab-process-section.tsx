@@ -8,7 +8,7 @@ const REHAB_STEPS = [
     title: "Thăm khám & Lượng giá",
     subtitle: "Toàn diện - Khoa học",
     description:
-      "Bác sĩ chuyên khoa trực tiếp đo tầm vận động khớp (ROM), cơ lực (MMT), kiểm tra thăng bằng, phản xạ thần kinh và chấm điểm thang FIM / Barthel.",
+      "Bác sĩ chuyên khoa trực tiếp đo tầm vận động khớp, cơ lực, kiểm tra thăng bằng, phản xạ thần kinh và chấm điểm thang FIM / Barthel.",
     icon: ClipboardList,
     bgClass: "bg-[#d2edcb] border-[#efeeeb]",
     accentPill: "bg-[#0f3e17] text-[#fffefc]",
@@ -28,7 +28,7 @@ const REHAB_STEPS = [
     title: "Trị liệu Kỹ thuật cao",
     subtitle: "KTV đồng hành 1 kèm 1",
     description:
-      "Kỹ thuật di động khớp bằng tay (Manual Therapy) kết hợp dàn máy hiện đại: Sóng xung kích Shockwave, Máy kéo giãn cột sống tự động, Laser công suất cao.",
+      "Kỹ thuật di động khớp bằng tay kết hợp dàn máy hiện đại: Sóng xung kích Shockwave, Máy kéo giãn cột sống tự động, Laser công suất cao.",
     icon: Dumbbell,
     bgClass: "bg-[#b6ced5] border-[#efeeeb]",
     accentPill: "bg-[#0f3e17] text-[#fffefc]",

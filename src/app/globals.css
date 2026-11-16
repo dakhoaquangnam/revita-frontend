@@ -46,16 +46,17 @@ body {
 
 /* Botanical Utility Classes */
 
-/* DESIGN.md: Faire Octave (thay thế: Cormorant Garamond) weight 300 cho mọi
-   tiêu đề hiển thị — serif mảnh, tracking chặt, không bao giờ in đậm. */
+/* DESIGN.md: Faire Octave (thay thế: Cormorant Garamond) weight 500 cho mọi
+   tiêu đề hiển thị từ 17/11/2026 (theo yêu cầu của anh Sang — trước đây 300).
+   Serif 500 trên mọi nền, trắng/kem lẫn nền màu. */
 .font-display-serif {
   font-family: var(--font-display-serif), "Cormorant Garamond", Georgia, serif;
-  font-weight: 300;
+  font-weight: 500;
 }
 
 /* Net 500 cho tieu de/so o muc Quy trinh (yeu cau cua anh 16/11).
-   Khong dung Tailwind font-medium o day: .font-display-serif ghi cung
-   font-weight 300 va thang utility do, nen can class rieng. */
+   Tu 17/11 class goc .font-display-serif cung la 500 nen class nay
+   trung voi class goc — giu lai de khoi sua hang loat file dang dung no. */
 .font-display-serif-medium {
   font-family: var(--font-display-serif), "Cormorant Garamond", Georgia, serif;
   font-weight: 500;

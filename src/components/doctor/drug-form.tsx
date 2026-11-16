@@ -143,7 +143,7 @@ export default function DrugForm({
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               onFocus={() => suggestions.length > 0 && setShowDropdown(true)}
-              placeholder="Gõ tên thuốc để tìm trong danh mục Dược thư (≥2 ký tự)..."
+              placeholder="Gõ tên thuốc để tìm trong danh mục Dược thư..."
               className="w-full pl-9 pr-3 py-2.5 rounded-[14px] bg-[#fffefc] border border-[#efeeeb] text-xs text-[#222222] focus:outline-none focus:border-[#0f3e17]"
             />
           </div>

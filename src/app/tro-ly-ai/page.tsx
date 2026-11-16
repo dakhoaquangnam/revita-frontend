@@ -101,17 +101,17 @@ export default function TroLyAiPage() {
       // Local fallback with accurate clinical advice
       setTimeout(() => {
         let reply =
-          "Cảm ơn bạn đã chia sẻ cụ thể. Tình trạng vận động này cần được kiểm tra tầm vận động khớp (ROM) và lượng giá chức năng để có phác đồ điều trị an toàn. Bác sĩ Thanh Sang khuyên bạn tránh mang vác nặng, xoay vặn đột ngột và nên duy trì các động tác kéo giãn cơ nhẹ nhàng.";
+          "Cảm ơn bạn đã chia sẻ cụ thể. Tình trạng vận động này cần được kiểm tra tầm vận động khớp và lượng giá chức năng để có phác đồ điều trị an toàn. Bác sĩ Thanh Sang khuyên bạn tránh mang vác nặng, xoay vặn đột ngột và nên duy trì các động tác kéo giãn cơ nhẹ nhàng.";
         const q = text.toLowerCase();
         if (q.includes("lưng") || q.includes("thoát vị")) {
           reply =
-            "Triệu chứng đau thắt lưng lan xuống chân thường gợi ý chèn ép rễ thần kinh (thường gặp ở thoát vị đĩa đệm L4-L5 hoặc L5-S1). Tại nhà, bạn có thể áp dụng tư thế nằm sấp thư giãn (McKenzie) nếu không làm đau lan xa hơn. Tuyệt đối không cúi gập lưng bưng đồ nặng. Hãy đến phòng khám Bác sĩ Thanh Sang để đo độ co cứng cơ và áp dụng liệu trình kéo giãn giảm áp chuyên sâu.";
+            "Triệu chứng đau thắt lưng lan xuống chân thường gợi ý chèn ép rễ thần kinh. Tại nhà, bạn có thể áp dụng tư thế nằm sấp thư giãn nếu không làm đau lan xa hơn. Tuyệt đối không cúi gập lưng bưng đồ nặng. Hãy đến phòng khám Bác sĩ Thanh Sang để đo độ co cứng cơ và áp dụng liệu trình kéo giãn giảm áp chuyên sâu.";
         } else if (q.includes("tai biến") || q.includes("liệt") || q.includes("đột quỵ")) {
           reply =
-            "Giai đoạn 3-6 tháng đầu sau tai biến là 'thời gian vàng' để phục hồi tái tạo đường dẫn truyền thần kinh (Neuroplasticity). Người nhà cần hỗ trợ tập ức chế mẫu co cứng gấp chi trên và duỗi chi dưới, tập bài bắc cầu (Bridge) nâng mông tại giường. Lưu ý không kéo mạnh tay bên liệt khi đỡ người bệnh dậy để bảo vệ khớp vai khỏi bị bán trật.";
+            "Giai đoạn 3-6 tháng đầu sau tai biến là 'thời gian vàng' để phục hồi tái tạo đường dẫn truyền thần kinh. Người nhà cần hỗ trợ tập ức chế mẫu co cứng gấp chi trên và duỗi chi dưới, tập bài bắc cầu nâng mông tại giường. Lưu ý không kéo mạnh tay bên liệt khi đỡ người bệnh dậy để bảo vệ khớp vai khỏi bị bán trật.";
         } else if (q.includes("dây chằng") || q.includes("acl") || q.includes("gối")) {
           reply =
-            "Ở tuần thứ 3 sau mổ tái tạo dây chằng chéo trước (ACL), mục tiêu quan trọng là đạt duỗi thẳng gối 0 độ và tập gập dần đến 90 độ, đồng thời gồng cơ tĩnh tứ đầu đùi (Quad sets) đều đặn mỗi ngày. Khi đi lại vẫn cần khóa nẹp gối theo chỉ định để bảo vệ mảnh ghép dây chằng.";
+            "Ở tuần thứ 3 sau mổ tái tạo dây chằng chéo trước, mục tiêu quan trọng là đạt duỗi thẳng gối 0 độ và tập gập dần đến 90 độ, đồng thời gồng cơ tĩnh tứ đầu đùi đều đặn mỗi ngày. Khi đi lại vẫn cần khóa nẹp gối theo chỉ định để bảo vệ mảnh ghép dây chằng.";
         } else if (q.includes("địa chỉ") || q.includes("chi phí") || q.includes("ở đâu")) {
           reply =
             "Phòng khám Phục hồi chức năng Bác sĩ Thanh Sang tọa lạc tại: 193 Quang Trung, Đại Lộc, Đà Nẵng. Hotline tư vấn & đặt lịch: 0369.117.117. Giờ làm việc từ 07:30 đến 19:30 hàng ngày. Khám lượng giá ban đầu và các buổi tập trị liệu 1 kèm 1 có mức phí công khai, rõ ràng.";

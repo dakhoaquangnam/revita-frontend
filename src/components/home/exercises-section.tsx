@@ -26,7 +26,7 @@ const HOME_REHAB_EXERCISES = [
   {
     id: "ex-spine-herniation",
     category: "Cột sống & Thoát vị",
-    title: "Chuỗi bài tập McKenzie & Ổn định cơ lõi (Core) cho người thoát vị đĩa đệm",
+    title: "Chuỗi bài tập McKenzie & Ổn định cơ lõi cho người thoát vị đĩa đệm",
     duration: "20 phút / ngày",
     level: "Trung bình",
     stepsCount: 6,
@@ -38,24 +38,24 @@ const HOME_REHAB_EXERCISES = [
   {
     id: "ex-knee-acl",
     category: "Sau phẫu thuật",
-    title: "Phục hồi khớp gối tuần 2-6 sau mổ tái tạo dây chằng chéo trước (ACL)",
+    title: "Phục hồi khớp gối tuần 2-6 sau mổ tái tạo dây chằng chéo trước",
     duration: "25 phút / ngày",
     level: "Theo tiến trình",
     stepsCount: 4,
     summary:
-      "Rèn luyện gồng cơ tĩnh tứ đầu đùi (Quad sets), nâng chân thẳng có nẹp, trượt gót chân trên giường để đạt góc gập 90 độ an toàn.",
+      "Rèn luyện gồng cơ tĩnh tứ đầu đùi, nâng chân thẳng có nẹp, trượt gót chân trên giường để đạt góc gập 90 độ an toàn.",
     highlight: "Chống teo cơ đùi",
     tone: "bg-[#b6ced5]", // Slate Hush
   },
   {
     id: "ex-neck-shoulder",
     category: "Cơ xương khớp",
-    title: "Giải tỏa căng cứng cổ vai gáy & Hội chứng đầu đưa ra trước (Forward Head)",
+    title: "Giải tỏa căng cứng cổ vai gáy & Hội chứng đầu đưa ra trước",
     duration: "10 phút / ngày",
     level: "Dễ thực hiện",
     stepsCount: 4,
     summary:
-      "Bài tập thụt cằm (Chin Tuck) tăng cường cơ gấp cổ sâu, kéo giãn cơ thang trên và cơ ngực lớn giúp mở rộng lồng ngực và trả lại đường cong sinh lý cổ.",
+      "Bài tập thụt cằm tăng cường cơ gấp cổ sâu, kéo giãn cơ thang trên và cơ ngực lớn giúp mở rộng lồng ngực và trả lại đường cong sinh lý cổ.",
     highlight: "Thực hiện ngay tại bàn làm việc",
     tone: "bg-[#cfe7d3]", // Mint Veil
   },

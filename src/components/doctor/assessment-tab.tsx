@@ -532,7 +532,7 @@ export default function AssessmentTab({
                   >
                     {scaleDef.items.map((i) => (
                       <option key={i.key} value={i.key}>
-                        {i.labelVi}{i.normalRange ? ` (chuẩn ${i.normalRange}°)` : ""}
+                        {i.labelVi}
                       </option>
                     ))}
                   </select>
@@ -609,7 +609,7 @@ export default function AssessmentTab({
                           {" • "}
                           {scaleDef.code === "MMT"
                             ? `Sức cơ ${m.value}/5`
-                            : `Chủ động ${m.active ?? "—"}° / Thụ động ${m.passive ?? "—"}°${def?.normalRange ? ` (chuẩn ${def.normalRange}°)` : ""}`}
+                            : `Chủ động ${m.active ?? "—"}° / Thụ động ${m.passive ?? "—"}°`}
                         </span>
                         <button
                           type="button"
@@ -629,7 +629,7 @@ export default function AssessmentTab({
           {/* Ghi chú + nút lưu */}
           <div>
             <label className="text-xs">
-              <span className="text-[#222222]/60">Ghi chú lần đánh giá (tùy chọn)</span>
+              <span className="text-[#222222]/60">Ghi chú lần đánh giá</span>
               <input
                 value={assessmentNote}
                 onChange={(e) => setAssessmentNote(e.target.value)}
@@ -763,7 +763,7 @@ export default function AssessmentTab({
                     <input
                       value={voidReason}
                       onChange={(e) => setVoidReason(e.target.value)}
-                      placeholder="Lý do hủy (VD: nhập sai điểm)"
+                      placeholder="Lý do hủy"
                       className="flex-1 bg-[#fffefc] border border-[#efeeeb] rounded-[14px] px-2 py-1.5 text-xs focus:outline-none focus:border-rose-700"
                     />
                     <button
@@ -786,7 +786,7 @@ export default function AssessmentTab({
         <h4 className="eyebrow text-[#0f3e17]">Mục tiêu điều trị</h4>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
           <label className="min-w-0">
-            <span className="text-[#222222]/60">Gắn thang (để trống = mục tiêu tự do)</span>
+            <span className="text-[#222222]/60">Gắn thang</span>
             <select
               value={goalScaleCode}
               onChange={(e) => handleGoalScaleChange(e.target.value)}
@@ -800,7 +800,7 @@ export default function AssessmentTab({
           </label>
           {goalScaleDef && goalScaleDef.kind === "MULTI_ITEM" && (
             <label className="min-w-0">
-              <span className="text-[#222222]/60">Trên 1 mục của thang (tùy chọn)</span>
+              <span className="text-[#222222]/60">Trên 1 mục của thang</span>
               <select
                 value={goalItemKey}
                 onChange={(e) => setGoalItemKey(e.target.value)}
@@ -996,7 +996,7 @@ function TrendSparkline({ points }: { points: TrendPoint[] }) {
   return (
     <div className="p-3 rounded-[14px] bg-[#fffefc] border border-[#efeeeb]">
       <div className="flex justify-between text-[11px] text-[#222222]/60 mb-1">
-        <span>Xu hướng (trước – sau)</span>
+        <span>Xu hướng</span>
         <strong className="text-[#0f3e17]">
           {values[0]} → {values[values.length - 1]}
         </strong>
