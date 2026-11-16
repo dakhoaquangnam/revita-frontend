@@ -132,6 +132,7 @@ export interface BookAppointmentResult {
   appointmentId?: string;
   appointmentCode: string;
   doctorName?: string;
+  technicianName?: string;
   patientName?: string;
   serviceName?: string;
   date: string;
@@ -144,6 +145,7 @@ export async function bookAppointmentAsService(input: {
   patientProfileId: string;
   doctorId: string;
   serviceId: string;
+  technicianId?: string;
   date: string;
   startTime: string;
   endTime: string;

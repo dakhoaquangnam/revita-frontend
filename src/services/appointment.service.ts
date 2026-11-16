@@ -52,10 +52,34 @@ export interface BookAppointmentPayload {
   patientProfileId: string;
   doctorId: string;
   serviceId: string;
+  technicianId?: string; // KTV bệnh nhân chọn ở bước riêng sau khi chọn dịch vụ
   date: string;
   startTime: string;
   endTime: string;
 }
+
+/** Kỹ thuật viên (lấy từ GET /staff?role=TECHNICIAN — chỉ đọc, công khai). */
+export interface TechnicianOption {
+  id: string; // id của technician (= auth id)
+  name: string;
+  email: string;
+  technicianCode: string;
+}
+
+/**
+ * Ánh xạ dịch vụ trị liệu → KTV phụ trách, dùng ở bước riêng chọn KTV sau
+ * khi bệnh nhân đã chọn dịch vụ (trang đặt lịch + form trang chủ).
+ * Khám PHCN (REHAB_EXAM) do bác sĩ làm nên không có bước chọn KTV.
+ */
+export const SERVICE_TECHNICIAN_MAP: Record<
+  string,
+  { email: string; roleLabel: string; prefix: string }
+> = {
+  PHYSIO_SESS: { email: "pt@dakhoaquangnam.com", roleLabel: "Vật lý trị liệu", prefix: "PT" },
+  OCCUP_THER: { email: "ot@dakhoaquangnam.com", roleLabel: "Hoạt động trị liệu", prefix: "OT" },
+  HAND_REHAB: { email: "st@dakhoaquangnam.com", roleLabel: "Ngôn ngữ trị liệu", prefix: "ST" },
+  NURSING_CARE: { email: "dd@dakhoaquangnam.com", roleLabel: "Điều dưỡng", prefix: "ĐD" },
+};
 
 /** Khớp với BookAppointmentResponseDto của backend (không có trường `code`/`message`). */
 export interface BookAppointmentResponse {
@@ -97,6 +121,8 @@ export interface AppointmentDetail {
   patientProfile?: PatientProfileSummary;
   doctorId: string;
   doctorName: string;
+  technicianId?: string;
+  technicianName?: string;
   specialtyId: string;
   specialtyName: string;
   date: string;
@@ -247,5 +273,27 @@ export const appointmentService = {
     );
     const data = res.data;
     return Array.isArray(data?.appointments) ? data.appointments : [];
+  },
+
+  /**
+   * Kỹ thuật viên đang làm việc (GET công khai — chỉ đọc).
+   * Chỉ lấy id/tên/email/mã KTV; bản ghi auth trả về có kèm hash mật khẩu
+   * nên không giữ lại nguyên bản ghi.
+   */
+  async getTechnicians(): Promise<TechnicianOption[]> {
+    const res = await apiClient.get<{
+      data: Array<{
+        id: string;
+        name: string;
+        email: string | null;
+        technician?: { id: string; technicianCode: string } | null;
+      }>;
+    }>("/staff", { params: { role: "TECHNICIAN", limit: 100 } });
+    return (res.data?.data ?? []).map((a) => ({
+      id: a.technician?.id ?? a.id,
+      name: a.name,
+      email: a.email ?? "",
+      technicianCode: a.technician?.technicianCode ?? "",
+    }));
   },
 };

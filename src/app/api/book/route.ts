@@ -62,6 +62,8 @@ export async function POST(req: NextRequest) {
   const allergies = String(body?.allergies ?? "").trim() || undefined;
   const doctorId = String(body?.doctorId ?? "").trim();
   const serviceId = String(body?.serviceId ?? "").trim();
+  // KTV bệnh nhân chọn ở bước riêng sau khi chọn dịch vụ (không bắt buộc).
+  const technicianId = String(body?.technicianId ?? "").trim() || undefined;
   const date = String(body?.date ?? "").trim();
   const startTime = String(body?.startTime ?? "").trim();
   const endTime = String(body?.endTime ?? "").trim();
@@ -98,6 +100,7 @@ export async function POST(req: NextRequest) {
       patientProfileId: profile.id,
       doctorId,
       serviceId,
+      technicianId,
       date,
       startTime,
       endTime,
@@ -109,6 +112,7 @@ export async function POST(req: NextRequest) {
         appointmentId: appointment.appointmentId,
         profileCode: profile.profileCode,
         doctorName: appointment.doctorName,
+        technicianName: appointment.technicianName ?? "",
         patientName: appointment.patientName ?? name,
         serviceName: appointment.serviceName,
         date: appointment.date ?? date,

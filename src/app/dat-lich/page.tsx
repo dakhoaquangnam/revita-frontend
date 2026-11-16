@@ -6,7 +6,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Navbar } from "@/components/layout/navbar";
 import { Footer } from "@/components/layout/footer";
 import { useSpecialties } from "@/hooks/use-public-data";
-import { appointmentService } from "@/services/appointment.service";
+import { appointmentService, SERVICE_TECHNICIAN_MAP } from "@/services/appointment.service";
 import {
   Calendar as CalendarIcon,
   Clock,
@@ -52,6 +52,9 @@ export default function DatLichPage() {
   }, []);
   const [selectedSlot, setSelectedSlot] = useState<{ startTime: string; endTime: string } | null>(null);
 
+  // KTV bệnh nhân chọn ở bước riêng sau khi chọn dịch vụ.
+  const [selectedTechnicianId, setSelectedTechnicianId] = useState<string>("");
+
   // Patient info
   const [patientInfo, setPatientInfo] = useState({
     fullName: "",
@@ -68,6 +71,7 @@ export default function DatLichPage() {
   // Kết quả đặt lịch thật
   const [ticketCode, setTicketCode] = useState<string>("");
   const [profileCode, setProfileCode] = useState<string>("");
+  const [ticketTechnicianName, setTicketTechnicianName] = useState<string>("");
   const [bookingError, setBookingError] = useState("");
   const [isBooking, setIsBooking] = useState(false);
 
@@ -128,6 +132,33 @@ export default function DatLichPage() {
   });
   const slots = (slotsData?.slots ?? []).filter((s) => s.isAvailable);
 
+  // KTV phụ trách dịch vụ đã chọn (bước riêng sau khi chọn dịch vụ).
+  // Khám PHCN do bác sĩ làm nên không có bước này.
+  const serviceTechnician = useMemo(
+    () =>
+      selectedService?.serviceCode
+        ? SERVICE_TECHNICIAN_MAP[selectedService.serviceCode] ?? null
+        : null,
+    [selectedService],
+  );
+  const needsTechnicianStep = !!serviceTechnician;
+
+  const { data: technicians, isLoading: techniciansLoading } = useQuery({
+    queryKey: ["technicians"],
+    queryFn: () => appointmentService.getTechnicians(),
+    enabled: needsTechnicianStep,
+  });
+  const mappedTechnician = useMemo(
+    () => technicians?.find((t) => t.email === serviceTechnician?.email) ?? null,
+    [technicians, serviceTechnician],
+  );
+  // Tự chọn sẵn KTV phụ trách (hiện mỗi dịch vụ chỉ có 1 KTV).
+  useEffect(() => {
+    if (mappedTechnician && !selectedTechnicianId) {
+      setSelectedTechnicianId(mappedTechnician.id);
+    }
+  }, [mappedTechnician, selectedTechnicianId]);
+
   const handleNextStep1 = () => {
     if (!selectedSpecialtyId) return;
     setStep(2);
@@ -135,7 +166,12 @@ export default function DatLichPage() {
 
   const handleNextStep2 = () => {
     if (!selectedDoctorId || !selectedServiceId || !selectedSlot) return;
-    setStep(3);
+    setStep(needsTechnicianStep ? 3 : 4);
+  };
+
+  const handleNextStep3 = () => {
+    if (!selectedTechnicianId) return;
+    setStep(4);
   };
 
   const handleFinishBooking = async (e: React.FormEvent) => {
@@ -165,6 +201,7 @@ export default function DatLichPage() {
           allergies: patientInfo.allergies.trim() || undefined,
           doctorId: selectedDoctorId,
           serviceId: selectedServiceId,
+          technicianId: selectedTechnicianId || undefined,
           date: selectedDate,
           startTime: selectedSlot.startTime,
           endTime: selectedSlot.endTime,
@@ -176,6 +213,7 @@ export default function DatLichPage() {
       }
       setTicketCode(data.appointmentCode);
       setProfileCode(data.profileCode ?? "");
+      setTicketTechnicianName(data.technicianName ?? mappedTechnician?.name ?? "");
 
       // Lưu biên lai trên máy để tra cứu nhanh (bản gốc nằm trên hệ thống).
       if (typeof window !== "undefined") {
@@ -195,7 +233,7 @@ export default function DatLichPage() {
         localStorage.setItem("revita_bookings", JSON.stringify([historyItem, ...existing]));
       }
 
-      setStep(4);
+      setStep(5);
     } catch (err: any) {
       setBookingError(err.message || "Đặt lịch thất bại. Vui lòng thử lại.");
     } finally {
@@ -251,12 +289,19 @@ export default function DatLichPage() {
                 <span className={`w-7 h-7 rounded-[6px] flex items-center justify-center text-xs font-bold ${step >= 3 ? "bg-[#0f3e17] text-[#fffefc]" : "bg-[#efeeeb] text-[#222222]/60"}`}>
                   3
                 </span>
-                <span className="hidden sm:inline">Hồ sơ người khám</span>
+                <span className="hidden sm:inline">Kỹ thuật viên</span>
               </div>
               <div className={`w-8 sm:w-16 h-0.5 ${step >= 4 ? "bg-[#0f3e17]" : "bg-[#efeeeb]"}`}></div>
               <div className={`flex items-center gap-2 ${step >= 4 ? "text-[#0f3e17] font-bold" : "text-[#222222]/40"}`}>
                 <span className={`w-7 h-7 rounded-[6px] flex items-center justify-center text-xs font-bold ${step >= 4 ? "bg-[#0f3e17] text-[#fffefc]" : "bg-[#efeeeb] text-[#222222]/60"}`}>
                   4
+                </span>
+                <span className="hidden sm:inline">Hồ sơ người khám</span>
+              </div>
+              <div className={`w-8 sm:w-16 h-0.5 ${step >= 5 ? "bg-[#0f3e17]" : "bg-[#efeeeb]"}`}></div>
+              <div className={`flex items-center gap-2 ${step >= 5 ? "text-[#0f3e17] font-bold" : "text-[#222222]/40"}`}>
+                <span className={`w-7 h-7 rounded-[6px] flex items-center justify-center text-xs font-bold ${step >= 5 ? "bg-[#0f3e17] text-[#fffefc]" : "bg-[#efeeeb] text-[#222222]/60"}`}>
+                  5
                 </span>
                 <span className="hidden sm:inline">Vé hẹn</span>
               </div>
@@ -334,6 +379,7 @@ export default function DatLichPage() {
                         setSelectedDoctorId("");
                         setSelectedServiceId("");
                         setSelectedSlot(null);
+                        setSelectedTechnicianId("");
                       }}
                       className="w-full px-3.5 py-2.5 text-sm bg-[#fffefc] border border-[#efeeeb] rounded-[14px] focus:outline-none focus:border-[#0f3e17]"
                     />
@@ -365,6 +411,7 @@ export default function DatLichPage() {
                           setSelectedDoctorId(d.doctorId);
                           setSelectedServiceId("");
                           setSelectedSlot(null);
+                          setSelectedTechnicianId("");
                         }}
                         className={`cursor-pointer p-4 rounded-[14px] border transition-colors ${
                           selectedDoctorId === d.doctorId
@@ -400,6 +447,7 @@ export default function DatLichPage() {
                           onClick={() => {
                             setSelectedServiceId(srv.serviceId);
                             setSelectedSlot(null);
+                            setSelectedTechnicianId("");
                           }}
                           className={`cursor-pointer p-4 rounded-[14px] border transition-colors flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${
                             selectedServiceId === srv.serviceId
@@ -485,6 +533,64 @@ export default function DatLichPage() {
                   disabled={!selectedDoctorId || !selectedServiceId || !selectedSlot}
                   className="inline-flex items-center gap-2 bg-[#0f3e17] hover:bg-[#0c2f10] text-[#fffefc] font-semibold text-sm px-6 py-3 rounded-[14px] transition-colors disabled:opacity-50"
                 >
+                  <span>{needsTechnicianStep ? "Tiếp tục: Chọn Kỹ thuật viên" : "Tiếp tục: Nhập thông tin người khám"}</span>
+                  <ArrowRight className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* STEP 3: CHỌN KỸ THUẬT VIÊN PHỤ TRÁCH (chỉ khi dịch vụ có KTV) */}
+          {step === 3 && (
+            <div className="bg-[#fffefc] rounded-[14px] p-6 sm:p-8 border border-[#efeeeb] space-y-6">
+              <div>
+                <h2 className="text-lg font-bold text-[#0f3e17]">3. Chọn Kỹ thuật viên phụ trách</h2>
+                <p className="text-xs text-[#222222]/70 mt-0.5">
+                  Dịch vụ {selectedService?.serviceName} do kỹ thuật viên {serviceTechnician?.roleLabel} phụ trách.
+                </p>
+                {techniciansLoading ? (
+                  <p className="text-sm text-[#222222]/70 mt-4">Đang tải danh sách kỹ thuật viên...</p>
+                ) : !mappedTechnician ? (
+                  <div className="mt-4 p-4 rounded-[14px] bg-rose-50 border border-rose-200 text-rose-800 text-sm">
+                    Không tải được kỹ thuật viên phụ trách dịch vụ này. Vui lòng quay lại bước trước rồi thử lại, hoặc gọi hotline phòng khám.
+                  </div>
+                ) : (
+                  <div
+                    onClick={() => setSelectedTechnicianId(mappedTechnician.id)}
+                    className={`cursor-pointer p-4 rounded-[14px] border transition-colors mt-3 ${
+                      selectedTechnicianId === mappedTechnician.id
+                        ? "bg-[#e1f4df] border-[#cfe7d3] text-[#0f3e17]"
+                        : "bg-[#fffefc] border-[#efeeeb] text-[#222222] hover:bg-[#efeeeb]/30"
+                    }`}
+                  >
+                    <p className="text-sm font-bold">
+                      {serviceTechnician?.prefix}. {mappedTechnician.name}
+                    </p>
+                    <p className="text-xs text-[#222222]/70 mt-0.5">
+                      {serviceTechnician?.roleLabel} • Mã KTV {mappedTechnician.technicianCode}
+                    </p>
+                    <span className="inline-block mt-2 text-[11px] font-semibold text-[#0f3e17] bg-[#b1dbb8]/40 px-2 py-0.5 rounded-[6px]">
+                      Kỹ thuật viên phụ trách buổi trị liệu này
+                    </span>
+                  </div>
+                )}
+              </div>
+
+              <div className="pt-4 flex items-center justify-between border-t border-[#efeeeb]">
+                <button
+                  type="button"
+                  onClick={() => setStep(2)}
+                  className="inline-flex items-center gap-1.5 text-[#222222]/70 hover:text-[#0f3e17] text-sm font-semibold px-4 py-2"
+                >
+                  <ArrowLeft className="w-4 h-4" />
+                  <span>Quay lại</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={handleNextStep3}
+                  disabled={!selectedTechnicianId}
+                  className="inline-flex items-center gap-2 bg-[#0f3e17] hover:bg-[#0c2f10] text-[#fffefc] font-semibold text-sm px-6 py-3 rounded-[14px] transition-colors disabled:opacity-50"
+                >
                   <span>Tiếp tục: Nhập thông tin người khám</span>
                   <ArrowRight className="w-4 h-4" />
                 </button>
@@ -492,8 +598,8 @@ export default function DatLichPage() {
             </div>
           )}
 
-          {/* STEP 3: THÔNG TIN BỆNH NHÂN & TIỀN SỬ Y KHOA */}
-          {step === 3 && (
+          {/* STEP 4: THÔNG TIN BỆNH NHÂN & TIỀN SỬ Y KHOA */}
+          {step === 4 && (
             <form onSubmit={handleFinishBooking} className="bg-[#fffefc] rounded-[14px] p-6 sm:p-8 border border-[#efeeeb] space-y-6">
               <div>
                 <h2 className="text-lg font-bold text-[#0f3e17]">Thông tin hành chính bệnh nhân</h2>
@@ -666,7 +772,7 @@ export default function DatLichPage() {
               <div className="pt-4 flex items-center justify-between border-t border-[#efeeeb]">
                 <button
                   type="button"
-                  onClick={() => setStep(2)}
+                  onClick={() => setStep(needsTechnicianStep ? 3 : 2)}
                   className="inline-flex items-center gap-1.5 text-[#222222]/70 hover:text-[#0f3e17] text-sm font-semibold px-4 py-2"
                 >
                   <ArrowLeft className="w-4 h-4" />
@@ -684,8 +790,8 @@ export default function DatLichPage() {
             </form>
           )}
 
-          {/* STEP 4: XÁC NHẬN VÉ HẸN */}
-          {step === 4 && (
+          {/* STEP 5: XÁC NHẬN VÉ HẸN */}
+          {step === 5 && (
             <div className="space-y-6">
               {/* Success Badge */}
               <div className="bg-[#0f3e17] text-[#fffefc] p-6 rounded-[14px] flex flex-col sm:flex-row items-center justify-between gap-4">
@@ -749,6 +855,12 @@ export default function DatLichPage() {
                     <span className="text-[#222222]/70">Bác sĩ:</span>
                     <span className="font-semibold text-[#222222]">{selectedDoctor?.doctorName}</span>
                   </div>
+                  {ticketTechnicianName && (
+                    <div className="flex justify-between py-1 border-b border-[#efeeeb]/60">
+                      <span className="text-[#222222]/70">Kỹ thuật viên:</span>
+                      <span className="font-semibold text-[#222222]">{ticketTechnicianName}</span>
+                    </div>
+                  )}
                   <div className="flex justify-between py-1 border-b border-[#efeeeb]/60">
                     <span className="text-[#222222]/70">Ngày khám:</span>
                     <span className="font-bold text-[#0f3e17]">{selectedDate}</span>

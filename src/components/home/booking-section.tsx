@@ -13,7 +13,7 @@ import {
   Check,
 } from "lucide-react";
 import { useSpecialties } from "@/hooks/use-public-data";
-import { appointmentService } from "@/services/appointment.service";
+import { appointmentService, SERVICE_TECHNICIAN_MAP } from "@/services/appointment.service";
 
 // Ngày hôm nay theo giờ địa phương (gán trong useEffect để không đọc
 // new Date() lúc prerender — Next.js 16 chặn giá trị thời gian không ổn định).
@@ -40,6 +40,7 @@ export function BookingSection() {
     specialtyId: "",
     doctorId: "",
     serviceId: "",
+    technicianId: "",
     date: "",
     slot: "",
     symptoms: "",
@@ -51,6 +52,7 @@ export function BookingSection() {
     appointmentCode: string;
     profileCode: string;
     doctorName: string;
+    technicianName: string;
     serviceName: string;
     date: string;
     startTime: string;
@@ -112,6 +114,33 @@ export function BookingSection() {
     [services, formData.serviceId],
   );
 
+  // KTV phụ trách dịch vụ đã chọn (hiện ngay dưới ô chọn dịch vụ).
+  // Khám PHCN do bác sĩ làm nên không có KTV.
+  const serviceTechnician = useMemo(
+    () =>
+      selectedService?.serviceCode
+        ? SERVICE_TECHNICIAN_MAP[selectedService.serviceCode] ?? null
+        : null,
+    [selectedService],
+  );
+  const needsTechnicianStep = !!serviceTechnician;
+
+  const { data: technicians } = useQuery({
+    queryKey: ["home-technicians"],
+    queryFn: () => appointmentService.getTechnicians(),
+    enabled: needsTechnicianStep,
+  });
+  const mappedTechnician = useMemo(
+    () => technicians?.find((t) => t.email === serviceTechnician?.email) ?? null,
+    [technicians, serviceTechnician],
+  );
+  // Tự chọn sẵn KTV phụ trách (hiện mỗi dịch vụ chỉ có 1 KTV).
+  useEffect(() => {
+    if (mappedTechnician && !formData.technicianId) {
+      setFormData((prev) => ({ ...prev, technicianId: mappedTechnician.id }));
+    }
+  }, [mappedTechnician, formData.technicianId]);
+
   // Khung giờ còn trống của bác sĩ cho dịch vụ đã chọn.
   const { data: slotsData, isLoading: slotsLoading } = useQuery({
     queryKey: ["home-available-slots", effectiveDoctorId, formData.serviceId, formData.date],
@@ -126,7 +155,7 @@ export function BookingSection() {
   const slots = (slotsData?.slots ?? []).filter((s) => s.isAvailable);
 
   const resetAfterSpecialtyOrDate = () =>
-    setFormData((prev) => ({ ...prev, doctorId: "", serviceId: "", slot: "" }));
+    setFormData((prev) => ({ ...prev, doctorId: "", serviceId: "", technicianId: "", slot: "" }));
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -159,6 +188,7 @@ export function BookingSection() {
           gender: formData.gender,
           doctorId: effectiveDoctorId,
           serviceId: formData.serviceId,
+          technicianId: formData.technicianId || undefined,
           date: formData.date,
           startTime,
           endTime,
@@ -172,6 +202,7 @@ export function BookingSection() {
         appointmentCode: data.appointmentCode,
         profileCode: data.profileCode ?? "",
         doctorName: data.doctorName ?? effectiveDoctor?.doctorName ?? "",
+        technicianName: data.technicianName ?? mappedTechnician?.name ?? "",
         serviceName: data.serviceName ?? selectedService?.serviceName ?? "",
         date: data.date ?? formData.date,
         startTime: data.startTime ?? startTime,
@@ -245,6 +276,7 @@ export function BookingSection() {
                     Cảm ơn bạn <strong>{formData.fullName}</strong>. Lịch hẹn{" "}
                     <strong>
                       {ticket.serviceName} — BS. {ticket.doctorName}
+                      {ticket.technicianName ? ` — KTV ${ticket.technicianName}` : ""}
                     </strong>{" "}
                     vào ngày <strong>{ticket.date}</strong> ({ticket.startTime} - {ticket.endTime})
                     đã được ghi vào hệ thống. Nhân viên y tế sẽ gọi điện thoại tới số{" "}
@@ -386,7 +418,7 @@ export function BookingSection() {
                         value={formData.doctorId}
                         disabled={!formData.specialtyId || doctorsLoading}
                         onChange={(e) => {
-                          setFormData({ ...formData, doctorId: e.target.value, serviceId: "", slot: "" });
+                          setFormData({ ...formData, doctorId: e.target.value, serviceId: "", technicianId: "", slot: "" });
                         }}
                         className="w-full px-3 py-2 text-sm bg-[#fffefc] border border-[#efeeeb] rounded-[14px] focus:outline-none focus:border-[#0f3e17] transition-all disabled:opacity-60"
                       >
@@ -413,7 +445,7 @@ export function BookingSection() {
                       <select
                         value={formData.serviceId}
                         disabled={!effectiveDoctorId || servicesLoading}
-                        onChange={(e) => setFormData({ ...formData, serviceId: e.target.value, slot: "" })}
+                        onChange={(e) => setFormData({ ...formData, serviceId: e.target.value, technicianId: "", slot: "" })}
                         className="w-full px-3 py-2 text-sm bg-[#fffefc] border border-[#efeeeb] rounded-[14px] focus:outline-none focus:border-[#0f3e17] transition-all disabled:opacity-60"
                       >
                         <option value="">-- Chọn dịch vụ --</option>
@@ -445,6 +477,20 @@ export function BookingSection() {
                       </div>
                     </div>
                   </div>
+
+                  {needsTechnicianStep && mappedTechnician && (
+                    <div className="p-3.5 rounded-[14px] bg-[#e1f4df]/40 border border-[#cfe7d3] text-sm">
+                      <span className="text-xs font-semibold text-[#0f3e17]">
+                        Kỹ thuật viên phụ trách:{" "}
+                      </span>
+                      <span className="font-bold text-[#0f3e17]">
+                        {serviceTechnician?.prefix}. {mappedTechnician.name}
+                      </span>
+                      <span className="text-xs text-[#222222]/70">
+                        {" "}• {serviceTechnician?.roleLabel} • Mã KTV {mappedTechnician.technicianCode}
+                      </span>
+                    </div>
+                  )}
 
                   <div>
                     <label className="block text-xs font-semibold text-[#0f3e17] mb-1">
