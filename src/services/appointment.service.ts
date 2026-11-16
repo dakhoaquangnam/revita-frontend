@@ -147,7 +147,18 @@ export const appointmentService = {
       "/appointment-booking/doctors/available",
       { params },
     );
-    return res.data;
+    const data = res.data;
+    // 16/11: không hiển thị BS Lâm Thanh Tú ở bước chọn bác sĩ phụ trách
+    // (trang chủ + trang đặt lịch). Bỏ lọc để hiện lại.
+    const HIDDEN_DOCTOR_IDS = new Set([
+      "68f6e254-9065-4c2a-b3fc-46013945bb7c", // BS Lâm Thanh Tú
+    ]);
+    return {
+      ...data,
+      doctors: (data.doctors ?? []).filter(
+        (d) => !HIDDEN_DOCTOR_IDS.has(d.doctorId),
+      ),
+    };
   },
 
   /** Bác sĩ theo chuyên khoa, không lọc theo ngày (public). */
