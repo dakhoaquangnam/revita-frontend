@@ -184,10 +184,7 @@ export function FloatingChatbot() {
         <button
           type="button"
           onClick={() => setIsOpen(true)}
-          className="fixed bottom-6 right-6 z-50 flex items-center gap-2.5 bg-[#0f3e17] hover:bg-[#0c2f10] text-[#fffefc] font-semibold text-sm px-4 py-3 rounded-[14px] border border-[#0c2f10] transition-all hover:scale-102 active:scale-98 group"
-          style={{
-            boxShadow: "0 4px 16px rgba(15, 62, 23, 0.2)",
-          }}
+          className="fixed bottom-6 right-6 z-50 flex items-center gap-2.5 bg-[#0f3e17] hover:bg-[#0c2f10] text-[#fffefc] font-semibold text-sm px-4 py-3 rounded-[14px] transition-all hover:scale-102 active:scale-98 group"
           aria-label="Mở Trợ lý AI Bác sĩ Thanh Sang"
         >
           <div className="relative">
@@ -200,19 +197,19 @@ export function FloatingChatbot() {
 
       {/* 2. Floating Chat Modal: Ease Health Botanical Canvas */}
       {isOpen && (
-        <div className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-50 w-[calc(100vw-32px)] sm:w-[420px] h-[580px] max-h-[85vh] bg-[#fffefc] rounded-[16px] border border-[#efeeeb] flex flex-col overflow-hidden animate-in fade-in duration-150 font-sans shadow-xl">
+        <div className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-50 w-[calc(100vw-32px)] sm:w-[420px] h-[580px] max-h-[85vh] bg-[#fffefc] rounded-[14px] border border-[#efeeeb] flex flex-col overflow-hidden animate-in fade-in duration-150 font-sans shadow-none">
           {/* Header */}
           <div className="bg-[#0f3e17] text-[#fffefc] p-4 flex items-center justify-between border-b border-[#0c2f10]">
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-[10px] bg-[#e1f4df] text-[#0f3e17] flex items-center justify-center shrink-0">
+              <div className="w-9 h-9 rounded-[14px] bg-[#e1f4df] text-[#0f3e17] flex items-center justify-center shrink-0">
                 <Stethoscope className="w-5 h-5" />
               </div>
               <div>
                 <div className="flex items-center gap-2">
-                  <h3 className="font-bold text-sm tracking-tight text-[#fffefc] whitespace-nowrap">
+                  <h3 className="font-semibold text-sm tracking-tight text-[#fffefc] whitespace-nowrap">
                     Trợ lý Y khoa Bác sĩ
                   </h3>
-                  <span className="inline-flex items-center gap-1.5 text-[10px] font-semibold bg-[#0c2f10] text-[#e1f4df] px-2 py-0.5 rounded-[6px] border border-[#b1dbb8]/30 shrink-0">
+                  <span className="inline-flex items-center gap-1.5 text-[10px] font-semibold bg-[#0c2f10] text-[#e1f4df] px-2 py-0.5 rounded-full shrink-0">
                     <span className="w-1.5 h-1.5 rounded-full bg-[#e1f4df] animate-ping" />
                     <span className="animate-pulse">Trực tuyến</span>
                   </span>
@@ -226,7 +223,7 @@ export function FloatingChatbot() {
             <div className="flex items-center gap-1">
               <Link
                 href="/tro-ly-ai"
-                className="p-1.5 rounded-[6px] text-[#b1dbb8] hover:text-[#fffefc] hover:bg-[#0c2f10] transition-colors"
+                className="p-1.5 rounded-[14px] text-[#b1dbb8] hover:text-[#fffefc] hover:bg-[#0c2f10] transition-colors"
                 title="Mở toàn màn hình"
               >
                 <Maximize2 className="w-4 h-4" />
@@ -234,7 +231,7 @@ export function FloatingChatbot() {
               <button
                 type="button"
                 onClick={() => setIsOpen(false)}
-                className="p-1.5 rounded-[6px] text-[#b1dbb8] hover:text-[#fffefc] hover:bg-[#0c2f10] transition-colors"
+                className="p-1.5 rounded-[14px] text-[#b1dbb8] hover:text-[#fffefc] hover:bg-[#0c2f10] transition-colors"
                 title="Đóng cửa sổ chat"
               >
                 <X className="w-5 h-5" />
@@ -243,7 +240,7 @@ export function FloatingChatbot() {
           </div>
 
           {/* Medical Disclaimer Banner */}
-          <div className="bg-[#e1f4df]/60 px-3.5 py-2 border-b border-[#cfe7d3] flex items-center gap-2 text-[11px] text-[#0f3e17] shrink-0">
+          <div className="bg-[#e1f4df]/60 px-3.5 py-2 border-b border-[#efeeeb] flex items-center gap-2 text-[11px] text-[#0f3e17] shrink-0">
             <ShieldCheck className="w-3.5 h-3.5 text-[#0f3e17] shrink-0" />
             <span>Thông tin tham khảo y khoa. Cần khám trực tiếp trước khi bắt đầu liệu trình.</span>
           </div>
@@ -256,16 +253,16 @@ export function FloatingChatbot() {
                 className={`flex gap-2.5 ${msg.sender === "user" ? "justify-end" : "justify-start"}`}
               >
                 {msg.sender === "ai" && (
-                  <div className="w-7 h-7 rounded-[8px] bg-[#e1f4df] text-[#0f3e17] flex items-center justify-center shrink-0 mt-0.5 border border-[#cfe7d3]">
+                  <div className="w-7 h-7 rounded-[14px] bg-[#e1f4df] text-[#0f3e17] flex items-center justify-center shrink-0 mt-0.5">
                     <Stethoscope className="w-3.5 h-3.5" />
                   </div>
                 )}
 
                 <div
-                  className={`max-w-[82%] rounded-[12px] px-3.5 py-2.5 text-xs sm:text-[13px] leading-relaxed ${
+                  className={`max-w-[82%] rounded-[14px] px-3.5 py-2.5 text-xs sm:text-[13px] leading-relaxed ${
                     msg.sender === "user"
                       ? "bg-[#0f3e17] text-[#fffefc] rounded-tr-[2px]"
-                      : "bg-[#e1f4df]/40 text-[#222222] border border-[#cfe7d3]/80 rounded-tl-[2px]"
+                      : "bg-[#e1f4df]/40 text-[#222222] rounded-tl-[2px]"
                   }`}
                 >
                   <p className="whitespace-pre-wrap">{msg.text}</p>
@@ -284,7 +281,7 @@ export function FloatingChatbot() {
                       </span>
                       <Link
                         href="/dat-lich"
-                        className="inline-flex items-center gap-1 bg-[#0f3e17] hover:bg-[#0c2f10] text-[#fffefc] font-semibold text-[11px] px-2.5 py-1 rounded-[6px] transition-colors"
+                        className="inline-flex items-center gap-1 bg-[#0f3e17] hover:bg-[#0c2f10] text-[#fffefc] font-semibold text-[11px] px-2.5 py-1 rounded-full transition-colors"
                       >
                         <Calendar className="w-3 h-3" />
                         <span>Đặt lịch khám</span>
@@ -295,7 +292,7 @@ export function FloatingChatbot() {
                 </div>
 
                 {msg.sender === "user" && (
-                  <div className="w-7 h-7 rounded-[8px] bg-[#efeeeb] text-[#0f3e17] flex items-center justify-center shrink-0 mt-0.5">
+                  <div className="w-7 h-7 rounded-[14px] bg-[#efeeeb] text-[#0f3e17] flex items-center justify-center shrink-0 mt-0.5">
                     <User className="w-3.5 h-3.5" />
                   </div>
                 )}
@@ -305,7 +302,7 @@ export function FloatingChatbot() {
             {/* Danh sách câu hỏi gợi ý thường gặp - Sắp xếp theo danh sách, tự động biến mất khi hỏi */}
             {showPrompts && messages.filter((m) => m.sender === "user").length === 0 && (
               <div className="pl-9 pr-1 pt-1 space-y-2 animate-in fade-in duration-200">
-                <p className="text-[11px] font-semibold text-[#0f3e17] uppercase tracking-wider">
+                <p className="eyebrow text-[#0f3e17]">
                   Gợi ý câu hỏi thường gặp:
                 </p>
                 <div className="space-y-1.5">
@@ -314,7 +311,7 @@ export function FloatingChatbot() {
                       key={prompt}
                       type="button"
                       onClick={() => handleSendMessage(prompt)}
-                      className="w-full text-left text-xs text-[#0f3e17] bg-[#fffefc] hover:bg-[#e1f4df] border border-[#cfe7d3] p-2.5 rounded-[10px] transition-all flex items-center justify-between group shadow-xs hover:border-[#0f3e17]/40 cursor-pointer"
+                      className="w-full text-left text-xs text-[#0f3e17] bg-[#fffefc] hover:bg-[#e1f4df] border border-[#efeeeb] p-2.5 rounded-[14px] transition-all flex items-center justify-between group cursor-pointer"
                     >
                       <span className="line-clamp-2 leading-relaxed">{prompt}</span>
                       <ArrowRight className="w-3.5 h-3.5 text-[#0f3e17]/50 group-hover:text-[#0f3e17] group-hover:translate-x-0.5 transition-all shrink-0 ml-2" />
@@ -348,12 +345,12 @@ export function FloatingChatbot() {
               value={inputMessage}
               onChange={(e) => setInputMessage(e.target.value)}
               placeholder="Nhập câu hỏi hoặc triệu chứng..."
-              className="flex-1 px-3 py-2 text-xs sm:text-sm bg-[#fffefc] border border-[#efeeeb] rounded-[8px] text-[#222222] placeholder:text-[#222222]/40 focus:outline-none focus:border-[#0f3e17]"
+              className="flex-1 px-3 py-2 text-xs sm:text-sm bg-[#fffefc] border border-[#efeeeb] rounded-[14px] text-[#222222] placeholder:text-[#222222]/40 focus:outline-none focus:border-[#0f3e17]"
             />
             <button
               type="submit"
               disabled={!inputMessage.trim() || isTyping}
-              className="p-2.5 rounded-[8px] bg-[#0f3e17] hover:bg-[#0c2f10] text-[#fffefc] disabled:opacity-40 transition-colors shrink-0"
+              className="p-2.5 rounded-[14px] bg-[#0f3e17] hover:bg-[#0c2f10] text-[#fffefc] disabled:opacity-40 transition-colors shrink-0"
               aria-label="Gửi tin nhắn"
             >
               <Send className="w-4 h-4" />

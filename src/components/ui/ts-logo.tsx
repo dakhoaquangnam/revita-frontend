@@ -41,20 +41,15 @@ export function TsLogo({
       {/* Biểu tượng Monogram cách điệu chữ TS y học:
           - Chữ T với thanh ngang vững chãi che chở
           - Chữ S sinh học phục hồi vận động khớp và cơ mềm mại
-          - Khi ở Footer (nền tối #0f3e17): icon chuyển sang nền trắng tinh khôi #ffffff viền #cfe7d3 với nét vẽ xanh rừng đậm #0f3e17 nổi bật sắc nét.
+          - Khi ở Footer (nền tối #0f3e17): icon chuyển sang nền kem #fffefc, không viền, không bóng, với nét vẽ xanh rừng đậm #0f3e17 nổi bật sắc nét.
           - Khi ở Header / Dashboard (nền sáng): icon dùng nền xanh rừng #0f3e17 với nét vẽ xanh nhạt và trắng tinh tế.
       */}
       <div
-        className={`${sizeMap[size]} shrink-0 rounded-[12px] flex items-center justify-center p-1.5 transition-transform hover:scale-105 ${
+        className={`${sizeMap[size]} shrink-0 rounded-[14px] flex items-center justify-center p-1.5 transition-transform hover:scale-105 ${
           isLightIcon
-            ? "bg-[#ffffff] text-[#0f3e17] border-2 border-[#b1dbb8] shadow-md shadow-black/25"
-            : "bg-[#0f3e17] text-[#fffefc] shadow-sm shadow-[#0f3e17]/20"
+            ? "bg-[#fffefc] text-[#0f3e17] shadow-none"
+            : "bg-[#0f3e17] text-[#fffefc] shadow-none"
         }`}
-        style={
-          isLightIcon
-            ? { boxShadow: "0 2px 10px rgba(0, 0, 0, 0.25)" }
-            : { boxShadow: "0 2px 8px rgba(15, 62, 23, 0.2)" }
-        }
         aria-hidden="true"
       >
         <svg
@@ -94,7 +89,7 @@ export function TsLogo({
           {/* Vòm ngược trên chữ S để khép góc đối xứng mềm mại */}
           <path
             d="M24 28C25 24 28.5 22 32 22"
-            stroke={isLightIcon ? "#09230e" : "#e1f4df"}
+            stroke={isLightIcon ? "#0c2f10" : "#e1f4df"}
             strokeWidth="3.5"
             strokeLinecap="round"
           />
@@ -108,7 +103,7 @@ export function TsLogo({
       {showText && (
         <div className="flex flex-col leading-tight">
           <div
-            className={`font-extrabold tracking-tight font-sans ${textSizes[size].title} ${
+            className={`font-display-serif tracking-tight ${textSizes[size].title} ${
               textVariant === "light" ? "text-[#fffefc]" : "text-[#0f3e17]"
             }`}
           >

@@ -25,10 +25,10 @@ export function DoctorsSection() {
     <section id="bac-si" className="py-24 bg-[#fffefc] border-b border-[#efeeeb]">
       <div className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center max-w-3xl mx-auto mb-16">
-          <h2 className="text-3xl sm:text-4xl font-semibold text-[#0f3e17] tracking-tight">
+          <h2 className="text-3xl sm:text-4xl font-display-serif text-[#0f3e17] tracking-[-0.01em]">
             Bác sĩ Thanh Sang & Đội ngũ Chuyên khoa
           </h2>
-          <p className="text-[15px] text-[#222222]/80 mt-3 leading-relaxed font-light">
+          <p className="text-[15px] text-[#222222]/80 mt-3 leading-relaxed font-normal">
             Được đào tạo chính quy, giàu kinh nghiệm thực tế từ các bệnh viện chuyên khoa phục hồi chức năng tuyến đầu, luôn tận tâm đồng hành trên từng bước đi của người bệnh.
           </p>
         </div>
@@ -37,7 +37,7 @@ export function DoctorsSection() {
         {isLoading && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {[1, 2, 3].map((i) => (
-              <div key={i} className="bg-[#fffefc] rounded-[14px] p-6 border border-[#efeeeb] animate-pulse space-y-4">
+              <div key={i} className="bg-[#fffefc] rounded-[14px] p-7 border border-[#efeeeb] animate-pulse space-y-4">
                 <div className="flex gap-4 items-center">
                   <div className="w-16 h-16 rounded-[14px] bg-[#e1f4df]/60"></div>
                   <div className="space-y-2 flex-1">
@@ -60,27 +60,27 @@ export function DoctorsSection() {
               return (
                 <div
                   key={item.id}
-                  className={`${cardBg} rounded-[14px] p-6 border border-[#efeeeb] flex flex-col justify-between transition-colors`}
+                  className={`${cardBg} rounded-[14px] p-7 border border-[#efeeeb] flex flex-col justify-between transition-colors`}
                 >
                   <div className="space-y-4">
                     <div className="flex items-start gap-4">
                       {/* Avatar */}
-                      <div className="w-16 h-16 rounded-[14px] bg-[#e1f4df] border border-[#cfe7d3] flex items-center justify-center text-[#0f3e17] shrink-0">
+                      <div className="w-16 h-16 rounded-[14px] bg-[#e1f4df] border border-[#efeeeb] flex items-center justify-center text-[#0f3e17] shrink-0">
                         <UserRound className="w-8 h-8" />
                       </div>
 
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between">
-                          <span className="text-[11px] font-medium text-[#0f3e17]/70 font-mono tracking-tight">
+                          <span className="text-[11px] font-semibold text-[#0f3e17]/70">
                             {docInfo?.doctorCode || "Bác sĩ CKI"}
                           </span>
-                          <div className="flex items-center gap-1 text-xs font-bold text-[#0f3e17]">
+                          <div className="flex items-center gap-1 text-xs font-semibold text-[#0f3e17]">
                             <Award className="w-3.5 h-3.5 text-[#0f3e17]" />
                             <span>{docInfo?.rating || 4.9}</span>
                           </div>
                         </div>
 
-                        <h3 className="text-lg font-bold text-[#0f3e17] mt-1.5 truncate">
+                        <h3 className="text-lg font-display-serif text-[#0f3e17] mt-1.5 truncate">
                           BS. {item.name}
                         </h3>
 

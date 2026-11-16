@@ -257,10 +257,10 @@ export default function DatLichPage() {
         <div className="max-w-4xl mx-auto px-4 sm:px-6">
           {/* Header Title */}
           <div className="text-center mb-10">
-            <span className="block text-[11px] font-semibold uppercase tracking-[0.08em] text-[#0f3e17]">
+            <span className="block eyebrow text-[#0f3e17]">
               HỆ THỐNG ĐẶT LỊCH KHÁM THÔNG MINH
             </span>
-            <h1 className="text-3xl sm:text-4xl font-extrabold text-[#0f3e17] tracking-tight mt-3">
+            <h1 className="text-3xl sm:text-4xl font-display-serif text-[#0f3e17] tracking-[-0.01em] mt-3">
               Đăng ký Lịch khám Phục hồi chức năng
             </h1>
             <p className="text-sm text-[#222222]/80 mt-2">
@@ -271,36 +271,36 @@ export default function DatLichPage() {
           {/* Stepper Indicator */}
           <div className="bg-[#fffefc] rounded-[14px] p-4 sm:p-5 border border-[#efeeeb] mb-8">
             <div className="flex items-center justify-between text-xs sm:text-sm font-medium">
-              <div className={`flex items-center gap-2 ${step >= 1 ? "text-[#0f3e17] font-bold" : "text-[#222222]/40"}`}>
-                <span className={`w-7 h-7 rounded-[6px] flex items-center justify-center text-xs font-bold ${step >= 1 ? "bg-[#0f3e17] text-[#fffefc]" : "bg-[#efeeeb] text-[#222222]/60"}`}>
+              <div className={`flex items-center gap-2 ${step >= 1 ? "text-[#0f3e17] font-semibold" : "text-[#222222]/40"}`}>
+                <span className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-semibold ${step >= 1 ? "bg-[#0f3e17] text-[#fffefc]" : "bg-[#efeeeb] text-[#222222]/60"}`}>
                   1
                 </span>
                 <span className="hidden sm:inline">Chọn Chuyên khoa</span>
               </div>
               <div className={`w-8 sm:w-16 h-0.5 ${step >= 2 ? "bg-[#0f3e17]" : "bg-[#efeeeb]"}`}></div>
-              <div className={`flex items-center gap-2 ${step >= 2 ? "text-[#0f3e17] font-bold" : "text-[#222222]/40"}`}>
-                <span className={`w-7 h-7 rounded-[6px] flex items-center justify-center text-xs font-bold ${step >= 2 ? "bg-[#0f3e17] text-[#fffefc]" : "bg-[#efeeeb] text-[#222222]/60"}`}>
+              <div className={`flex items-center gap-2 ${step >= 2 ? "text-[#0f3e17] font-semibold" : "text-[#222222]/40"}`}>
+                <span className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-semibold ${step >= 2 ? "bg-[#0f3e17] text-[#fffefc]" : "bg-[#efeeeb] text-[#222222]/60"}`}>
                   2
                 </span>
                 <span className="hidden sm:inline">Bác sĩ, Dịch vụ & Giờ</span>
               </div>
               <div className={`w-8 sm:w-16 h-0.5 ${step >= 3 ? "bg-[#0f3e17]" : "bg-[#efeeeb]"}`}></div>
-              <div className={`flex items-center gap-2 ${step >= 3 ? "text-[#0f3e17] font-bold" : "text-[#222222]/40"}`}>
-                <span className={`w-7 h-7 rounded-[6px] flex items-center justify-center text-xs font-bold ${step >= 3 ? "bg-[#0f3e17] text-[#fffefc]" : "bg-[#efeeeb] text-[#222222]/60"}`}>
+              <div className={`flex items-center gap-2 ${step >= 3 ? "text-[#0f3e17] font-semibold" : "text-[#222222]/40"}`}>
+                <span className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-semibold ${step >= 3 ? "bg-[#0f3e17] text-[#fffefc]" : "bg-[#efeeeb] text-[#222222]/60"}`}>
                   3
                 </span>
                 <span className="hidden sm:inline">Kỹ thuật viên</span>
               </div>
               <div className={`w-8 sm:w-16 h-0.5 ${step >= 4 ? "bg-[#0f3e17]" : "bg-[#efeeeb]"}`}></div>
-              <div className={`flex items-center gap-2 ${step >= 4 ? "text-[#0f3e17] font-bold" : "text-[#222222]/40"}`}>
-                <span className={`w-7 h-7 rounded-[6px] flex items-center justify-center text-xs font-bold ${step >= 4 ? "bg-[#0f3e17] text-[#fffefc]" : "bg-[#efeeeb] text-[#222222]/60"}`}>
+              <div className={`flex items-center gap-2 ${step >= 4 ? "text-[#0f3e17] font-semibold" : "text-[#222222]/40"}`}>
+                <span className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-semibold ${step >= 4 ? "bg-[#0f3e17] text-[#fffefc]" : "bg-[#efeeeb] text-[#222222]/60"}`}>
                   4
                 </span>
                 <span className="hidden sm:inline">Hồ sơ người khám</span>
               </div>
               <div className={`w-8 sm:w-16 h-0.5 ${step >= 5 ? "bg-[#0f3e17]" : "bg-[#efeeeb]"}`}></div>
-              <div className={`flex items-center gap-2 ${step >= 5 ? "text-[#0f3e17] font-bold" : "text-[#222222]/40"}`}>
-                <span className={`w-7 h-7 rounded-[6px] flex items-center justify-center text-xs font-bold ${step >= 5 ? "bg-[#0f3e17] text-[#fffefc]" : "bg-[#efeeeb] text-[#222222]/60"}`}>
+              <div className={`flex items-center gap-2 ${step >= 5 ? "text-[#0f3e17] font-semibold" : "text-[#222222]/40"}`}>
+                <span className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-semibold ${step >= 5 ? "bg-[#0f3e17] text-[#fffefc]" : "bg-[#efeeeb] text-[#222222]/60"}`}>
                   5
                 </span>
                 <span className="hidden sm:inline">Vé hẹn</span>
@@ -312,7 +312,7 @@ export default function DatLichPage() {
           {step === 1 && (
             <div className="bg-[#fffefc] rounded-[14px] p-6 sm:p-8 border border-[#efeeeb] space-y-6">
               <div>
-                <h2 className="text-lg font-bold text-[#0f3e17]">1. Chọn Chuyên khoa bạn cần điều trị</h2>
+                <h2 className="text-lg font-display-serif text-[#0f3e17]">1. Chọn Chuyên khoa bạn cần điều trị</h2>
                 <p className="text-xs text-[#222222]/70 mt-0.5">Chọn đúng nhóm bệnh giúp phòng khám chuẩn bị buồng máy phù hợp.</p>
                 {specialtiesLoading ? (
                   <p className="text-sm text-[#222222]/70 mt-4">Đang tải danh sách chuyên khoa...</p>
@@ -333,7 +333,7 @@ export default function DatLichPage() {
                         onClick={() => setSelectedSpecialtyId(spec.id)}
                         className={`text-left p-3.5 rounded-[14px] border text-sm font-medium transition-colors ${
                           selectedSpecialtyId === spec.id
-                            ? "bg-[#e1f4df] border-[#cfe7d3] text-[#0f3e17] font-semibold"
+                            ? "bg-[#e1f4df] border-[#efeeeb] text-[#0f3e17] font-semibold"
                             : "bg-[#fffefc] border-[#efeeeb] text-[#222222] hover:bg-[#efeeeb]/40"
                         }`}
                       >
@@ -367,7 +367,7 @@ export default function DatLichPage() {
           {step === 2 && (
             <div className="bg-[#fffefc] rounded-[14px] p-6 sm:p-8 border border-[#efeeeb] space-y-6">
               <div>
-                <h2 className="text-lg font-bold text-[#0f3e17]">1. Chọn ngày khám</h2>
+                <h2 className="text-lg font-display-serif text-[#0f3e17]">1. Chọn ngày khám</h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-center mt-3">
                   <div>
                     <input
@@ -393,7 +393,7 @@ export default function DatLichPage() {
               </div>
 
               <div className="pt-4 border-t border-[#efeeeb]">
-                <h2 className="text-lg font-bold text-[#0f3e17]">2. Chọn Bác sĩ chuyên khoa phụ trách</h2>
+                <h2 className="text-lg font-display-serif text-[#0f3e17]">2. Chọn Bác sĩ chuyên khoa phụ trách</h2>
                 {doctorsLoading ? (
                   <p className="text-sm text-[#222222]/70 mt-3">Đang tải danh sách bác sĩ...</p>
                 ) : doctorsError ? (
@@ -415,15 +415,15 @@ export default function DatLichPage() {
                         }}
                         className={`cursor-pointer p-4 rounded-[14px] border transition-colors ${
                           selectedDoctorId === d.doctorId
-                            ? "bg-[#e1f4df] border-[#cfe7d3] text-[#0f3e17]"
+                            ? "bg-[#e1f4df] border-[#efeeeb] text-[#0f3e17]"
                             : "bg-[#fffefc] border-[#efeeeb] text-[#222222] hover:bg-[#efeeeb]/30"
                         }`}
                       >
-                        <p className="text-sm font-bold truncate">BS. {d.doctorName}</p>
+                        <p className="text-sm font-semibold truncate">BS. {d.doctorName}</p>
                         <p className="text-xs text-[#222222]/70">
                           {d.roomName ?? d.boothName ?? ""} • Ca {d.workSessionStart} - {d.workSessionEnd}
                         </p>
-                        <span className="inline-block mt-2 text-[11px] font-semibold text-[#0f3e17] bg-[#b1dbb8]/40 px-2 py-0.5 rounded-[6px]">
+                        <span className="inline-block mt-2 text-[11px] font-semibold text-[#0f3e17] bg-[#b1dbb8]/40 px-2 py-0.5 rounded-full">
                           Đánh giá {d.rating} / 5.0
                         </span>
                       </div>
@@ -434,7 +434,7 @@ export default function DatLichPage() {
 
               {selectedDoctorId && (
                 <div className="pt-4 border-t border-[#efeeeb]">
-                  <h2 className="text-lg font-bold text-[#0f3e17]">3. Chọn Dịch vụ khám / Trị liệu</h2>
+                  <h2 className="text-lg font-display-serif text-[#0f3e17]">3. Chọn Dịch vụ khám / Trị liệu</h2>
                   {servicesLoading ? (
                     <p className="text-sm text-[#222222]/70 mt-3">Đang tải dịch vụ...</p>
                   ) : services.length === 0 ? (
@@ -451,12 +451,12 @@ export default function DatLichPage() {
                           }}
                           className={`cursor-pointer p-4 rounded-[14px] border transition-colors flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${
                             selectedServiceId === srv.serviceId
-                              ? "bg-[#e1f4df]/60 border-[#cfe7d3]"
+                              ? "bg-[#e1f4df]/60 border-[#efeeeb]"
                               : "bg-[#fffefc] border-[#efeeeb] hover:bg-[#efeeeb]/30"
                           }`}
                         >
                           <div className="space-y-1">
-                            <h3 className="font-bold text-[#0f3e17] text-sm sm:text-base">{srv.serviceName}</h3>
+                            <h3 className="font-semibold text-[#0f3e17] text-sm sm:text-base">{srv.serviceName}</h3>
                             {srv.description && (
                               <p className="text-xs text-[#222222]/75 leading-relaxed">{srv.description}</p>
                             )}
@@ -467,7 +467,7 @@ export default function DatLichPage() {
                             )}
                           </div>
                           <div className="text-right sm:shrink-0">
-                            <span className="text-base font-extrabold text-[#0f3e17]">
+                            <span className="text-base font-display-serif text-[#0f3e17]">
                               {srv.price != null ? `${srv.price.toLocaleString("vi-VN")} đ` : "Liên hệ"}
                             </span>
                           </div>
@@ -480,7 +480,7 @@ export default function DatLichPage() {
 
               {selectedServiceId && (
                 <div className="pt-4 border-t border-[#efeeeb]">
-                  <label className="block text-sm font-bold text-[#0f3e17] mb-2">
+                  <label className="block text-sm font-semibold text-[#0f3e17] mb-2">
                     4. Chọn Khung giờ còn trống
                   </label>
                   {slotsLoading ? (
@@ -505,7 +505,7 @@ export default function DatLichPage() {
                             }
                             className={`py-2.5 px-2 rounded-[14px] text-xs font-semibold border transition-colors ${
                               isSelected
-                                ? "bg-[#0f3e17] border-[#0f3e17] text-[#fffefc]"
+                                ? "bg-[#0f3e17] border-transparent text-[#fffefc]"
                                 : "bg-[#fffefc] border-[#efeeeb] text-[#222222] hover:bg-[#efeeeb]/40"
                             }`}
                           >
@@ -544,7 +544,7 @@ export default function DatLichPage() {
           {step === 3 && (
             <div className="bg-[#fffefc] rounded-[14px] p-6 sm:p-8 border border-[#efeeeb] space-y-6">
               <div>
-                <h2 className="text-lg font-bold text-[#0f3e17]">3. Chọn Kỹ thuật viên phụ trách</h2>
+                <h2 className="text-lg font-display-serif text-[#0f3e17]">3. Chọn Kỹ thuật viên phụ trách</h2>
                 <p className="text-xs text-[#222222]/70 mt-0.5">
                   Dịch vụ {selectedService?.serviceName} do kỹ thuật viên {serviceTechnician?.roleLabel} phụ trách.
                 </p>
@@ -559,17 +559,17 @@ export default function DatLichPage() {
                     onClick={() => setSelectedTechnicianId(mappedTechnician.id)}
                     className={`cursor-pointer p-4 rounded-[14px] border transition-colors mt-3 ${
                       selectedTechnicianId === mappedTechnician.id
-                        ? "bg-[#e1f4df] border-[#cfe7d3] text-[#0f3e17]"
+                        ? "bg-[#e1f4df] border-[#efeeeb] text-[#0f3e17]"
                         : "bg-[#fffefc] border-[#efeeeb] text-[#222222] hover:bg-[#efeeeb]/30"
                     }`}
                   >
-                    <p className="text-sm font-bold">
+                    <p className="text-sm font-semibold">
                       {serviceTechnician?.prefix}. {mappedTechnician.name}
                     </p>
                     <p className="text-xs text-[#222222]/70 mt-0.5">
                       {serviceTechnician?.roleLabel} • Mã KTV {mappedTechnician.technicianCode}
                     </p>
-                    <span className="inline-block mt-2 text-[11px] font-semibold text-[#0f3e17] bg-[#b1dbb8]/40 px-2 py-0.5 rounded-[6px]">
+                    <span className="inline-block mt-2 text-[11px] font-semibold text-[#0f3e17] bg-[#b1dbb8]/40 px-2 py-0.5 rounded-full">
                       Kỹ thuật viên phụ trách buổi trị liệu này
                     </span>
                   </div>
@@ -602,7 +602,7 @@ export default function DatLichPage() {
           {step === 4 && (
             <form onSubmit={handleFinishBooking} className="bg-[#fffefc] rounded-[14px] p-6 sm:p-8 border border-[#efeeeb] space-y-6">
               <div>
-                <h2 className="text-lg font-bold text-[#0f3e17]">Thông tin hành chính bệnh nhân</h2>
+                <h2 className="text-lg font-display-serif text-[#0f3e17]">Thông tin hành chính bệnh nhân</h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-3">
                   <div>
                     <label className="block text-xs font-semibold text-[#0f3e17] mb-1">
@@ -663,13 +663,13 @@ export default function DatLichPage() {
               <div className="pt-4 border-t border-[#efeeeb] space-y-4">
                 <div className="flex items-center gap-2">
                   <AlertTriangle className="w-4 h-4 text-[#0f3e17]" />
-                  <h3 className="text-sm font-bold text-[#0f3e17]">
+                  <h3 className="text-sm font-semibold text-[#0f3e17]">
                     Sàng lọc an toàn Vật lý trị liệu (Bắt buộc)
                   </h3>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="p-4 rounded-[14px] bg-[#e1f4df]/40 border border-[#cfe7d3]">
+                  <div className="p-4 rounded-[14px] bg-[#e1f4df]/40 border border-[#efeeeb]">
                     <p className="text-xs font-semibold text-[#0f3e17]">
                       Người bệnh có nẹp vít kim loại trong cơ thể không?
                     </p>
@@ -698,7 +698,7 @@ export default function DatLichPage() {
                     </div>
                   </div>
 
-                  <div className="p-4 rounded-[14px] bg-[#e1f4df]/40 border border-[#cfe7d3]">
+                  <div className="p-4 rounded-[14px] bg-[#e1f4df]/40 border border-[#efeeeb]">
                     <p className="text-xs font-semibold text-[#0f3e17]">
                       Người bệnh có cấy ghép máy tạo nhịp tim không?
                     </p>
@@ -800,16 +800,16 @@ export default function DatLichPage() {
                     <CheckCircle2 className="w-7 h-7 text-[#b1dbb8]" />
                   </div>
                   <div>
-                    <h2 className="text-xl font-bold">Đặt lịch khám thành công!</h2>
+                    <h2 className="text-xl font-display-serif">Đặt lịch khám thành công!</h2>
                     <p className="text-xs text-[#cfe7d3]">
                       Mã phiếu hẹn đã được cấp và lưu vào hệ thống tiếp đón của Bác sĩ Thanh Sang (193 Quang Trung, Đại Lộc, Đà Nẵng).
                     </p>
                   </div>
                 </div>
 
-                <div className="bg-[#fffefc]/10 px-4 py-2 rounded-[14px] border border-[#fffefc]/20 text-center">
-                  <span className="text-[11px] uppercase tracking-wider block text-[#b1dbb8]">Mã vé hẹn</span>
-                  <span className="text-2xl font-black tracking-widest">{ticketCode}</span>
+                <div className="bg-[#fffefc]/10 px-4 py-2 rounded-[14px] border border-[#efeeeb]/20 text-center">
+                  <span className="eyebrow block text-[#b1dbb8]">Mã vé hẹn</span>
+                  <span className="text-2xl font-display-serif tracking-widest">{ticketCode}</span>
                   <button
                     type="button"
                     onClick={() => copyToClipboard(ticketCode)}
@@ -823,7 +823,7 @@ export default function DatLichPage() {
 
               {/* Ticket Summary */}
               <div className="bg-[#fffefc] rounded-[14px] p-6 border border-[#efeeeb] space-y-4">
-                <h3 className="font-bold text-[#0f3e17] text-base pb-3 border-b border-[#efeeeb] flex items-center gap-2">
+                <h3 className="font-display-serif text-[#0f3e17] text-base pb-3 border-b border-[#efeeeb] flex items-center gap-2">
                   <ShieldCheck className="w-5 h-5 text-[#0f3e17]" />
                   <span>Phiếu Khám Lượng Giá Điện Tử</span>
                 </h3>
@@ -831,7 +831,7 @@ export default function DatLichPage() {
                 <div className="space-y-2.5 text-sm">
                   <div className="flex justify-between py-1 border-b border-[#efeeeb]/60">
                     <span className="text-[#222222]/70">Người khám:</span>
-                    <span className="font-bold text-[#0f3e17]">{patientInfo.fullName}</span>
+                    <span className="font-semibold text-[#0f3e17]">{patientInfo.fullName}</span>
                   </div>
                   <div className="flex justify-between py-1 border-b border-[#efeeeb]/60">
                     <span className="text-[#222222]/70">Số điện thoại:</span>
@@ -840,7 +840,7 @@ export default function DatLichPage() {
                   {profileCode && (
                     <div className="flex justify-between py-1 border-b border-[#efeeeb]/60">
                       <span className="text-[#222222]/70">Mã hồ sơ:</span>
-                      <span className="font-mono font-semibold text-[#222222]">{profileCode}</span>
+                      <span className="font-semibold text-[#222222]">{profileCode}</span>
                     </div>
                   )}
                   <div className="flex justify-between py-1 border-b border-[#efeeeb]/60">
@@ -863,17 +863,17 @@ export default function DatLichPage() {
                   )}
                   <div className="flex justify-between py-1 border-b border-[#efeeeb]/60">
                     <span className="text-[#222222]/70">Ngày khám:</span>
-                    <span className="font-bold text-[#0f3e17]">{selectedDate}</span>
+                    <span className="font-semibold text-[#0f3e17]">{selectedDate}</span>
                   </div>
                   <div className="flex justify-between py-1 border-b border-[#efeeeb]/60">
                     <span className="text-[#222222]/70">Khung giờ:</span>
-                    <span className="font-bold text-[#0f3e17]">
+                    <span className="font-semibold text-[#0f3e17]">
                       {selectedSlot ? slotLabel(selectedSlot.startTime, selectedSlot.endTime) : ""}
                     </span>
                   </div>
                   <div className="flex justify-between py-1 pt-2">
                     <span className="text-[#222222] font-semibold">Tổng chi phí dự kiến:</span>
-                    <span className="text-lg font-black text-[#0f3e17]">
+                    <span className="text-lg font-display-serif text-[#0f3e17]">
                       {selectedService?.price != null
                         ? `${selectedService.price.toLocaleString("vi-VN")} đ`
                         : "Thanh toán tại quầy"}
@@ -881,8 +881,8 @@ export default function DatLichPage() {
                   </div>
                 </div>
 
-                <div className="p-3.5 bg-[#e1f4df]/40 rounded-[14px] border border-[#cfe7d3] text-xs text-[#222222]/80 space-y-1">
-                  <p className="font-bold text-[#0f3e17]">Hướng dẫn khi đến phòng khám:</p>
+                <div className="p-3.5 bg-[#e1f4df]/40 rounded-[14px] border border-[#efeeeb] text-xs text-[#222222]/80 space-y-1">
+                  <p className="font-semibold text-[#0f3e17]">Hướng dẫn khi đến phòng khám:</p>
                   <p>1. Đến trước giờ hẹn 10 phút, đưa mã vé <strong>{ticketCode}</strong> tại quầy Lễ tân hoặc màn hình Kiosk để nhận số vào thẳng phòng khám.</p>
                   <p>2. Mang theo phim chụp X-Quang / MRI hoặc giấy ra viện (nếu có).</p>
                   <p>3. Thanh toán chi phí tại quầy thu ngân sau khi khám — hiện phòng khám chưa thu cọc online.</p>

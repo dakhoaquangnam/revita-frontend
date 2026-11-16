@@ -27,8 +27,8 @@ interface AssessmentTabProps {
 }
 
 const GOAL_STATUS_LABEL: Record<string, { text: string; className: string }> = {
-  ACTIVE: { text: "Đang thực hiện", className: "bg-[#e1f4df] text-[#0f3e17] border-[#cfe7d3]" },
-  ACHIEVED: { text: "Đã đạt", className: "bg-[#0f3e17] text-[#fffefc] border-[#0f3e17]" },
+  ACTIVE: { text: "Đang thực hiện", className: "bg-[#e1f4df] text-[#0f3e17]" },
+  ACHIEVED: { text: "Đã đạt", className: "bg-[#0f3e17] text-[#fffefc]" },
   NOT_ACHIEVED: { text: "Không đạt", className: "bg-rose-100 text-rose-700 border-rose-300" },
   CANCELLED: { text: "Đã hủy", className: "bg-[#efeeeb] text-[#222222]/60 border-[#efeeeb]" },
 };
@@ -370,7 +370,7 @@ export default function AssessmentTab({
           <select
             value={selectedCondition}
             onChange={(e) => setSelectedCondition(e.target.value)}
-            className="mt-1 w-full bg-[#fffefc] border border-[#efeeeb] rounded-[7px] px-2 py-2 text-xs font-semibold text-[#0f3e17] focus:outline-none focus:border-[#0f3e17]"
+            className="mt-1 w-full bg-[#fffefc] border border-[#efeeeb] rounded-[14px] px-2 py-2 text-xs font-semibold text-[#0f3e17] focus:outline-none focus:border-[#0f3e17]"
           >
             {CONDITION_OPTIONS.map((c) => (
               <option key={c.value} value={c.value}>{c.label}</option>
@@ -382,7 +382,7 @@ export default function AssessmentTab({
           <select
             value={selectedSpecialty}
             onChange={(e) => setSelectedSpecialty(e.target.value)}
-            className="mt-1 w-full bg-[#fffefc] border border-[#efeeeb] rounded-[7px] px-2 py-2 text-xs font-semibold text-[#0f3e17] focus:outline-none focus:border-[#0f3e17]"
+            className="mt-1 w-full bg-[#fffefc] border border-[#efeeeb] rounded-[14px] px-2 py-2 text-xs font-semibold text-[#0f3e17] focus:outline-none focus:border-[#0f3e17]"
           >
             {SPECIALTY_OPTIONS.map((s) => (
               <option key={s.value} value={s.value}>{s.label}</option>
@@ -394,7 +394,7 @@ export default function AssessmentTab({
           <select
             value={selectedScaleCode}
             onChange={(e) => setSelectedScaleCode(e.target.value)}
-            className="mt-1 w-full bg-[#fffefc] border border-[#efeeeb] rounded-[7px] px-2 py-2 text-xs font-semibold text-[#0f3e17] focus:outline-none focus:border-[#0f3e17]"
+            className="mt-1 w-full bg-[#fffefc] border border-[#efeeeb] rounded-[14px] px-2 py-2 text-xs font-semibold text-[#0f3e17] focus:outline-none focus:border-[#0f3e17]"
           >
             <option value="">— Chọn thang điểm —</option>
             {scales.map((s) => (
@@ -420,8 +420,8 @@ export default function AssessmentTab({
                 onClick={() => setSelectedTimepoint(t.value)}
                 className={`px-3 py-1.5 rounded-[14px] text-xs font-semibold border transition-colors ${
                   selectedTimepoint === t.value
-                    ? "bg-[#0f3e17] text-[#fffefc] border-[#0f3e17]"
-                    : "bg-[#fffefc] border-[#efeeeb] text-[#222222]/70 hover:border-[#0f3e17]"
+                    ? "bg-[#0f3e17] text-[#fffefc]"
+                    : "bg-[#fffefc] border-[#efeeeb] text-[#222222]/70 hover:bg-[#e1f4df]"
                 }`}
               >
                 {t.label}
@@ -434,15 +434,15 @@ export default function AssessmentTab({
 
           {/* Tổng preview */}
           {preview && preview.total !== null && (
-            <div className="p-4 rounded-[14px] bg-[#e1f4df]/40 border border-[#cfe7d3] flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <div className="p-4 rounded-[14px] bg-[#e1f4df]/40 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
               <div>
-                <span className="text-xs text-[#0f3e17] font-semibold uppercase tracking-wider">Tổng điểm (xem trước)</span>
-                <div className="text-3xl font-black text-[#0f3e17] font-mono mt-0.5">
+                <span className="eyebrow text-[#0f3e17]">Tổng điểm (xem trước)</span>
+                <div className="font-display-serif text-3xl text-[#0f3e17] tracking-[-0.01em] mt-0.5">
                   {preview.total}
                   <span className="text-sm font-normal text-[#222222]/60"> / {scaleDef.scoring.maxTotal ?? "—"} điểm</span>
                 </div>
               </div>
-              <div className="text-xs font-bold text-[#0f3e17]">{preview.text}</div>
+              <div className="text-xs font-semibold text-[#0f3e17]">{preview.text}</div>
             </div>
           )}
 
@@ -450,7 +450,7 @@ export default function AssessmentTab({
           {scaleDef.kind === "MULTI_ITEM" && (
             <div className="space-y-4">
               {scaleDef.subscales && scaleDef.subscales.length > 0 && (
-                <div className="text-xs font-bold text-[#0f3e17] uppercase tracking-wide">
+                <div className="eyebrow text-[#0f3e17]">
                   {scaleDef.subscales.map((s) => s.labelVi).join(" & ")} (thang {scaleDef.items[0]?.min}–{scaleDef.items[0]?.max} / mục)
                 </div>
               )}
@@ -467,7 +467,7 @@ export default function AssessmentTab({
                         onChange={(e) =>
                           setItemValues((prev) => ({ ...prev, [item.key]: e.target.value === "" ? null : Number(e.target.value) }))
                         }
-                        className="bg-[#fffefc] border border-[#efeeeb] rounded-[7px] px-2 py-1 text-xs text-[#0f3e17] font-bold focus:outline-none focus:border-[#0f3e17] max-w-[180px]"
+                        className="bg-[#fffefc] border border-[#efeeeb] rounded-[14px] px-2 py-1 text-xs text-[#0f3e17] font-semibold focus:outline-none focus:border-[#0f3e17] max-w-[180px]"
                       >
                         <option value="">— Chưa chấm —</option>
                         {item.options.map((o) => (
@@ -480,7 +480,7 @@ export default function AssessmentTab({
                         onChange={(e) =>
                           setItemValues((prev) => ({ ...prev, [item.key]: e.target.value === "" ? null : Number(e.target.value) }))
                         }
-                        className="bg-[#fffefc] border border-[#efeeeb] rounded-[7px] px-2 py-1 text-xs text-[#0f3e17] font-bold focus:outline-none focus:border-[#0f3e17]"
+                        className="bg-[#fffefc] border border-[#efeeeb] rounded-[14px] px-2 py-1 text-xs text-[#0f3e17] font-semibold focus:outline-none focus:border-[#0f3e17]"
                       >
                         <option value="">—</option>
                         {Array.from({ length: item.max - item.min + 1 }, (_, k) => item.min + k).map((v) => (
@@ -528,7 +528,7 @@ export default function AssessmentTab({
                   <select
                     value={newMeasureKey}
                     onChange={(e) => setNewMeasureKey(e.target.value)}
-                    className="mt-1 w-full bg-[#fffefc] border border-[#efeeeb] rounded-[7px] px-2 py-2 font-semibold text-[#0f3e17] focus:outline-none focus:border-[#0f3e17]"
+                    className="mt-1 w-full bg-[#fffefc] border border-[#efeeeb] rounded-[14px] px-2 py-2 font-semibold text-[#0f3e17] focus:outline-none focus:border-[#0f3e17]"
                   >
                     {scaleDef.items.map((i) => (
                       <option key={i.key} value={i.key}>
@@ -542,7 +542,7 @@ export default function AssessmentTab({
                   <select
                     value={newMeasureSide}
                     onChange={(e) => setNewMeasureSide(e.target.value as "LEFT" | "RIGHT" | "BOTH")}
-                    className="mt-1 w-full bg-[#fffefc] border border-[#efeeeb] rounded-[7px] px-2 py-2 font-semibold text-[#0f3e17] focus:outline-none focus:border-[#0f3e17]"
+                    className="mt-1 w-full bg-[#fffefc] border border-[#efeeeb] rounded-[14px] px-2 py-2 font-semibold text-[#0f3e17] focus:outline-none focus:border-[#0f3e17]"
                   >
                     <option value="RIGHT">Phải</option>
                     <option value="LEFT">Trái</option>
@@ -559,7 +559,7 @@ export default function AssessmentTab({
                       value={newMeasureValue}
                       onChange={(e) => setNewMeasureValue(e.target.value)}
                       placeholder="0–5"
-                      className="mt-1 w-full bg-[#fffefc] border border-[#efeeeb] rounded-[7px] px-2 py-2 font-bold text-[#0f3e17] focus:outline-none focus:border-[#0f3e17]"
+                      className="mt-1 w-full bg-[#fffefc] border border-[#efeeeb] rounded-[14px] px-2 py-2 font-semibold text-[#0f3e17] focus:outline-none focus:border-[#0f3e17]"
                     />
                   </label>
                 ) : (
@@ -572,7 +572,7 @@ export default function AssessmentTab({
                         value={newMeasureActive}
                         onChange={(e) => setNewMeasureActive(e.target.value)}
                         placeholder="°"
-                        className="mt-1 w-full bg-[#fffefc] border border-[#efeeeb] rounded-[7px] px-2 py-2 font-bold text-[#0f3e17] focus:outline-none focus:border-[#0f3e17]"
+                        className="mt-1 w-full bg-[#fffefc] border border-[#efeeeb] rounded-[14px] px-2 py-2 font-semibold text-[#0f3e17] focus:outline-none focus:border-[#0f3e17]"
                       />
                     </label>
                     <label>
@@ -583,7 +583,7 @@ export default function AssessmentTab({
                         value={newMeasurePassive}
                         onChange={(e) => setNewMeasurePassive(e.target.value)}
                         placeholder="°"
-                        className="mt-1 w-full bg-[#fffefc] border border-[#efeeeb] rounded-[7px] px-2 py-2 font-bold text-[#0f3e17] focus:outline-none focus:border-[#0f3e17]"
+                        className="mt-1 w-full bg-[#fffefc] border border-[#efeeeb] rounded-[14px] px-2 py-2 font-semibold text-[#0f3e17] focus:outline-none focus:border-[#0f3e17]"
                       />
                     </label>
                   </>
@@ -634,7 +634,7 @@ export default function AssessmentTab({
                 value={assessmentNote}
                 onChange={(e) => setAssessmentNote(e.target.value)}
                 placeholder="VD: bệnh nhân mệt, đo buổi chiều…"
-                className="mt-1 w-full bg-[#fffefc] border border-[#efeeeb] rounded-[7px] px-3 py-2 text-xs focus:outline-none focus:border-[#0f3e17]"
+                className="mt-1 w-full bg-[#fffefc] border border-[#efeeeb] rounded-[14px] px-3 py-2 text-xs focus:outline-none focus:border-[#0f3e17]"
               />
             </label>
           </div>
@@ -660,7 +660,7 @@ export default function AssessmentTab({
       {/* Lịch sử + xu hướng */}
       {scaleDef && (
         <div className="space-y-3">
-          <h4 className="text-xs font-bold text-[#0f3e17] uppercase tracking-wider">
+          <h4 className="eyebrow text-[#0f3e17]">
             Lịch sử {scaleDef.nameVi} của bệnh nhân
           </h4>
           {historyLoading ? (
@@ -696,7 +696,7 @@ export default function AssessmentTab({
                           <td className="py-2 pr-2">
                             {h.timepoint === "BASELINE" ? "ĐV" : h.timepoint === "REASSESSMENT" ? "TĐG" : "RV"}
                           </td>
-                          <td className="py-2 pr-2 font-bold text-[#0f3e17]">{main}</td>
+                          <td className="py-2 pr-2 font-semibold text-[#0f3e17]">{main}</td>
                           <td className="py-2 pr-2">{t?.deltaVsPrevious ?? "—"}</td>
                           <td className="py-2 pr-2">{t?.deltaVsBaseline ?? "—"}</td>
                           <td className="py-2">{t?.mcidReached ? "✓ Đạt" : "—"}</td>
@@ -764,12 +764,12 @@ export default function AssessmentTab({
                       value={voidReason}
                       onChange={(e) => setVoidReason(e.target.value)}
                       placeholder="Lý do hủy (VD: nhập sai điểm)"
-                      className="flex-1 bg-[#fffefc] border border-[#efeeeb] rounded-[7px] px-2 py-1.5 text-xs focus:outline-none focus:border-rose-700"
+                      className="flex-1 bg-[#fffefc] border border-[#efeeeb] rounded-[14px] px-2 py-1.5 text-xs focus:outline-none focus:border-rose-700"
                     />
                     <button
                       type="button"
                       onClick={() => handleVoid(selectedHistory.id)}
-                      className="px-3 py-1.5 rounded-[7px] bg-rose-700 text-white text-xs font-semibold"
+                      className="px-3 py-1.5 rounded-[14px] bg-rose-700 text-[#fffefc] text-xs font-semibold"
                     >
                       Hủy lần này
                     </button>
@@ -783,14 +783,14 @@ export default function AssessmentTab({
 
       {/* Mục tiêu điều trị */}
       <div className="space-y-3 border-t border-[#efeeeb] pt-4">
-        <h4 className="text-xs font-bold text-[#0f3e17] uppercase tracking-wider">Mục tiêu điều trị</h4>
+        <h4 className="eyebrow text-[#0f3e17]">Mục tiêu điều trị</h4>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
           <label className="min-w-0">
             <span className="text-[#222222]/60">Gắn thang (để trống = mục tiêu tự do)</span>
             <select
               value={goalScaleCode}
               onChange={(e) => handleGoalScaleChange(e.target.value)}
-              className="mt-1 w-full bg-[#fffefc] border border-[#efeeeb] rounded-[7px] px-2 py-2 font-semibold text-[#0f3e17] focus:outline-none focus:border-[#0f3e17]"
+              className="mt-1 w-full bg-[#fffefc] border border-[#efeeeb] rounded-[14px] px-2 py-2 font-semibold text-[#0f3e17] focus:outline-none focus:border-[#0f3e17]"
             >
               <option value="">— Mục tiêu tự do —</option>
               {scales.map((s) => (
@@ -804,7 +804,7 @@ export default function AssessmentTab({
               <select
                 value={goalItemKey}
                 onChange={(e) => setGoalItemKey(e.target.value)}
-                className="mt-1 w-full bg-[#fffefc] border border-[#efeeeb] rounded-[7px] px-2 py-2 font-semibold text-[#0f3e17] focus:outline-none focus:border-[#0f3e17]"
+                className="mt-1 w-full bg-[#fffefc] border border-[#efeeeb] rounded-[14px] px-2 py-2 font-semibold text-[#0f3e17] focus:outline-none focus:border-[#0f3e17]"
               >
                 <option value="">— Cả thang —</option>
                 {goalScaleDef.items.map((i) => (
@@ -819,7 +819,7 @@ export default function AssessmentTab({
               value={goalTitle}
               onChange={(e) => setGoalTitle(e.target.value)}
               placeholder={goalScaleDef ? `VD: ${goalScaleDef.nameVi}: ${goalBaseline || "?"} → ${goalTarget || "?"}` : "VD: Tự mặc áo thân trên"}
-              className="mt-1 w-full bg-[#fffefc] border border-[#efeeeb] rounded-[7px] px-2 py-2 focus:outline-none focus:border-[#0f3e17]"
+              className="mt-1 w-full bg-[#fffefc] border border-[#efeeeb] rounded-[14px] px-2 py-2 focus:outline-none focus:border-[#0f3e17]"
             />
           </label>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:col-span-2 min-w-0">
@@ -829,7 +829,7 @@ export default function AssessmentTab({
                 type="number"
                 value={goalBaseline}
                 onChange={(e) => setGoalBaseline(e.target.value)}
-                className="mt-1 w-full bg-[#fffefc] border border-[#efeeeb] rounded-[7px] px-2 py-2 font-bold text-[#0f3e17] focus:outline-none focus:border-[#0f3e17]"
+                className="mt-1 w-full bg-[#fffefc] border border-[#efeeeb] rounded-[14px] px-2 py-2 font-semibold text-[#0f3e17] focus:outline-none focus:border-[#0f3e17]"
               />
             </label>
             <label className="min-w-0">
@@ -838,7 +838,7 @@ export default function AssessmentTab({
                 type="number"
                 value={goalTarget}
                 onChange={(e) => setGoalTarget(e.target.value)}
-                className="mt-1 w-full bg-[#fffefc] border border-[#efeeeb] rounded-[7px] px-2 py-2 font-bold text-[#0f3e17] focus:outline-none focus:border-[#0f3e17]"
+                className="mt-1 w-full bg-[#fffefc] border border-[#efeeeb] rounded-[14px] px-2 py-2 font-semibold text-[#0f3e17] focus:outline-none focus:border-[#0f3e17]"
               />
             </label>
             <label className="min-w-0">
@@ -847,7 +847,7 @@ export default function AssessmentTab({
                 type="date"
                 value={goalDate}
                 onChange={(e) => setGoalDate(e.target.value)}
-                className="mt-1 w-full min-w-0 bg-[#fffefc] border border-[#efeeeb] rounded-[7px] px-2 py-2 focus:outline-none focus:border-[#0f3e17]"
+                className="mt-1 w-full min-w-0 bg-[#fffefc] border border-[#efeeeb] rounded-[14px] px-2 py-2 focus:outline-none focus:border-[#0f3e17]"
               />
             </label>
           </div>
@@ -872,7 +872,7 @@ export default function AssessmentTab({
                 <div key={g.id} className="p-4 rounded-[14px] bg-[#fffefc] border border-[#efeeeb] space-y-2 text-xs">
                   <div className="flex items-center justify-between gap-2">
                     <strong className="text-[#0f3e17]">{g.title}</strong>
-                    <span className={`text-[10px] px-2 py-0.5 rounded-[6px] border font-semibold whitespace-nowrap ${st.className}`}>
+                    <span className={`text-[10px] px-2 py-0.5 rounded-full border font-semibold whitespace-nowrap ${st.className}`}>
                       {st.text}
                     </span>
                   </div>
@@ -902,7 +902,7 @@ export default function AssessmentTab({
                       <select
                         value={achieveProofId[g.id] ?? ""}
                         onChange={(e) => setAchieveProofId((prev) => ({ ...prev, [g.id]: e.target.value }))}
-                        className="bg-[#fffefc] border border-[#efeeeb] rounded-[7px] px-2 py-1.5 text-xs focus:outline-none focus:border-[#0f3e17]"
+                        className="bg-[#fffefc] border border-[#efeeeb] rounded-[14px] px-2 py-1.5 text-xs focus:outline-none focus:border-[#0f3e17]"
                       >
                         <option value="">— Chọn lần đánh giá làm chứng —</option>
                         {history
@@ -924,7 +924,7 @@ export default function AssessmentTab({
                             setGoalError(getApiErrorMessage(err, "Không đánh dấu đạt được."));
                           }
                         }}
-                        className="px-3 py-1.5 rounded-[7px] bg-[#0f3e17] text-white text-xs font-semibold disabled:opacity-50"
+                        className="px-3 py-1.5 rounded-[14px] bg-[#0f3e17] text-[#fffefc] text-xs font-semibold disabled:opacity-50"
                       >
                         Đánh dấu đạt
                       </button>
@@ -932,7 +932,7 @@ export default function AssessmentTab({
                         value={notAchievedReason[g.id] ?? ""}
                         onChange={(e) => setNotAchievedReason((prev) => ({ ...prev, [g.id]: e.target.value }))}
                         placeholder="Lý do không đạt"
-                        className="bg-[#fffefc] border border-[#efeeeb] rounded-[7px] px-2 py-1.5 text-xs focus:outline-none focus:border-[#0f3e17]"
+                        className="bg-[#fffefc] border border-[#efeeeb] rounded-[14px] px-2 py-1.5 text-xs focus:outline-none focus:border-[#0f3e17]"
                       />
                       <button
                         type="button"
@@ -945,7 +945,7 @@ export default function AssessmentTab({
                             setGoalError(getApiErrorMessage(err, "Không đánh dấu được."));
                           }
                         }}
-                        className="px-3 py-1.5 rounded-[7px] bg-[#fffefc] border border-[#efeeeb] text-rose-700 text-xs font-semibold disabled:opacity-50"
+                        className="px-3 py-1.5 rounded-[14px] bg-[#fffefc] border border-[#efeeeb] text-rose-700 text-xs font-semibold disabled:opacity-50"
                       >
                         Không đạt
                       </button>
@@ -959,7 +959,7 @@ export default function AssessmentTab({
                             setGoalError(getApiErrorMessage(err, "Không hủy được mục tiêu."));
                           }
                         }}
-                        className="px-3 py-1.5 rounded-[7px] bg-[#fffefc] border border-[#efeeeb] text-[#222222]/70 text-xs font-semibold"
+                        className="px-3 py-1.5 rounded-[14px] bg-[#fffefc] border border-[#efeeeb] text-[#222222]/70 text-xs font-semibold"
                       >
                         Hủy
                       </button>

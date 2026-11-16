@@ -66,10 +66,10 @@ export default function BaiVietPage() {
       <main className="flex-1 py-12 md:py-16">
         <div className="max-w-4xl mx-auto px-4 sm:px-6">
           <div className="text-center mb-10">
-            <span className="block text-[11px] font-semibold uppercase tracking-[0.08em] text-[#0f3e17]">
+            <span className="block eyebrow text-[#0f3e17]">
               CẨM NANG SỨC KHỎE & PHỤC HỒI CHỨC NĂNG
             </span>
-            <h1 className="text-3xl sm:text-4xl font-extrabold text-[#0f3e17] tracking-tight mt-3">
+            <h1 className="text-3xl sm:text-4xl font-display-serif text-[#0f3e17] tracking-[-0.01em] mt-3">
               Bài viết & Kiến thức PHCN
             </h1>
             <p className="text-sm text-[#222222]/80 mt-2">
@@ -86,14 +86,14 @@ export default function BaiVietPage() {
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 placeholder="Tìm kiếm bài viết..."
-                className="w-full pl-9 pr-3 py-2 text-xs bg-[#fffefc] border border-[#efeeeb] rounded-[8px] focus:outline-none focus:border-[#0f3e17]"
+                className="w-full pl-9 pr-3 py-2 text-xs bg-[#fffefc] border border-[#efeeeb] rounded-[14px] focus:outline-none focus:border-[#0f3e17]"
               />
             </div>
             <div className="flex flex-wrap items-center gap-1.5">
               <button
                 type="button"
                 onClick={() => setSelectedCategoryId("all")}
-                className={`text-xs px-3 py-1.5 rounded-[8px] transition-colors cursor-pointer ${
+                className={`text-xs px-3 py-1.5 rounded-full transition-colors cursor-pointer ${
                   selectedCategoryId === "all"
                     ? "bg-[#0f3e17] text-[#fffefc] font-semibold"
                     : "bg-[#fffefc] text-[#222222]/70 hover:bg-[#e1f4df] border border-[#efeeeb]"
@@ -106,7 +106,7 @@ export default function BaiVietPage() {
                   key={cat.id}
                   type="button"
                   onClick={() => setSelectedCategoryId(cat.id)}
-                  className={`text-xs px-3 py-1.5 rounded-[8px] transition-colors cursor-pointer ${
+                  className={`text-xs px-3 py-1.5 rounded-full transition-colors cursor-pointer ${
                     selectedCategoryId === cat.id
                       ? "bg-[#0f3e17] text-[#fffefc] font-semibold"
                       : "bg-[#fffefc] text-[#222222]/70 hover:bg-[#e1f4df] border border-[#efeeeb]"
@@ -142,7 +142,7 @@ export default function BaiVietPage() {
             <div className="space-y-6">
               {pinned.length > 0 && (
                 <div className="space-y-4">
-                  <h2 className="text-sm font-bold text-[#0f3e17] uppercase tracking-wider">
+                  <h2 className="eyebrow text-[#0f3e17]">
                     Bài viết nổi bật
                   </h2>
                   {pinned.map((post) => (
@@ -152,7 +152,7 @@ export default function BaiVietPage() {
               )}
               <div className="space-y-4">
                 {pinned.length > 0 && (
-                  <h2 className="text-sm font-bold text-[#0f3e17] uppercase tracking-wider">
+                  <h2 className="eyebrow text-[#0f3e17]">
                     Bài viết mới nhất
                   </h2>
                 )}
@@ -174,8 +174,8 @@ function PostCard({ post, featured }: { post: PostItem; featured?: boolean }) {
   return (
     <Link
       href={`/bai-viet/${post.slug}`}
-      className={`block bg-[#fffefc] rounded-[14px] border p-5 sm:p-6 hover:shadow-md transition-shadow ${
-        featured ? "border-[#cfe7d3] bg-[#e1f4df]/30" : "border-[#efeeeb]"
+      className={`block bg-[#fffefc] rounded-[14px] border p-5 sm:p-6 ${
+        featured ? "border-[#efeeeb] bg-[#e1f4df]/30" : "border-[#efeeeb]"
       }`}
     >
       {post.coverImage && (
@@ -183,15 +183,15 @@ function PostCard({ post, featured }: { post: PostItem; featured?: boolean }) {
         <img
           src={post.coverImage}
           alt={post.title}
-          className="w-full h-48 object-cover rounded-[10px] mb-4"
+          className="w-full h-48 object-cover rounded-[14px] mb-4"
         />
       )}
       <div className="flex flex-wrap items-center gap-2 mb-2">
-        <span className="text-[11px] font-semibold text-[#0f3e17] bg-[#e1f4df] px-2.5 py-0.5 rounded-[6px] border border-[#cfe7d3]">
+        <span className="text-[11px] font-semibold text-[#0f3e17] bg-[#e1f4df] px-2.5 py-0.5 rounded-full border border-[#efeeeb]">
           {post.categories?.[0]?.name ?? "Kiến thức PHCN"}
         </span>
         {post.isPinned && (
-          <span className="text-[11px] font-semibold text-[#fffefc] bg-[#0f3e17] px-2 py-0.5 rounded-[6px]">
+          <span className="text-[11px] font-semibold text-[#fffefc] bg-[#0f3e17] px-2 py-0.5 rounded-full">
             Ghim
           </span>
         )}
@@ -200,7 +200,7 @@ function PostCard({ post, featured }: { post: PostItem; featured?: boolean }) {
           {formatDate(post.createdAt)}
         </span>
       </div>
-      <h3 className="font-bold text-[#0f3e17] text-lg leading-snug hover:underline">
+      <h3 className="font-display-serif text-[#0f3e17] text-lg leading-snug hover:underline">
         {post.title}
       </h3>
       {post.summary && (

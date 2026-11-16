@@ -290,7 +290,7 @@ export default function PostsManagementPage() {
             <ShieldAlert className="w-6 h-6" />
           </div>
           <div>
-            <h2 className="text-base font-bold text-rose-800">Quyền truy cập bị từ chối</h2>
+            <h2 className="text-base font-display-serif text-rose-800 tracking-[-0.01em]">Quyền truy cập bị từ chối</h2>
             <p className="text-xs text-[#222222]/70 mt-1">
               Mục Quản lý Bài viết & Chiến dịch Quảng bá chỉ dành riêng cho tài khoản Quản trị viên (Admin).
             </p>
@@ -310,7 +310,7 @@ export default function PostsManagementPage() {
     <div className="space-y-6">
       {/* Toast Notification */}
       {toastMessage && (
-        <div className="fixed top-20 right-6 z-50 bg-[#0f3e17] text-[#fffefc] px-4 py-2.5 rounded-[14px] text-xs font-semibold animate-in fade-in duration-200 flex items-center gap-2 border border-[#b1dbb8]">
+        <div className="fixed top-20 right-6 z-50 bg-[#0f3e17] text-[#fffefc] px-4 py-2.5 rounded-[14px] text-xs font-semibold animate-in fade-in duration-200 flex items-center gap-2 border border-[#efeeeb]">
           <CheckCircle2 className="w-4 h-4 text-[#e1f4df]" />
           <span>{toastMessage}</span>
         </div>
@@ -325,10 +325,10 @@ export default function PostsManagementPage() {
       {/* Header Bar */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[#efeeeb]">
         <div>
-          <span className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#0f3e17]">
+          <span className="text-[#0f3e17] eyebrow">
             QUẢNG BÁ PHÒNG KHÁM & MARKETING
           </span>
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-[#0f3e17] tracking-tight mt-1">
+          <h1 className="text-2xl sm:text-3xl font-display-serif text-[#0f3e17] tracking-[-0.01em] mt-1">
             Quản lý Bài viết & Cẩm nang Y tế
           </h1>
           <p className="text-xs text-[#222222]/70 mt-1">
@@ -339,7 +339,7 @@ export default function PostsManagementPage() {
         <button
           type="button"
           onClick={handleOpenCreateModal}
-          className="btn-forest inline-flex items-center gap-2 text-xs py-2.5 px-4 rounded-[12px] shrink-0"
+          className="btn-forest inline-flex items-center gap-2 text-xs py-2.5 px-4 rounded-[14px] shrink-0"
         >
           <Plus className="w-4 h-4" />
           <span>Viết bài quảng bá mới</span>
@@ -350,19 +350,19 @@ export default function PostsManagementPage() {
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         <div className="p-4 rounded-[14px] bg-[#fffefc] border border-[#efeeeb]">
           <p className="text-[11px] text-[#222222]/60 font-medium">Tổng số bài viết</p>
-          <p className="text-2xl font-black text-[#0f3e17] mt-1">{posts.length}</p>
+          <p className="text-2xl font-display-serif text-[#0f3e17] mt-1 tracking-[-0.01em]">{posts.length}</p>
         </div>
-        <div className="p-4 rounded-[14px] bg-[#e1f4df]/50 border border-[#cfe7d3]">
+        <div className="p-4 rounded-[14px] bg-[#e1f4df]/50 border border-[#efeeeb]">
           <p className="text-[11px] text-[#0f3e17] font-semibold">Đã xuất bản</p>
-          <p className="text-2xl font-black text-[#0f3e17] mt-1">{publishedCount}</p>
+          <p className="text-2xl font-display-serif text-[#0f3e17] mt-1 tracking-[-0.01em]">{publishedCount}</p>
         </div>
         <div className="p-4 rounded-[14px] bg-[#fffefc] border border-[#efeeeb]">
           <p className="text-[11px] text-[#222222]/60 font-medium">Bản nháp</p>
-          <p className="text-2xl font-black text-[#222222]/80 mt-1">{draftCount}</p>
+          <p className="text-2xl font-display-serif text-[#222222]/80 mt-1 tracking-[-0.01em]">{draftCount}</p>
         </div>
-        <div className="p-4 rounded-[14px] bg-[#b1dbb8]/30 border border-[#b1dbb8]">
+        <div className="p-4 rounded-[14px] bg-[#b1dbb8]/30 border border-[#efeeeb]">
           <p className="text-[11px] text-[#0f3e17] font-semibold">Tổng lượt thích</p>
-          <p className="text-2xl font-black text-[#0f3e17] mt-1">
+          <p className="text-2xl font-display-serif text-[#0f3e17] mt-1 tracking-[-0.01em]">
             {totalLikes.toLocaleString("vi-VN")}
           </p>
         </div>
@@ -378,7 +378,7 @@ export default function PostsManagementPage() {
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="Tìm kiếm bài viết theo tiêu đề hoặc nội dung..."
-            className="w-full pl-9 pr-3 py-2 text-xs bg-[#fffefc] border border-[#efeeeb] rounded-[8px] focus:outline-none focus:border-[#0f3e17]"
+            className="w-full pl-9 pr-3 py-2 text-xs bg-[#fffefc] border border-[#efeeeb] rounded-[14px] focus:outline-none focus:border-[#0f3e17]"
           />
         </div>
 
@@ -387,7 +387,7 @@ export default function PostsManagementPage() {
           <button
             type="button"
             onClick={() => setSelectedCategoryId("all")}
-            className={`text-xs px-3 py-1.5 rounded-[8px] transition-colors cursor-pointer ${
+            className={`text-xs px-3 py-1.5 rounded-[14px] transition-colors cursor-pointer ${
               selectedCategoryId === "all"
                 ? "bg-[#0f3e17] text-[#fffefc] font-semibold"
                 : "bg-[#fffefc] text-[#222222]/70 hover:bg-[#e1f4df] border border-[#efeeeb]"
@@ -400,7 +400,7 @@ export default function PostsManagementPage() {
               key={cat.id}
               type="button"
               onClick={() => setSelectedCategoryId(cat.id)}
-              className={`text-xs px-3 py-1.5 rounded-[8px] transition-colors cursor-pointer ${
+              className={`text-xs px-3 py-1.5 rounded-[14px] transition-colors cursor-pointer ${
                 selectedCategoryId === cat.id
                   ? "bg-[#0f3e17] text-[#fffefc] font-semibold"
                   : "bg-[#fffefc] text-[#222222]/70 hover:bg-[#e1f4df] border border-[#efeeeb]"
@@ -422,7 +422,7 @@ export default function PostsManagementPage() {
           <button
             type="button"
             onClick={loadData}
-            className="px-3 py-1.5 bg-[#0f3e17] text-[#fffefc] rounded-[8px] font-semibold shrink-0"
+            className="px-3 py-1.5 bg-[#0f3e17] text-[#fffefc] rounded-[14px] font-semibold shrink-0"
           >
             Tải lại
           </button>
@@ -458,28 +458,28 @@ export default function PostsManagementPage() {
               >
                 <div className="space-y-1.5 flex-1 min-w-0">
                   <div className="flex flex-wrap items-center gap-2">
-                    <span className="text-[11px] font-semibold text-[#0f3e17] bg-[#e1f4df] px-2.5 py-0.5 rounded-[6px] border border-[#cfe7d3]">
+                    <span className="text-[11px] font-semibold text-[#0f3e17] bg-[#e1f4df] px-2.5 py-0.5 rounded-full border border-[#efeeeb]">
                       {post.categories?.[0]?.name ?? "Chưa xếp chuyên mục"}
                     </span>
                     <button
                       type="button"
                       onClick={() => handleToggleStatus(post)}
-                      className={`text-[11px] font-semibold px-2 py-0.5 rounded-[6px] border transition-colors cursor-pointer ${
+                      className={`text-[11px] font-semibold px-2 py-0.5 rounded-full border transition-colors cursor-pointer ${
                         post.status === "PUBLISHED"
-                          ? "bg-[#0f3e17] text-[#fffefc] border-[#0f3e17]"
+                          ? "bg-[#0f3e17] text-[#fffefc] border-transparent"
                           : "bg-[#efeeeb] text-[#222222]/70 border-[#efeeeb]"
                       }`}
                       title="Bấm để đổi trạng thái"
                     >
                       {post.status === "PUBLISHED" ? "✓ Đã xuất bản" : "Bản nháp"}
                     </button>
-                    <span className="text-[11px] text-[#222222]/50 flex items-center gap-1 font-mono">
+                    <span className="text-[11px] text-[#222222]/50 flex items-center gap-1">
                       <Calendar className="w-3 h-3" />
                       {formatDate(post.createdAt)}
                     </span>
                   </div>
 
-                  <h3 className="font-bold text-[#0f3e17] text-base leading-snug">
+                  <h3 className="font-display-serif text-[#0f3e17] text-base leading-snug tracking-[-0.01em]">
                     {post.status === "PUBLISHED" ? (
                       <Link
                         href={`/bai-viet/${post.slug}`}
@@ -518,7 +518,7 @@ export default function PostsManagementPage() {
                   <button
                     type="button"
                     onClick={() => handleOpenEditModal(post)}
-                    className="p-2 rounded-[8px] bg-[#fffefc] border border-[#efeeeb] text-[#0f3e17] hover:bg-[#e1f4df] transition-colors"
+                    className="p-2 rounded-[14px] bg-[#fffefc] border border-[#efeeeb] text-[#0f3e17] hover:bg-[#e1f4df] transition-colors"
                     title="Chỉnh sửa bài viết"
                   >
                     <Edit3 className="w-4 h-4" />
@@ -526,7 +526,7 @@ export default function PostsManagementPage() {
                   <button
                     type="button"
                     onClick={() => handleSharePost(post)}
-                    className="p-2 rounded-[8px] bg-[#fffefc] border border-[#efeeeb] text-[#0f3e17] hover:bg-[#e1f4df] transition-colors"
+                    className="p-2 rounded-[14px] bg-[#fffefc] border border-[#efeeeb] text-[#0f3e17] hover:bg-[#e1f4df] transition-colors"
                     title="Sao chép link chia sẻ"
                   >
                     <Share2 className="w-4 h-4" />
@@ -534,7 +534,7 @@ export default function PostsManagementPage() {
                   <button
                     type="button"
                     onClick={() => handleDeletePost(post.id)}
-                    className="p-2 rounded-[8px] bg-[#fffefc] border border-[#efeeeb] text-red-600 hover:bg-red-50 transition-colors"
+                    className="p-2 rounded-[14px] bg-[#fffefc] border border-[#efeeeb] text-red-600 hover:bg-red-50 transition-colors"
                     title="Xóa bài viết"
                   >
                     <Trash2 className="w-4 h-4" />
@@ -548,15 +548,15 @@ export default function PostsManagementPage() {
 
       {/* Create / Edit Post Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 bg-[#0f3e17]/60 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-[#fffefc] rounded-[14px] border border-[#efeeeb] max-w-2xl w-full max-h-[90vh] flex flex-col animate-in zoom-in-95 duration-150">
             {/* Modal Header */}
             <div className="p-5 border-b border-[#efeeeb] flex items-center justify-between">
               <div>
-                <span className="text-[11px] font-semibold text-[#0f3e17] uppercase tracking-wider">
+                <span className="text-[#0f3e17] eyebrow">
                   Biên tập bài viết
                 </span>
-                <h3 className="text-lg font-bold text-[#0f3e17]">
+                <h3 className="text-lg font-display-serif text-[#0f3e17] tracking-[-0.01em]">
                   {editingPost ? "Chỉnh sửa bài viết quảng bá" : "Tạo bài viết quảng bá mới"}
                 </h3>
                 <p className="text-[11px] text-[#222222]/60 mt-0.5">
@@ -566,7 +566,7 @@ export default function PostsManagementPage() {
               <button
                 type="button"
                 onClick={() => setIsModalOpen(false)}
-                className="p-2 rounded-[8px] hover:bg-[#efeeeb] text-[#222222]/60 hover:text-[#222222]"
+                className="p-2 rounded-[14px] hover:bg-[#efeeeb] text-[#222222]/60 hover:text-[#222222]"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -576,7 +576,7 @@ export default function PostsManagementPage() {
             <form onSubmit={handleSavePost} className="p-6 space-y-4 overflow-y-auto flex-1">
               {/* Tiêu đề */}
               <div>
-                <label className="block text-xs font-bold text-[#0f3e17] mb-1">
+                <label className="block text-xs font-semibold text-[#0f3e17] mb-1">
                   Tiêu đề bài viết quảng bá *
                 </label>
                 <input
@@ -585,13 +585,13 @@ export default function PostsManagementPage() {
                   value={formData.title}
                   onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                   placeholder="Ví dụ: Phục hồi chức năng sau mổ dây chằng ACL tại Bác sĩ Thanh Sang..."
-                  className="w-full px-3.5 py-2.5 text-xs sm:text-sm bg-[#fffefc] border border-[#efeeeb] rounded-[10px] focus:outline-none focus:border-[#0f3e17]"
+                  className="w-full px-3.5 py-2.5 text-xs sm:text-sm bg-[#fffefc] border border-[#efeeeb] rounded-[14px] focus:outline-none focus:border-[#0f3e17]"
                 />
               </div>
 
               {/* Chuyên mục */}
               <div>
-                <label className="block text-xs font-bold text-[#0f3e17] mb-1">Chuyên mục</label>
+                <label className="block text-xs font-semibold text-[#0f3e17] mb-1">Chuyên mục</label>
                 {categories.length === 0 ? (
                   <p className="text-xs text-[#222222]/70">
                     Chưa có chuyên mục nào. Tạo chuyên mục đầu tiên ở dưới để xếp bài viết.
@@ -600,7 +600,7 @@ export default function PostsManagementPage() {
                   <select
                     value={formData.categoryId}
                     onChange={(e) => setFormData({ ...formData, categoryId: e.target.value })}
-                    className="w-full px-3 py-2 text-xs bg-[#fffefc] border border-[#efeeeb] rounded-[10px] focus:outline-none focus:border-[#0f3e17]"
+                    className="w-full px-3 py-2 text-xs bg-[#fffefc] border border-[#efeeeb] rounded-[14px] focus:outline-none focus:border-[#0f3e17]"
                   >
                     <option value="">— Không xếp chuyên mục —</option>
                     {categories.map((cat) => (
@@ -617,20 +617,20 @@ export default function PostsManagementPage() {
                       value={newCategoryName}
                       onChange={(e) => setNewCategoryName(e.target.value)}
                       placeholder="Tên chuyên mục mới, ví dụ: Kiến thức PHCN"
-                      className="flex-1 px-3 py-2 text-xs bg-[#fffefc] border border-[#efeeeb] rounded-[10px] focus:outline-none focus:border-[#0f3e17]"
+                      className="flex-1 px-3 py-2 text-xs bg-[#fffefc] border border-[#efeeeb] rounded-[14px] focus:outline-none focus:border-[#0f3e17]"
                     />
                     <button
                       type="button"
                       onClick={handleCreateCategory}
                       disabled={isCreatingCategory}
-                      className="px-3 py-2 text-xs font-semibold bg-[#0f3e17] text-[#fffefc] rounded-[10px] disabled:opacity-50"
+                      className="px-3 py-2 text-xs font-semibold bg-[#0f3e17] text-[#fffefc] rounded-[14px] disabled:opacity-50"
                     >
                       {isCreatingCategory ? "Đang tạo..." : "Tạo"}
                     </button>
                     <button
                       type="button"
                       onClick={() => setShowNewCategory(false)}
-                      className="px-3 py-2 text-xs border border-[#efeeeb] rounded-[10px]"
+                      className="px-3 py-2 text-xs border border-[#efeeeb] rounded-[14px]"
                     >
                       Hủy
                     </button>
@@ -648,7 +648,7 @@ export default function PostsManagementPage() {
 
               {/* Tóm tắt */}
               <div>
-                <label className="block text-xs font-bold text-[#0f3e17] mb-1">
+                <label className="block text-xs font-semibold text-[#0f3e17] mb-1">
                   Tóm tắt ngắn (Hiển thị thẻ Facebook/Zalo/SEO)
                 </label>
                 <textarea
@@ -656,13 +656,13 @@ export default function PostsManagementPage() {
                   value={formData.summary}
                   onChange={(e) => setFormData({ ...formData, summary: e.target.value })}
                   placeholder="Mô tả ngắn gọn từ 1 - 2 câu nêu bật giá trị điều trị..."
-                  className="w-full px-3.5 py-2 text-xs bg-[#fffefc] border border-[#efeeeb] rounded-[10px] focus:outline-none focus:border-[#0f3e17]"
+                  className="w-full px-3.5 py-2 text-xs bg-[#fffefc] border border-[#efeeeb] rounded-[14px] focus:outline-none focus:border-[#0f3e17]"
                 />
               </div>
 
               {/* Nội dung chi tiết */}
               <div>
-                <label className="block text-xs font-bold text-[#0f3e17] mb-1">
+                <label className="block text-xs font-semibold text-[#0f3e17] mb-1">
                   Nội dung chi tiết bài viết
                 </label>
                 <textarea
@@ -670,14 +670,14 @@ export default function PostsManagementPage() {
                   value={formData.content}
                   onChange={(e) => setFormData({ ...formData, content: e.target.value })}
                   placeholder="Nội dung phác đồ điều trị, kỹ thuật tập, lời dặn của bác sĩ..."
-                  className="w-full px-3.5 py-2.5 text-xs bg-[#fffefc] border border-[#efeeeb] rounded-[10px] focus:outline-none focus:border-[#0f3e17]"
+                  className="w-full px-3.5 py-2.5 text-xs bg-[#fffefc] border border-[#efeeeb] rounded-[14px] focus:outline-none focus:border-[#0f3e17]"
                 />
               </div>
 
               {/* Ảnh bìa + Ghim */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-bold text-[#0f3e17] mb-1">
+                  <label className="block text-xs font-semibold text-[#0f3e17] mb-1">
                     Ảnh bìa (đường dẫn URL, không bắt buộc)
                   </label>
                   <input
@@ -685,7 +685,7 @@ export default function PostsManagementPage() {
                     value={formData.coverImage}
                     onChange={(e) => setFormData({ ...formData, coverImage: e.target.value })}
                     placeholder="https://..."
-                    className="w-full px-3.5 py-2 text-xs bg-[#fffefc] border border-[#efeeeb] rounded-[10px] focus:outline-none focus:border-[#0f3e17]"
+                    className="w-full px-3.5 py-2 text-xs bg-[#fffefc] border border-[#efeeeb] rounded-[14px] focus:outline-none focus:border-[#0f3e17]"
                   />
                 </div>
                 <label className="flex items-center gap-2 text-xs font-semibold text-[#0f3e17] cursor-pointer pt-5">
@@ -701,7 +701,7 @@ export default function PostsManagementPage() {
 
               {/* Trạng thái */}
               <div>
-                <label className="block text-xs font-bold text-[#0f3e17] mb-1">Trạng thái bài đăng</label>
+                <label className="block text-xs font-semibold text-[#0f3e17] mb-1">Trạng thái bài đăng</label>
                 <div className="flex items-center gap-4 text-xs">
                   <label className="inline-flex items-center gap-2 cursor-pointer">
                     <input
@@ -731,14 +731,14 @@ export default function PostsManagementPage() {
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="px-4 py-2 text-xs rounded-[10px] border border-[#efeeeb] hover:bg-[#efeeeb]/50 text-[#222222]"
+                  className="px-4 py-2 text-xs rounded-[14px] border border-[#efeeeb] hover:bg-[#efeeeb]/50 text-[#222222]"
                 >
                   Hủy
                 </button>
                 <button
                   type="submit"
                   disabled={isSaving}
-                  className="btn-forest text-xs py-2 px-5 rounded-[10px] disabled:opacity-50"
+                  className="btn-forest text-xs py-2 px-5 rounded-[14px] disabled:opacity-50"
                 >
                   {isSaving ? "Đang lưu..." : editingPost ? "Lưu thay đổi" : "Tạo bài viết"}
                 </button>

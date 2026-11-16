@@ -139,17 +139,17 @@ export default function TroLyAiPage() {
       <main className="flex-1 py-6 md:py-10">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 flex flex-col h-[780px] max-h-[84vh]">
           {/* Top Clinical Header Banner: Botanical Greenhouse */}
-          <div className="bg-[#e1f4df] rounded-[14px] p-4 sm:p-5 border border-[#cfe7d3] mb-4 flex items-center justify-between">
+          <div className="bg-[#e1f4df] rounded-[14px] p-4 sm:p-5 border border-[#efeeeb] mb-4 flex items-center justify-between">
             <div className="flex items-center gap-3.5">
-              <div className="w-11 h-11 rounded-[12px] bg-[#0f3e17] text-[#fffefc] flex items-center justify-center shrink-0">
+              <div className="w-11 h-11 rounded-[14px] bg-[#0f3e17] text-[#fffefc] flex items-center justify-center shrink-0">
                 <Stethoscope className="w-6 h-6 stroke-[2]" />
               </div>
               <div>
                 <div className="flex items-center gap-2.5">
-                  <h1 className="text-base sm:text-lg font-bold text-[#0f3e17] tracking-tight whitespace-nowrap">
+                  <h1 className="text-base sm:text-lg font-display-serif text-[#0f3e17] whitespace-nowrap">
                     Hỏi đáp
                   </h1>
-                  <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold bg-[#0f3e17] text-[#e1f4df] px-2.5 py-0.5 rounded-[6px] border border-[#0f3e17] shrink-0">
+                  <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold bg-[#0f3e17] text-[#e1f4df] px-2.5 py-0.5 rounded-full border border-transparent shrink-0">
                     <span className="w-1.5 h-1.5 rounded-full bg-[#e1f4df] animate-ping" />
                     <span className="animate-pulse">Trực tuyến</span>
                   </span>
@@ -162,7 +162,7 @@ export default function TroLyAiPage() {
 
             <Link
               href="/dat-lich"
-              className="hidden sm:inline-flex items-center gap-1.5 btn-forest text-xs py-2.5 px-4 rounded-[10px]"
+              className="hidden sm:inline-flex items-center gap-1.5 btn-forest text-xs py-2.5 px-4"
             >
               <Calendar className="w-3.5 h-3.5" />
               <span>Đặt khám trực tiếp</span>
@@ -187,7 +187,7 @@ export default function TroLyAiPage() {
                   className={`flex gap-3 ${m.sender === "user" ? "justify-end" : "justify-start"}`}
                 >
                   {m.sender === "ai" && (
-                    <div className="w-8 h-8 rounded-[10px] bg-[#e1f4df] text-[#0f3e17] border border-[#cfe7d3] flex items-center justify-center shrink-0 mt-0.5">
+                    <div className="w-8 h-8 rounded-[14px] bg-[#e1f4df] text-[#0f3e17] border border-[#efeeeb] flex items-center justify-center shrink-0 mt-0.5">
                       <Stethoscope className="w-4 h-4" />
                     </div>
                   )}
@@ -196,7 +196,7 @@ export default function TroLyAiPage() {
                     className={`max-w-[85%] rounded-[14px] p-4 text-sm leading-relaxed ${
                       m.sender === "user"
                         ? "bg-[#0f3e17] text-[#fffefc] rounded-tr-[4px]"
-                        : "bg-[#e1f4df]/40 text-[#222222] border border-[#cfe7d3]/80 rounded-tl-[4px]"
+                        : "bg-[#e1f4df]/40 text-[#222222] border border-[#efeeeb] rounded-tl-[4px]"
                     }`}
                   >
                     <p className="whitespace-pre-wrap">{m.text}</p>
@@ -209,13 +209,13 @@ export default function TroLyAiPage() {
                     </span>
 
                     {m.suggestBooking && (
-                      <div className="mt-3 pt-3 border-t border-[#0f3e17]/10 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+                      <div className="mt-3 pt-3 border-t border-[#efeeeb] flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
                         <span className="text-xs text-[#0f3e17] font-medium">
                           Cần Bác sĩ Thanh Sang khám & đo góc ROM trực tiếp?
                         </span>
                         <Link
                           href="/dat-lich"
-                          className="inline-flex items-center justify-center gap-1.5 bg-[#0f3e17] hover:bg-[#0c2f10] text-[#fffefc] font-semibold text-xs px-3.5 py-1.5 rounded-[8px] transition-colors"
+                          className="inline-flex items-center justify-center gap-1.5 bg-[#0f3e17] hover:bg-[#0c2f10] text-[#fffefc] font-semibold text-xs px-3.5 py-1.5 rounded-[14px] transition-colors"
                         >
                           <Calendar className="w-3.5 h-3.5" />
                           <span>Đặt hẹn khám ngay</span>
@@ -226,7 +226,7 @@ export default function TroLyAiPage() {
                   </div>
 
                   {m.sender === "user" && (
-                    <div className="w-8 h-8 rounded-[10px] bg-[#efeeeb] text-[#0f3e17] flex items-center justify-center shrink-0 mt-0.5">
+                    <div className="w-8 h-8 rounded-[14px] bg-[#efeeeb] text-[#0f3e17] flex items-center justify-center shrink-0 mt-0.5">
                       <User className="w-4 h-4" />
                     </div>
                   )}
@@ -236,7 +236,7 @@ export default function TroLyAiPage() {
               {/* Danh sách câu hỏi gợi ý thường gặp - Sắp xếp theo danh sách, tự động biến mất khi hỏi xong */}
               {showTopics && messages.filter((m) => m.sender === "user").length === 0 && (
                 <div className="pl-11 pr-2 pt-1 space-y-2 animate-in fade-in duration-200">
-                  <p className="text-xs font-semibold text-[#0f3e17] uppercase tracking-wider">
+                  <p className="eyebrow text-[#0f3e17]">
                     Gợi ý câu hỏi thường gặp:
                   </p>
                   <div className="space-y-2">
@@ -245,7 +245,7 @@ export default function TroLyAiPage() {
                         key={item}
                         type="button"
                         onClick={() => handleSend(item)}
-                        className="w-full text-left text-xs sm:text-[13px] text-[#0f3e17] bg-[#fffefc] hover:bg-[#e1f4df] border border-[#cfe7d3] p-3 rounded-[10px] transition-all flex items-center justify-between group shadow-xs hover:border-[#0f3e17]/40 cursor-pointer"
+                        className="w-full text-left text-xs sm:text-[13px] text-[#0f3e17] bg-[#fffefc] hover:bg-[#e1f4df] border border-[#efeeeb] p-3 rounded-[14px] transition-all flex items-center justify-between group cursor-pointer"
                       >
                         <span className="line-clamp-2 leading-relaxed font-medium">{item}</span>
                         <ArrowRight className="w-3.5 h-3.5 text-[#0f3e17]/50 group-hover:text-[#0f3e17] group-hover:translate-x-0.5 transition-all shrink-0 ml-2" />
@@ -279,12 +279,12 @@ export default function TroLyAiPage() {
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 placeholder="Mô tả triệu chứng hoặc hỏi về bài tập phục hồi chức năng..."
-                className="flex-1 px-4 py-3 text-sm bg-[#fffefc] border border-[#efeeeb] rounded-[10px] text-[#222222] placeholder:text-[#222222]/40 focus:outline-none focus:border-[#0f3e17] focus:ring-1 focus:ring-[#0f3e17]"
+                className="flex-1 px-4 py-3 text-sm bg-[#fffefc] border border-[#efeeeb] rounded-[14px] text-[#222222] placeholder:text-[#222222]/40 focus:outline-none focus:border-[#0f3e17] focus:ring-1 focus:ring-[#0f3e17]"
               />
               <button
                 type="submit"
                 disabled={!input.trim() || loading}
-                className="btn-forest px-5 py-3 rounded-[10px] text-sm disabled:opacity-40 transition-colors inline-flex items-center gap-2 shrink-0"
+                className="btn-forest px-5 py-3 text-sm disabled:opacity-40 transition-colors inline-flex items-center gap-2 shrink-0"
               >
                 <span>Gửi</span>
                 <Send className="w-4 h-4" />

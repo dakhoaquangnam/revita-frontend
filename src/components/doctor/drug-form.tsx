@@ -109,7 +109,7 @@ export default function DrugForm({
   }, [rows, allergies]);
 
   const inputCls =
-    "px-2 py-1.5 rounded-[8px] bg-[#fffefc] border border-[#efeeeb] text-xs text-[#222222] focus:outline-none focus:border-[#0f3e17] w-full";
+    "px-2 py-1.5 rounded-[14px] bg-[#fffefc] border border-[#efeeeb] text-xs text-[#222222] focus:outline-none focus:border-[#0f3e17] w-full";
 
   return (
     <div className="space-y-3">
@@ -156,7 +156,7 @@ export default function DrugForm({
               </button>
         </div>
         {showDropdown && suggestions.length > 0 && (
-          <div className="absolute z-20 left-0 right-0 mt-1 bg-[#fffefc] border border-[#efeeeb] rounded-[14px] shadow-lg overflow-hidden">
+          <div className="absolute z-20 left-0 right-0 mt-1 bg-[#fffefc] border border-[#efeeeb] rounded-[14px] overflow-hidden">
             {suggestions.map((d) => (
               <button
                 key={d.id}
@@ -164,7 +164,7 @@ export default function DrugForm({
                 onClick={() => addDrug(d)}
                 className="w-full text-left px-3.5 py-2.5 hover:bg-[#e1f4df]/50 text-xs"
               >
-                <span className="font-bold text-[#0f3e17]">{d.name}</span>
+                <span className="font-semibold text-[#0f3e17]">{d.name}</span>
                 {d.strength && <span className="text-[#222222]/60"> — {d.strength}</span>}
                 {d.dosageForm && <span className="text-[#222222]/60"> ({d.dosageForm})</span>}
               </button>
@@ -172,7 +172,7 @@ export default function DrugForm({
           </div>
         )}
         {showDropdown && query.trim().length >= 2 && !searching && suggestions.length === 0 && (
-          <div className="absolute z-20 left-0 right-0 mt-1 bg-[#fffefc] border border-[#efeeeb] rounded-[14px] shadow-lg px-3.5 py-2.5 text-xs text-[#222222]/70">
+          <div className="absolute z-20 left-0 right-0 mt-1 bg-[#fffefc] border border-[#efeeeb] rounded-[14px] px-3.5 py-2.5 text-xs text-[#222222]/70">
             Không có trong danh mục — bấm “+ Thuốc tự do” để nhập tên tay.
           </div>
         )}
@@ -193,13 +193,13 @@ export default function DrugForm({
             }`}
           >
             <div className="flex items-center gap-2">
-              <span className="font-bold text-[#0f3e17]">{idx + 1}.</span>
+              <span className="font-semibold text-[#0f3e17]">{idx + 1}.</span>
               <input
                 type="text"
                 value={rx.name}
                 onChange={(e) => updateRow(rx.id, { name: e.target.value })}
                 placeholder="Tên thuốc *"
-                className={`${inputCls} font-bold`}
+                className={`${inputCls} font-semibold`}
               />
               <button
                 type="button"
@@ -330,12 +330,12 @@ export default function DrugForm({
 
       {/* Trạng thái đơn sau khi lưu + nút ký/phát */}
       {savedMp && (
-        <div className="p-3.5 rounded-[14px] bg-[#e1f4df]/60 border border-[#cfe7d3] text-xs space-y-2">
+        <div className="p-3.5 rounded-[14px] bg-[#e1f4df]/60 text-xs space-y-2">
           <div className="flex items-center justify-between gap-2 flex-wrap">
             <span>
-              <span className="font-bold text-[#0f3e17]">Đơn thuốc đã lưu: </span>
-              <span className="font-mono font-bold text-[#0f3e17]">{savedMp.code}</span>
-              <span className="ml-2 px-2 py-0.5 rounded-[6px] bg-[#fffefc] border border-[#cfe7d3] font-semibold text-[#0f3e17]">
+              <span className="font-semibold text-[#0f3e17]">Đơn thuốc đã lưu: </span>
+              <span className="font-semibold text-[#0f3e17]">{savedMp.code}</span>
+              <span className="ml-2 px-2 py-0.5 rounded-full bg-[#fffefc] border border-[#efeeeb] font-semibold text-[#0f3e17]">
                 {savedMp.status === "DRAFT"
                   ? "Bản nháp"
                   : savedMp.status === "SIGNED"
@@ -351,7 +351,7 @@ export default function DrugForm({
                   type="button"
                   onClick={onSign}
                   disabled={actionBusy}
-                  className="px-3 py-1.5 rounded-[10px] bg-[#0f3e17] text-[#fffefc] font-semibold inline-flex items-center gap-1 disabled:opacity-50"
+                  className="px-3 py-1.5 rounded-[14px] bg-[#0f3e17] text-[#fffefc] font-semibold inline-flex items-center gap-1 disabled:opacity-50"
                 >
                   <PenLine className="w-3.5 h-3.5" /> Ký đơn
                 </button>
@@ -361,7 +361,7 @@ export default function DrugForm({
                   type="button"
                   onClick={onDispense}
                   disabled={actionBusy}
-                  className="px-3 py-1.5 rounded-[10px] bg-[#0f3e17] text-[#fffefc] font-semibold inline-flex items-center gap-1 disabled:opacity-50"
+                  className="px-3 py-1.5 rounded-[14px] bg-[#0f3e17] text-[#fffefc] font-semibold inline-flex items-center gap-1 disabled:opacity-50"
                 >
                   <PackageCheck className="w-3.5 h-3.5" /> Phát thuốc
                 </button>

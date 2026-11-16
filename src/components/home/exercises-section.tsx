@@ -80,13 +80,13 @@ export function ExercisesSection() {
         {/* Section Header */}
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6">
           <div>
-            <span className="block text-[11px] font-semibold uppercase tracking-[0.08em] text-[#0f3e17] mb-2">
+            <span className="block eyebrow text-[#0f3e17] mb-2">
               CẨM NANG Y TẾ CHÍNH THỨC
             </span>
-            <h2 className="text-3xl sm:text-4xl font-semibold text-[#0f3e17] tracking-tight mt-1">
+            <h2 className="text-3xl sm:text-4xl font-display-serif text-[#0f3e17] tracking-[-0.01em] mt-1">
               Bài tập Phục hồi chức năng tại nhà
             </h2>
-            <p className="text-[15px] text-[#222222]/80 max-w-2xl mt-2 font-light leading-relaxed">
+            <p className="text-[15px] text-[#222222]/80 max-w-2xl mt-2 font-normal leading-relaxed">
               Biên soạn bởi Bác sĩ Thanh Sang & Đội ngũ Kỹ thuật viên trưởng. Giúp người bệnh duy trì hiệu quả trị liệu sau các buổi tập tại phòng khám.
             </p>
           </div>
@@ -106,11 +106,11 @@ export function ExercisesSection() {
             <div
               key={exercise.id}
               id={exercise.id}
-              className={`${exercise.tone} rounded-[14px] p-8 flex flex-col justify-between transition-all border border-transparent hover:border-[#0f3e17]/15`}
+              className={`${exercise.tone} rounded-[14px] p-8 flex flex-col justify-between transition-all`}
             >
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <span className="rounded-[6px] px-2.5 py-1 bg-[#fffefc] border border-[#efeeeb] text-[#0f3e17] text-[11px] font-medium">
+                  <span className="rounded-full px-2.5 py-1 bg-[#fffefc] border border-[#efeeeb] text-[#0f3e17] text-[11px] font-medium">
                     {exercise.category}
                   </span>
                   <div className="flex items-center gap-1.5 text-[12px] font-medium text-[#0f3e17]">
@@ -119,17 +119,17 @@ export function ExercisesSection() {
                   </div>
                 </div>
 
-                <h3 className="text-xl font-bold text-[#0f3e17] leading-snug">
+                <h3 className="text-xl font-display-serif text-[#0f3e17] leading-snug">
                   {exercise.title}
                 </h3>
 
-                <p className="text-[13px] text-[#222222]/80 leading-relaxed font-light">
+                <p className="text-[13px] text-[#222222]/80 leading-relaxed font-normal">
                   {exercise.summary}
                 </p>
               </div>
 
               {/* Bottom Actions */}
-              <div className="pt-6 mt-6 border-t border-[#0f3e17]/10 flex items-center justify-between">
+              <div className="pt-6 mt-6 border-t border-[#efeeeb] flex items-center justify-between">
                 <span className="text-[11px] font-semibold text-[#0f3e17] uppercase tracking-wider">
                   {exercise.highlight}
                 </span>
@@ -138,7 +138,7 @@ export function ExercisesSection() {
                   <button
                     type="button"
                     onClick={() => handleShare(exercise.id, exercise.title)}
-                    className="p-2 rounded-[7px] text-[#0f3e17] hover:bg-[#fffefc] transition-colors"
+                    className="p-2 rounded-[14px] text-[#0f3e17] hover:bg-[#fffefc] transition-colors"
                     title="Sao chép liên kết chia sẻ cho người nhà qua Zalo/Facebook"
                   >
                     {copiedId === exercise.id ? (
@@ -150,7 +150,7 @@ export function ExercisesSection() {
 
                   <Link
                     href={`/dat-lich?exercise=${exercise.id}`}
-                    className="inline-flex items-center gap-1.5 text-xs font-bold text-[#0f3e17] hover:translate-x-0.5 transition-transform"
+                    className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#0f3e17] hover:translate-x-0.5 transition-transform"
                   >
                     <span>Hướng dẫn 1:1</span>
                     <ArrowRight className="w-3.5 h-3.5" />

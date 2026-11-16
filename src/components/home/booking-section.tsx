@@ -227,15 +227,15 @@ export function BookingSection() {
   return (
     <section id="dat-lich" className="py-24 bg-[#fffefc] border-b border-[#efeeeb] scroll-mt-12">
       <div className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="bg-[#e1f4df] rounded-[14px] p-8 sm:p-12 border border-[#cfe7d3]">
+        <div className="bg-[#e1f4df] rounded-[14px] p-8 sm:p-12 border border-[#efeeeb]">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
             {/* Left Info */}
             <div className="lg:col-span-5 space-y-6">
-              <h2 className="text-3xl sm:text-4xl font-semibold text-[#0f3e17] tracking-tight leading-tight">
+              <h2 className="text-3xl sm:text-4xl font-display-serif text-[#0f3e17] tracking-[-0.01em] leading-tight">
                 Đặt lịch Khám lượng giá & Tư vấn phác đồ
               </h2>
 
-              <p className="text-[#222222]/80 text-sm leading-relaxed font-light">
+              <p className="text-[#222222]/80 text-sm leading-relaxed font-normal">
                 Chủ động chọn giờ khám, giảm thiểu tối đa thời gian chờ đợi tại phòng khám. Bác sĩ chuyên khoa sẽ liên hệ xác nhận thông tin trước buổi khám.
               </p>
 
@@ -254,9 +254,9 @@ export function BookingSection() {
                 </div>
               </div>
 
-              <div className="pt-6 border-t border-[#cfe7d3] flex items-center gap-3 text-xs text-[#0f3e17]">
+              <div className="pt-6 border-t border-[#efeeeb] flex items-center gap-3 text-xs text-[#0f3e17]">
                 <span>Hotline hỗ trợ:</span>
-                <a href="tel:0369117117" className="text-[#0f3e17] font-bold text-base hover:text-[#0c2f10] transition-colors">
+                <a href="tel:0369117117" className="text-[#0f3e17] font-semibold text-base hover:text-[#0c2f10] transition-colors">
                   0369.117.117
                 </a>
               </div>
@@ -266,10 +266,10 @@ export function BookingSection() {
             <div className="lg:col-span-7 bg-[#fffefc] text-[#222222] rounded-[14px] p-6 sm:p-8 border border-[#efeeeb]">
               {isSubmitted && ticket ? (
                 <div className="text-center py-8 space-y-4">
-                  <div className="w-16 h-16 rounded-[14px] bg-[#e1f4df] text-[#0f3e17] flex items-center justify-center mx-auto border border-[#cfe7d3]">
+                  <div className="w-16 h-16 rounded-[14px] bg-[#e1f4df] text-[#0f3e17] flex items-center justify-center mx-auto border border-[#efeeeb]">
                     <CheckCircle2 className="w-8 h-8" />
                   </div>
-                  <h3 className="text-2xl font-bold text-[#0f3e17]">
+                  <h3 className="text-2xl font-display-serif text-[#0f3e17]">
                     Đăng ký lịch khám thành công!
                   </h3>
                   <p className="text-sm text-[#222222]/80 max-w-md mx-auto leading-relaxed">
@@ -282,11 +282,11 @@ export function BookingSection() {
                     đã được ghi vào hệ thống. Nhân viên y tế sẽ gọi điện thoại tới số{" "}
                     <strong>{formData.phone}</strong> để xác nhận trong ít phút.
                   </p>
-                  <div className="bg-[#e1f4df]/40 px-4 py-3 rounded-[14px] border border-[#cfe7d3] inline-flex flex-col items-center gap-1">
-                    <span className="text-[11px] uppercase tracking-wider text-[#0f3e17]/70">
+                  <div className="bg-[#e1f4df]/40 px-4 py-3 rounded-[14px] border border-[#efeeeb] inline-flex flex-col items-center gap-1">
+                    <span className="eyebrow text-[#0f3e17]/70">
                       Mã vé hẹn
                     </span>
-                    <span className="text-2xl font-black tracking-widest text-[#0f3e17]">
+                    <span className="text-2xl font-display-serif tracking-widest text-[#0f3e17]">
                       {ticket.appointmentCode}
                     </span>
                     <button
@@ -303,7 +303,7 @@ export function BookingSection() {
                     </button>
                     {ticket.profileCode && (
                       <span className="text-[11px] text-[#222222]/60">
-                        Mã hồ sơ: <span className="font-mono">{ticket.profileCode}</span>
+                        Mã hồ sơ: <span className="font-semibold">{ticket.profileCode}</span>
                       </span>
                     )}
                   </div>
@@ -319,7 +319,7 @@ export function BookingSection() {
                 </div>
               ) : (
                 <form onSubmit={handleSubmit} className="space-y-4">
-                  <h3 className="text-lg font-bold text-[#0f3e17] pb-2 border-b border-[#efeeeb]">
+                  <h3 className="text-lg font-display-serif text-[#0f3e17] pb-2 border-b border-[#efeeeb]">
                     Thông tin người khám
                   </h3>
 
@@ -479,11 +479,11 @@ export function BookingSection() {
                   </div>
 
                   {needsTechnicianStep && mappedTechnician && (
-                    <div className="p-3.5 rounded-[14px] bg-[#e1f4df]/40 border border-[#cfe7d3] text-sm">
+                    <div className="p-3.5 rounded-[14px] bg-[#e1f4df]/40 border border-[#efeeeb] text-sm">
                       <span className="text-xs font-semibold text-[#0f3e17]">
                         Kỹ thuật viên phụ trách:{" "}
                       </span>
-                      <span className="font-bold text-[#0f3e17]">
+                      <span className="font-semibold text-[#0f3e17]">
                         {serviceTechnician?.prefix}. {mappedTechnician.name}
                       </span>
                       <span className="text-xs text-[#222222]/70">

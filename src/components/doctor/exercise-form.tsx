@@ -70,7 +70,7 @@ export default function ExerciseForm({ rows, onChange, savedExpCode }: ExerciseF
   };
 
   const inputCls =
-    "px-2 py-1.5 rounded-[8px] bg-[#fffefc] border border-[#efeeeb] text-xs text-[#222222] focus:outline-none focus:border-[#0f3e17] w-full";
+    "px-2 py-1.5 rounded-[14px] bg-[#fffefc] border border-[#efeeeb] text-xs text-[#222222] focus:outline-none focus:border-[#0f3e17] w-full";
 
   return (
     <div className="space-y-3">
@@ -108,7 +108,7 @@ export default function ExerciseForm({ rows, onChange, savedExpCode }: ExerciseF
               key={ex.id}
               className={`flex items-start gap-3 p-3 rounded-[14px] border text-xs cursor-pointer transition-colors ${
                 checked
-                  ? "bg-[#e1f4df]/60 border-[#cfe7d3]"
+                  ? "bg-[#e1f4df]/60"
                   : "bg-[#fffefc] border-[#efeeeb] hover:bg-[#efeeeb]/30"
               }`}
             >
@@ -119,7 +119,7 @@ export default function ExerciseForm({ rows, onChange, savedExpCode }: ExerciseF
                 className="mt-0.5 w-4 h-4 accent-[#0f3e17]"
               />
               <span className="flex-1">
-                <span className="block font-bold text-[#0f3e17] text-sm">{ex.name}</span>
+                <span className="block font-semibold text-[#0f3e17] text-sm">{ex.name}</span>
                 <span className="block text-[11px] text-[#222222]/60 mt-0.5">
                   {ex.category} • {ex.level === "EASY" ? "Dễ" : ex.level === "MEDIUM" ? "Vừa" : "Khó"}
                   {ex.bodyPart ? ` • ${ex.bodyPart}` : ""}
@@ -144,13 +144,13 @@ export default function ExerciseForm({ rows, onChange, savedExpCode }: ExerciseF
       {/* Liều tập của các bài đã chọn */}
       {rows.length > 0 && (
         <div className="space-y-2 pt-2">
-          <h5 className="text-xs font-bold text-[#0f3e17] uppercase tracking-wider">
+          <h5 className="eyebrow text-[#0f3e17]">
             Liều tập đã kê ({rows.length} bài)
           </h5>
           {rows.map((row, idx) => (
             <div
               key={row.exerciseId}
-              className="p-3 rounded-[14px] bg-[#e1f4df]/30 border border-[#cfe7d3] text-xs space-y-2"
+              className="p-3 rounded-[14px] bg-[#e1f4df]/30 text-xs space-y-2"
             >
               <div className="flex items-center justify-between">
                 <strong className="text-[#0f3e17] text-sm">
@@ -246,9 +246,9 @@ export default function ExerciseForm({ rows, onChange, savedExpCode }: ExerciseF
       )}
 
       {savedExpCode && (
-        <div className="p-3.5 rounded-[14px] bg-[#e1f4df]/60 border border-[#cfe7d3] text-xs">
-          <span className="font-bold text-[#0f3e17]">Đơn bài tập đã lưu: </span>
-          <span className="font-mono font-bold text-[#0f3e17]">{savedExpCode}</span>
+        <div className="p-3.5 rounded-[14px] bg-[#e1f4df]/60 text-xs">
+          <span className="font-semibold text-[#0f3e17]">Đơn bài tập đã lưu: </span>
+          <span className="font-semibold text-[#0f3e17]">{savedExpCode}</span>
           <span className="text-[#222222]/70"> — in phiếu bài tập kèm mã QR ở khung in sau khi lưu.</span>
         </div>
       )}

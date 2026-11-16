@@ -63,16 +63,16 @@ const THERAPY_STATUS_LABEL: Record<string, string> = {
 
 const THERAPY_STATUS_STYLE: Record<string, string> = {
   WAITING: "bg-amber-100 text-amber-800",
-  PREPARING: "bg-blue-100 text-blue-800",
-  SERVING: "bg-green-100 text-green-800",
-  WAITING_RESULT: "bg-purple-100 text-purple-800",
-  RETURNING: "bg-cyan-100 text-cyan-800",
-  COMPLETED: "bg-gray-100 text-gray-600",
-  SKIPPED: "bg-gray-100 text-gray-500",
+  PREPARING: "bg-[#b6ced5] text-[#0f3e17]",
+  SERVING: "bg-[#e1f4df] text-[#0f3e17]",
+  WAITING_RESULT: "bg-[#cfe7d3] text-[#0f3e17]",
+  RETURNING: "bg-[#b6ced5] text-[#0f3e17]",
+  COMPLETED: "bg-[#efeeeb] text-[#222222]",
+  SKIPPED: "bg-[#efeeeb] text-[#222222]/70",
   CANCELLED: "bg-red-100 text-red-700",
-  NOT_STARTED: "bg-gray-100 text-gray-600",
-  PENDING: "bg-gray-100 text-gray-600",
-  RESCHEDULED: "bg-orange-100 text-orange-800",
+  NOT_STARTED: "bg-[#efeeeb] text-[#222222]",
+  PENDING: "bg-[#efeeeb] text-[#222222]",
+  RESCHEDULED: "bg-amber-100 text-amber-800",
 };
 
 function fmtTime(value: string | null | undefined): string {
@@ -111,22 +111,22 @@ function PatientDetailPanel(props: {
 }) {
   const { patientName, loading, sessions, progress, pendingLogs } = props;
   if (loading) {
-    return <p className="mt-2 text-sm text-gray-500">Đang tải lịch sử buổi của {patientName}...</p>;
+    return <p className="mt-2 text-sm text-[#222222]/60">Đang tải lịch sử buổi của {patientName}...</p>;
   }
   return (
-    <div className="mt-2 space-y-3 rounded-lg border border-gray-200 bg-gray-50 p-3">
+    <div className="mt-2 space-y-3 rounded-[14px] border border-[#efeeeb] bg-[#efeeeb] p-3">
       <div>
-        <p className="text-sm font-semibold text-gray-900">
+        <p className="text-sm font-semibold text-[#222222]">
           Các buổi đã làm — {patientName}
           {progress ? ` (${progress.completedSessions}/${progress.totalSessions} buổi xong)` : ""}
         </p>
         {sessions.length === 0 ? (
-          <p className="mt-1 text-sm text-gray-500">Chưa có buổi trị liệu nào được ghi.</p>
+          <p className="mt-1 text-sm text-[#222222]/60">Chưa có buổi trị liệu nào được ghi.</p>
         ) : (
           <ul className="mt-1 space-y-1">
             {sessions.map((s) => (
-              <li key={s.id} className="text-sm text-gray-700">
-                <span className="font-mono font-medium">{s.code}</span>
+              <li key={s.id} className="text-sm text-[#222222]">
+                <span className=" font-medium">{s.code}</span>
                 {` · ${fmtDate(s.startedAt)} ${fmtTime(s.startedAt)}`}
                 {s.services?.length
                   ? ` · ${(s.services.map((x) => x.serviceName ?? "").filter(Boolean)).join(", ")}`
@@ -143,24 +143,24 @@ function PatientDetailPanel(props: {
           </ul>
         )}
         {progress && progress.goalsDue.length > 0 && (
-          <p className="mt-1 rounded-md border border-amber-300 bg-amber-50 px-2 py-1 text-sm text-amber-800">
+          <p className="mt-1 rounded-[14px] border border-amber-300 bg-amber-50 px-2 py-1 text-sm text-amber-800">
             Đã đủ số buổi — nên đánh giá lại:{" "}
             {progress.goalsDue.map((g) => g.scaleNameVi ?? g.scaleCode).join(", ")}.
           </p>
         )}
       </div>
       <div>
-        <p className="text-sm font-semibold text-gray-900">
+        <p className="text-sm font-semibold text-[#222222]">
           Nhật ký tự tập chờ duyệt ({pendingLogs.length})
         </p>
         {pendingLogs.length === 0 ? (
-          <p className="mt-1 text-sm text-gray-500">Không có nhật ký tự tập nào đang chờ duyệt.</p>
+          <p className="mt-1 text-sm text-[#222222]/60">Không có nhật ký tự tập nào đang chờ duyệt.</p>
         ) : (
           <ul className="mt-1 space-y-2">
             {pendingLogs.map((log) => (
-              <li key={log.id} className="rounded-md border border-gray-200 bg-white p-2 text-sm">
-                <p className="text-gray-800">
-                  <span className="font-mono font-medium">{log.code ?? ""}</span>
+              <li key={log.id} className="rounded-[14px] border border-[#efeeeb] bg-[#fffefc] p-2 text-sm">
+                <p className="text-[#222222]">
+                  <span className=" font-medium">{log.code ?? ""}</span>
                   {` · ${fmtDate(log.loggedDate ?? log.createdAt)}`}
                   {` · ${log.exerciseName ?? "Bài tập"}`}
                   {log.setsDone != null ? ` · ${log.setsDone} hiệp` : ""}
@@ -168,7 +168,7 @@ function PatientDetailPanel(props: {
                   {log.painDuring != null ? ` · đau ${log.painDuring}/10` : ""}
                   {log.completed === false ? " · bỏ dở" : ""}
                 </p>
-                {log.note && <p className="text-gray-600">Ghi chú: {log.note}</p>}
+                {log.note && <p className="text-[#222222]/70">Ghi chú: {log.note}</p>}
                 {props.canReview && (
                   <div className="mt-1 flex flex-wrap items-center gap-2">
                     <input
@@ -176,13 +176,13 @@ function PatientDetailPanel(props: {
                       value={props.reviewNotes[log.id] ?? ""}
                       onChange={(e) => props.onReviewNoteChange(log.id, e.target.value)}
                       placeholder="Ghi chú duyệt (tùy chọn)"
-                      className="min-w-48 flex-1 rounded-md border border-gray-300 px-2 py-1 text-sm"
+                      className="min-w-48 flex-1 rounded-[14px] border border-[#efeeeb] px-2 py-1 text-sm"
                     />
                     <button
                       type="button"
                       disabled={props.reviewBusyId !== ""}
                       onClick={() => props.onReview(log, "APPROVED")}
-                      className="rounded-md bg-emerald-600 px-2 py-1 text-xs font-medium text-white hover:bg-emerald-700 disabled:opacity-50"
+                      className="rounded-[14px] bg-[#0f3e17] px-2 py-1 text-xs font-medium text-[#fffefc] hover:bg-[#0c2f10] disabled:opacity-50"
                     >
                       {props.reviewBusyId === `APPROVED-${log.id}` ? "Đang duyệt..." : "Duyệt"}
                     </button>
@@ -190,7 +190,7 @@ function PatientDetailPanel(props: {
                       type="button"
                       disabled={props.reviewBusyId !== ""}
                       onClick={() => props.onReview(log, "REJECTED")}
-                      className="rounded-md border border-rose-300 px-2 py-1 text-xs font-medium text-rose-700 hover:bg-rose-50 disabled:opacity-50"
+                      className="rounded-[14px] border border-rose-300 px-2 py-1 text-xs font-medium text-rose-700 hover:bg-rose-50 disabled:opacity-50"
                     >
                       {props.reviewBusyId === `REJECTED-${log.id}` ? "Đang xử lý..." : "Từ chối"}
                     </button>
@@ -778,10 +778,10 @@ export default function RoomWorkspacePage() {
           type="button"
           disabled={busy}
           onClick={() => handleCallTherapy(item)}
-          className={`inline-flex items-center gap-1 rounded-md px-3 py-1.5 text-sm font-medium text-white disabled:opacity-50 ${
+          className={`inline-flex items-center gap-1 rounded-[14px] px-3 py-1.5 text-sm font-medium text-[#fffefc] disabled:opacity-50 ${
             unassigned
-              ? "bg-teal-600 hover:bg-teal-700"
-              : "bg-blue-600 hover:bg-blue-700"
+              ? "bg-[#0c2f10] hover:bg-[#0f3e17]"
+              : "bg-[#0f3e17] hover:bg-[#0c2f10]"
           }`}
         >
           {unassigned ? <UserPlus className="h-4 w-4" /> : <PhoneCall className="h-4 w-4" />}
@@ -797,7 +797,7 @@ export default function RoomWorkspacePage() {
           type="button"
           disabled={busy}
           onClick={() => openStartForm(item)}
-          className="inline-flex items-center gap-1 rounded-md bg-green-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-green-700 disabled:opacity-50"
+          className="inline-flex items-center gap-1 rounded-[14px] bg-[#0f3e17] px-3 py-1.5 text-sm font-medium text-[#fffefc] hover:bg-[#0c2f10] disabled:opacity-50"
         >
           <Play className="h-4 w-4" />
           Bắt đầu
@@ -812,7 +812,7 @@ export default function RoomWorkspacePage() {
             type="button"
             disabled={busy || finishLoading}
             onClick={() => void openFinishForm(item)}
-            className="inline-flex items-center gap-1 rounded-md bg-emerald-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-emerald-700 disabled:opacity-50"
+            className="inline-flex items-center gap-1 rounded-[14px] bg-[#0f3e17] px-3 py-1.5 text-sm font-medium text-[#fffefc] hover:bg-[#0c2f10] disabled:opacity-50"
           >
             <ClipboardList className="h-4 w-4" />
             {finishLoading && finishTarget?.item.id === item.id
@@ -825,7 +825,7 @@ export default function RoomWorkspacePage() {
             type="button"
             disabled={busy}
             onClick={() => openResultForm(item)}
-            className="inline-flex items-center gap-1 rounded-md border border-emerald-300 px-3 py-1.5 text-sm font-medium text-emerald-700 hover:bg-emerald-50 disabled:opacity-50"
+            className="inline-flex items-center gap-1 rounded-[14px] border border-[#efeeeb] px-3 py-1.5 text-sm font-medium text-[#0f3e17] hover:bg-[#e1f4df] disabled:opacity-50"
           >
             <ClipboardList className="h-4 w-4" /> Ghi kết quả
           </button>
@@ -833,7 +833,7 @@ export default function RoomWorkspacePage() {
             type="button"
             disabled={busy}
             onClick={() => handleComplete(item)}
-            className="inline-flex items-center gap-1 rounded-md bg-gray-700 px-3 py-1.5 text-sm font-medium text-white hover:bg-gray-800 disabled:opacity-50"
+            className="inline-flex items-center gap-1 rounded-[14px] bg-[#222222] px-3 py-1.5 text-sm font-medium text-[#fffefc] hover:bg-[#0f3e17] disabled:opacity-50"
           >
             <Check className="h-4 w-4" />
             {b(`complete-${item.id}`) ? "Đang lưu..." : "Hoàn thành"}
@@ -842,7 +842,7 @@ export default function RoomWorkspacePage() {
             type="button"
             disabled={busy}
             onClick={() => handleSkip(item)}
-            className="inline-flex items-center gap-1 rounded-md border border-gray-300 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+            className="inline-flex items-center gap-1 rounded-[14px] border border-[#efeeeb] px-3 py-1.5 text-sm font-medium text-[#222222] hover:bg-[#efeeeb] disabled:opacity-50"
           >
             <SkipForward className="h-4 w-4" /> Bỏ qua
           </button>
@@ -856,7 +856,7 @@ export default function RoomWorkspacePage() {
             type="button"
             disabled={busy}
             onClick={() => openResultForm(item)}
-            className="inline-flex items-center gap-1 rounded-md bg-emerald-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-emerald-700 disabled:opacity-50"
+            className="inline-flex items-center gap-1 rounded-[14px] bg-[#0f3e17] px-3 py-1.5 text-sm font-medium text-[#fffefc] hover:bg-[#0c2f10] disabled:opacity-50"
           >
             <ClipboardList className="h-4 w-4" /> Ghi kết quả
           </button>
@@ -864,7 +864,7 @@ export default function RoomWorkspacePage() {
             type="button"
             disabled={busy}
             onClick={() => handleRecall(item)}
-            className="inline-flex items-center gap-1 rounded-md border border-blue-300 px-3 py-1.5 text-sm font-medium text-blue-700 hover:bg-blue-50 disabled:opacity-50"
+            className="inline-flex items-center gap-1 rounded-[14px] border border-[#efeeeb] px-3 py-1.5 text-sm font-medium text-[#0f3e17] hover:bg-[#e1f4df] disabled:opacity-50"
           >
             <RefreshCw className="h-4 w-4" />
             {b(`recall-${item.id}`) ? "Đang xử lý..." : "Gọi lại"}
@@ -873,7 +873,7 @@ export default function RoomWorkspacePage() {
             type="button"
             disabled={busy}
             onClick={() => handleComplete(item)}
-            className="inline-flex items-center gap-1 rounded-md bg-gray-700 px-3 py-1.5 text-sm font-medium text-white hover:bg-gray-800 disabled:opacity-50"
+            className="inline-flex items-center gap-1 rounded-[14px] bg-[#222222] px-3 py-1.5 text-sm font-medium text-[#fffefc] hover:bg-[#0f3e17] disabled:opacity-50"
           >
             <Check className="h-4 w-4" /> Hoàn thành
           </button>
@@ -885,7 +885,7 @@ export default function RoomWorkspacePage() {
 
   if (role && role !== "DOCTOR" && role !== "TECHNICIAN" && role !== "RECEPTIONIST" && role !== "ADMIN") {
     return (
-      <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-red-700">
+      <div className="rounded-[14px] border border-red-200 bg-red-50 p-4 text-red-700">
         Tài khoản của bạn không có quyền xem màn hình phòng.
       </div>
     );
@@ -895,10 +895,10 @@ export default function RoomWorkspacePage() {
     <div className="space-y-6">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h1 className="flex items-center gap-2 text-2xl font-bold text-gray-900">
-            <DoorOpen className="h-6 w-6 text-blue-600" /> Màn hình phòng
+          <h1 className="flex items-center gap-2 font-display-serif text-2xl text-[#0f3e17] tracking-[-0.01em]">
+            <DoorOpen className="h-6 w-6 text-[#0f3e17]" /> Màn hình phòng
           </h1>
-          <p className="mt-1 text-sm text-gray-500">
+          <p className="mt-1 text-sm text-[#222222]/60">
             Hàng đợi khám và trị liệu của một phòng — tự làm mới mỗi 15 giây
             {isConnected ? " và khi có lệnh gọi mới" : " (mất kết nối thời gian thực, đang dùng poll)"}.
           </p>
@@ -907,14 +907,14 @@ export default function RoomWorkspacePage() {
           type="button"
           onClick={() => selectedRoomId && fetchQueue(selectedRoomId)}
           disabled={!selectedRoomId || queueLoading}
-          className="inline-flex items-center gap-1 rounded-md border border-gray-300 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+          className="inline-flex items-center gap-1 rounded-[14px] border border-[#efeeeb] px-3 py-2 text-sm font-medium text-[#222222] hover:bg-[#efeeeb] disabled:opacity-50"
         >
           <RefreshCw className="h-4 w-4" /> Tải lại
         </button>
       </div>
 
       {actionMsg && (
-        <div className="flex items-start gap-2 rounded-lg border border-green-200 bg-green-50 p-3 text-sm text-green-800">
+        <div className="flex items-start gap-2 rounded-[14px] bg-[#e1f4df] p-3 text-sm text-[#0f3e17]">
           <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0" />
           <span>{actionMsg}</span>
           <button type="button" onClick={clearMsg} className="ml-auto" aria-label="Đóng">
@@ -923,7 +923,7 @@ export default function RoomWorkspacePage() {
         </div>
       )}
       {actionError && (
-        <div className="flex items-start gap-2 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-800">
+        <div className="flex items-start gap-2 rounded-[14px] border border-red-200 bg-red-50 p-3 text-sm text-red-800">
           <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
           <span>{actionError}</span>
           <button type="button" onClick={clearMsg} className="ml-auto" aria-label="Đóng">
@@ -932,19 +932,19 @@ export default function RoomWorkspacePage() {
         </div>
       )}
 
-      <div className="rounded-lg border border-gray-200 bg-white p-4">
-        <label className="mb-1 block text-sm font-medium text-gray-700" htmlFor="room-select">
+      <div className="rounded-[14px] border border-[#efeeeb] bg-[#fffefc] p-7">
+        <label className="mb-1 block text-sm font-medium text-[#222222]" htmlFor="room-select">
           Phòng
         </label>
         {roomsLoading ? (
-          <p className="text-sm text-gray-500">Đang tải danh sách phòng...</p>
+          <p className="text-sm text-[#222222]/60">Đang tải danh sách phòng...</p>
         ) : roomsError ? (
           <div className="space-y-2">
             <p className="text-sm text-red-600">{roomsError}</p>
             <button
               type="button"
               onClick={fetchRooms}
-              className="rounded-md border border-gray-300 px-3 py-1.5 text-sm hover:bg-gray-50"
+              className="rounded-[14px] border border-[#efeeeb] px-3 py-1.5 text-sm hover:bg-[#efeeeb]"
             >
               Thử lại
             </button>
@@ -955,7 +955,7 @@ export default function RoomWorkspacePage() {
               id="room-select"
               value={selectedRoomId}
               onChange={(e) => setSelectedRoomId(e.target.value)}
-              className="min-w-64 rounded-md border border-gray-300 px-3 py-2 text-sm"
+              className="min-w-64 rounded-[14px] border border-[#efeeeb] px-3 py-2 text-sm"
             >
               {visibleRooms.map((r) => (
                 <option key={r.id} value={r.id}>
@@ -964,7 +964,7 @@ export default function RoomWorkspacePage() {
                 </option>
               ))}
             </select>
-            <label className="flex items-center gap-1 text-sm text-gray-600">
+            <label className="flex items-center gap-1 text-sm text-[#222222]/70">
               <input
                 type="checkbox"
                 checked={showAllRooms}
@@ -977,29 +977,29 @@ export default function RoomWorkspacePage() {
       </div>
 
       {queueError && (
-        <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">{queueError}</div>
+        <div className="rounded-[14px] border border-red-200 bg-red-50 p-3 text-sm text-red-700">{queueError}</div>
       )}
 
       {queueLoading && !queue ? (
-        <p className="text-sm text-gray-500">Đang tải hàng đợi phòng...</p>
+        <p className="text-sm text-[#222222]/60">Đang tải hàng đợi phòng...</p>
       ) : queue ? (
         <div className="space-y-6">
           {/* Khối Chờ khám */}
-          <section className="rounded-lg border border-gray-200 bg-white p-4">
-            <h2 className="flex items-center gap-2 text-lg font-semibold text-gray-900">
-              <Stethoscope className="h-5 w-5 text-blue-600" /> Chờ khám
-              <span className="text-sm font-normal text-gray-500">
+          <section className="rounded-[14px] border border-[#efeeeb] bg-[#fffefc] p-7">
+            <h2 className="flex items-center gap-2 font-display-serif text-lg text-[#0f3e17]">
+              <Stethoscope className="h-5 w-5 text-[#0f3e17]" /> Chờ khám
+              <span className="text-sm font-normal text-[#222222]/60">
                 ({queue.examQueue.length} lịch hẹn hôm nay)
               </span>
             </h2>
             {servingExam && (
-              <div className="mt-3 rounded-lg border border-green-300 bg-green-50 p-3">
-                <p className="text-xs font-semibold uppercase tracking-wide text-green-700">Đang khám</p>
-                <p className="mt-1 font-medium text-gray-900">
+              <div className="mt-3 rounded-[14px] bg-[#e1f4df] p-3">
+                <p className="eyebrow text-[#0f3e17]">Đang khám</p>
+                <p className="mt-1 font-display-serif text-[#0f3e17]">
                   {servingExam.patientName}
                   {servingExam.serviceName ? ` — ${servingExam.serviceName}` : ""}
                 </p>
-                <p className="text-sm text-gray-600">
+                <p className="text-sm text-[#222222]/70">
                   {servingExam.appointmentCode}
                   {servingExam.doctorName ? ` · BS. ${servingExam.doctorName}` : ""}
                   {servingExam.startTime ? ` · ${fmtTime(servingExam.startTime)}–${fmtTime(servingExam.endTime)}` : ""}
@@ -1007,17 +1007,17 @@ export default function RoomWorkspacePage() {
               </div>
             )}
             {waitingExam.length === 0 && !servingExam ? (
-              <p className="mt-3 text-sm text-gray-500">Không có lịch khám nào đang chờ ở phòng này.</p>
+              <p className="mt-3 text-sm text-[#222222]/60">Không có lịch khám nào đang chờ ở phòng này.</p>
             ) : (
-              <ul className="mt-3 divide-y divide-gray-100">
+              <ul className="mt-3 divide-y divide-[#efeeeb]">
                 {waitingExam.map((e) => (
                   <li key={e.appointmentCode} className="flex flex-wrap items-center justify-between gap-2 py-2">
                     <div>
-                      <p className="font-medium text-gray-900">
+                      <p className="font-display-serif text-[#0f3e17]">
                         {e.patientName}
                         {e.serviceName ? ` — ${e.serviceName}` : ""}
                       </p>
-                      <p className="text-sm text-gray-600">
+                      <p className="text-sm text-[#222222]/70">
                         {e.appointmentCode}
                         {e.doctorName ? ` · BS. ${e.doctorName}` : ""}
                         {e.startTime ? ` · ${fmtTime(e.startTime)}–${fmtTime(e.endTime)}` : ""}
@@ -1032,7 +1032,7 @@ export default function RoomWorkspacePage() {
                           type="button"
                           disabled={busyId !== ""}
                           onClick={() => handleCallExam(e)}
-                          className="inline-flex items-center gap-1 rounded-md bg-blue-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+                          className="inline-flex items-center gap-1 rounded-[14px] bg-[#0f3e17] px-3 py-1.5 text-sm font-medium text-[#fffefc] hover:bg-[#0c2f10] disabled:opacity-50"
                         >
                           <PhoneCall className="h-4 w-4" />
                           {busyId === `exam-${e.appointmentCode}` ? "Đang gọi..." : "Mời vào"}
@@ -1046,20 +1046,20 @@ export default function RoomWorkspacePage() {
           </section>
 
           {/* Khối Chờ trị liệu */}
-          <section className="rounded-lg border border-gray-200 bg-white p-4">
-            <h2 className="flex items-center gap-2 text-lg font-semibold text-gray-900">
-              <Clock className="h-5 w-5 text-emerald-600" /> Chờ trị liệu
-              <span className="text-sm font-normal text-gray-500">
+          <section className="rounded-[14px] border border-[#efeeeb] bg-[#fffefc] p-7">
+            <h2 className="flex items-center gap-2 font-display-serif text-lg text-[#0f3e17]">
+              <Clock className="h-5 w-5 text-[#0f3e17]" /> Chờ trị liệu
+              <span className="text-sm font-normal text-[#222222]/60">
                 ({queue.therapyQueue.length} dịch vụ)
               </span>
             </h2>
             {servingTherapy && (
-              <div className="mt-3 rounded-lg border border-green-300 bg-green-50 p-3">
-                <p className="text-xs font-semibold uppercase tracking-wide text-green-700">Đang phục vụ</p>
-                <p className="mt-1 font-medium text-gray-900">
+              <div className="mt-3 rounded-[14px] bg-[#e1f4df] p-3">
+                <p className="eyebrow text-[#0f3e17]">Đang phục vụ</p>
+                <p className="mt-1 font-display-serif text-[#0f3e17]">
                   {servingTherapy.patientName} — {servingTherapy.serviceName}
                 </p>
-                <p className="text-sm text-gray-600">
+                <p className="text-sm text-[#222222]/70">
                   {servingTherapy.prescriptionCode}
                   {servingTherapy.doctorName ? ` · BS. ${servingTherapy.doctorName}` : ""}
                   {servingTherapy.technicianName ? ` · KTV. ${servingTherapy.technicianName}` : ""}
@@ -1067,8 +1067,8 @@ export default function RoomWorkspacePage() {
                 </p>
                 {/* GĐ5 — thẻ buổi đang chạy: mã buổi, người thực hiện, giờ bắt đầu, đếm thời gian. */}
                 {sessionsByService[servingTherapy.id] && (
-                  <p className="mt-1 text-sm text-green-800">
-                    Buổi <span className="font-mono font-semibold">{sessionsByService[servingTherapy.id].code}</span>
+                  <p className="mt-1 text-sm text-[#0f3e17]">
+                    Buổi <span className="font-semibold">{sessionsByService[servingTherapy.id].code}</span>
                     {sessionsByService[servingTherapy.id].performedByName
                       ? ` · ${sessionsByService[servingTherapy.id].performedByName}`
                       : ""}
@@ -1082,17 +1082,17 @@ export default function RoomWorkspacePage() {
               </div>
             )}
             {waitingTherapy.length === 0 && !servingTherapy ? (
-              <p className="mt-3 text-sm text-gray-500">Không có dịch vụ trị liệu nào đang chờ ở phòng này.</p>
+              <p className="mt-3 text-sm text-[#222222]/60">Không có dịch vụ trị liệu nào đang chờ ở phòng này.</p>
             ) : (
-              <ul className="mt-3 divide-y divide-gray-100">
+              <ul className="mt-3 divide-y divide-[#efeeeb]">
                 {waitingTherapy.map((t) => (
                   <li key={t.id} className="py-2">
                     <div className="flex flex-wrap items-center justify-between gap-2">
                       <div>
-                        <p className="font-medium text-gray-900">
+                        <p className="font-display-serif text-[#0f3e17]">
                           {t.patientName} — {t.serviceName}
                         </p>
-                        <p className="text-sm text-gray-600">
+                        <p className="text-sm text-[#222222]/70">
                           {t.prescriptionCode}
                           {t.doctorName ? ` · BS. ${t.doctorName}` : ""}
                           {t.technicianName ? ` · KTV. ${t.technicianName}` : ""}
@@ -1100,13 +1100,13 @@ export default function RoomWorkspacePage() {
                         </p>
                       </div>
                       <span className="flex flex-wrap items-center gap-2">
-                        <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${THERAPY_STATUS_STYLE[t.status] ?? "bg-gray-100 text-gray-600"}`}>
+                        <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${THERAPY_STATUS_STYLE[t.status] ?? "bg-[#efeeeb] text-[#222222]"}`}>
                           {THERAPY_STATUS_LABEL[t.status] ?? t.status}
                         </span>
                         <button
                           type="button"
                           onClick={() => void togglePatientDetail(t)}
-                          className="rounded-md border border-gray-300 px-2 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-50"
+                          className="rounded-[14px] border border-[#efeeeb] px-2 py-1.5 text-xs font-medium text-[#222222] hover:bg-[#efeeeb]"
                         >
                           {expandedPatientId === t.patientProfileId ? "Ẩn lịch sử buổi" : "Buổi đã làm"}
                         </button>
@@ -1138,8 +1138,8 @@ export default function RoomWorkspacePage() {
           {/* GĐ5 — banner nhắc đánh giá lại (hiện sau khi kết thúc 1 buổi
               mà bệnh nhân đã đủ số buổi theo mục tiêu, mặc định 5 buổi). */}
           {reassessBanner && (
-            <section className="rounded-lg border border-amber-300 bg-amber-50 p-4">
-              <h2 className="flex items-center gap-2 text-base font-semibold text-amber-900">
+            <section className="rounded-[14px] border border-amber-300 bg-amber-50 p-7">
+              <h2 className="flex items-center gap-2 font-display-serif text-base text-amber-900">
                 <AlertCircle className="h-5 w-5 text-amber-600" />
                 Đã đủ số buổi — nên đánh giá lại
               </h2>
@@ -1154,7 +1154,7 @@ export default function RoomWorkspacePage() {
                 <button
                   type="button"
                   onClick={() => setShowReassessForm((v) => !v)}
-                  className="rounded-md bg-amber-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-amber-700"
+                  className="rounded-[14px] bg-amber-600 px-3 py-1.5 text-sm font-medium text-[#fffefc] hover:bg-amber-700"
                 >
                   {showReassessForm ? "Ẩn form đánh giá" : "Đánh giá ngay"}
                 </button>
@@ -1164,14 +1164,14 @@ export default function RoomWorkspacePage() {
                     setReassessBanner(null);
                     setShowReassessForm(false);
                   }}
-                  className="rounded-md border border-amber-300 px-3 py-1.5 text-sm font-medium text-amber-800 hover:bg-amber-100"
+                  className="rounded-[14px] border border-amber-300 px-3 py-1.5 text-sm font-medium text-amber-800 hover:bg-amber-100"
                 >
                   Để sau
                 </button>
               </div>
               {showReassessForm && (
-                <div className="mt-3 rounded-lg border border-amber-200 bg-white p-3">
-                  <p className="mb-2 text-xs text-gray-500">
+                <div className="mt-3 rounded-[14px] border border-amber-200 bg-[#fffefc] p-3">
+                  <p className="mb-2 text-xs text-[#222222]/60">
                     Chấm ở thời điểm Tái đánh giá, gắn với buổi {""}
                     vừa xong — thang BS-only vẫn chỉ bác sĩ chấm (quyền GĐ3).
                   </p>
@@ -1195,12 +1195,12 @@ export default function RoomWorkspacePage() {
       {/* GĐ5 — Form bắt đầu buổi: chọn nhiều dịch vụ WAITING của cùng 1
           bệnh nhân (Q1) + VAS trước buổi tùy chọn (Q3). */}
       {startTarget && (
-        <div className="rounded-lg border border-green-300 bg-white p-4 shadow-sm">
-          <h3 className="flex items-center gap-2 text-base font-semibold text-gray-900">
-            <Play className="h-5 w-5 text-green-600" />
+        <div className="rounded-[14px] border border-[#efeeeb] bg-[#fffefc] p-7">
+          <h3 className="flex items-center gap-2 font-display-serif text-base text-[#0f3e17]">
+            <Play className="h-5 w-5 text-[#0f3e17]" />
             Bắt đầu buổi trị liệu — {startTarget.patientName}
           </h3>
-          <p className="mt-1 text-sm text-gray-500">
+          <p className="mt-1 text-sm text-[#222222]/60">
             1 buổi có thể gồm nhiều dịch vụ của cùng bệnh nhân. Buổi chỉ được tạo khi bấm
             &quot;Bắt đầu buổi&quot; — nếu tạo buổi lỗi thì dịch vụ không đổi trạng thái.
           </p>
@@ -1212,7 +1212,7 @@ export default function RoomWorkspacePage() {
                   (t.status === "WAITING" || t.status === "PREPARING"),
               )
               .map((t) => (
-                <label key={t.id} className="flex items-center gap-2 text-sm text-gray-800">
+                <label key={t.id} className="flex items-center gap-2 text-sm text-[#222222]">
                   <input
                     type="checkbox"
                     checked={startSelectedIds.includes(t.id)}
@@ -1220,7 +1220,7 @@ export default function RoomWorkspacePage() {
                   />
                   <span>
                     {t.serviceName}
-                    <span className="text-gray-500">
+                    <span className="text-[#222222]/60">
                       {` (${THERAPY_STATUS_LABEL[t.status] ?? t.status})`}
                       {t.doctorName ? ` · BS. ${t.doctorName}` : ""}
                       {t.technicianName ? ` · KTV. ${t.technicianName}` : ""}
@@ -1229,7 +1229,7 @@ export default function RoomWorkspacePage() {
                 </label>
               ))}
           </div>
-          <label className="mt-3 block text-sm font-medium text-gray-700" htmlFor="pain-before">
+          <label className="mt-3 block text-sm font-medium text-[#222222]" htmlFor="pain-before">
             Đau trước buổi (VAS 0–10, tùy chọn)
           </label>
           <input
@@ -1240,14 +1240,14 @@ export default function RoomWorkspacePage() {
             value={startPainBefore}
             onChange={(e) => setStartPainBefore(e.target.value)}
             placeholder="Để trống nếu bệnh nhân không đau"
-            className="mt-1 w-64 rounded-md border border-gray-300 px-3 py-2 text-sm"
+            className="mt-1 w-64 rounded-[14px] border border-[#efeeeb] px-3 py-2 text-sm"
           />
           <div className="mt-3 flex gap-2">
             <button
               type="button"
               disabled={startSaving || startSelectedIds.length === 0}
               onClick={handleSubmitStart}
-              className="inline-flex items-center gap-1 rounded-md bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700 disabled:opacity-50"
+              className="inline-flex items-center gap-1 rounded-[14px] bg-[#0f3e17] px-4 py-2 text-sm font-medium text-[#fffefc] hover:bg-[#0c2f10] disabled:opacity-50"
             >
               <Play className="h-4 w-4" /> {startSaving ? "Đang bắt đầu..." : `Bắt đầu buổi (${startSelectedIds.length} dịch vụ)`}
             </button>
@@ -1255,7 +1255,7 @@ export default function RoomWorkspacePage() {
               type="button"
               disabled={startSaving}
               onClick={() => setStartTarget(null)}
-              className="rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+              className="rounded-[14px] border border-[#efeeeb] px-4 py-2 text-sm font-medium text-[#222222] hover:bg-[#efeeeb] disabled:opacity-50"
             >
               Hủy
             </button>
@@ -1266,12 +1266,12 @@ export default function RoomWorkspacePage() {
       {/* GĐ5 — Form kết thúc buổi: VAS sau buổi (tùy chọn) + bài đã làm
           (tick từ đơn ACTIVE + thêm bài ngoài đơn) + ghi chú + sự cố. */}
       {finishTarget && (
-        <div className="rounded-lg border border-emerald-300 bg-white p-4 shadow-sm">
-          <h3 className="flex items-center gap-2 text-base font-semibold text-gray-900">
-            <ClipboardList className="h-5 w-5 text-emerald-600" />
+        <div className="rounded-[14px] border border-[#efeeeb] bg-[#fffefc] p-7">
+          <h3 className="flex items-center gap-2 font-display-serif text-base text-[#0f3e17]">
+            <ClipboardList className="h-5 w-5 text-[#0f3e17]" />
             Kết thúc buổi {finishTarget.session.code} — {finishTarget.item.patientName} ({finishTarget.item.serviceName})
           </h3>
-          <label className="mt-3 block text-sm font-medium text-gray-700" htmlFor="pain-after">
+          <label className="mt-3 block text-sm font-medium text-[#222222]" htmlFor="pain-after">
             Đau sau buổi (VAS 0–10, tùy chọn)
           </label>
           <input
@@ -1282,12 +1282,12 @@ export default function RoomWorkspacePage() {
             value={finishPainAfter}
             onChange={(e) => setFinishPainAfter(e.target.value)}
             placeholder="Để trống nếu không đo"
-            className="mt-1 w-64 rounded-md border border-gray-300 px-3 py-2 text-sm"
+            className="mt-1 w-64 rounded-[14px] border border-[#efeeeb] px-3 py-2 text-sm"
           />
 
-          <p className="mt-4 text-sm font-semibold text-gray-900">Bài đã làm trong buổi</p>
+          <p className="mt-4 text-sm font-semibold text-[#222222]">Bài đã làm trong buổi</p>
           {finishPrescriptions.length === 0 ? (
-            <p className="mt-1 text-sm text-gray-500">
+            <p className="mt-1 text-sm text-[#222222]/60">
               Bệnh nhân chưa có đơn bài tập nào đang hiệu lực — chỉ ghi được bài ngoài đơn bên dưới.
             </p>
           ) : (
@@ -1296,8 +1296,8 @@ export default function RoomWorkspacePage() {
                 const key = `rx:${p.id}`;
                 const row = finishTicked[key];
                 return (
-                  <div key={p.id} className="rounded-md border border-gray-200 p-3">
-                    <label className="flex items-center gap-2 text-sm font-medium text-gray-900">
+                  <div key={p.id} className="rounded-[14px] border border-[#efeeeb] p-3">
+                    <label className="flex items-center gap-2 text-sm font-medium text-[#222222]">
                       <input
                         type="checkbox"
                         checked={!!row}
@@ -1323,13 +1323,13 @@ export default function RoomWorkspacePage() {
                         }}
                       />
                       {p.exercise?.name ?? "Bài tập"}
-                      <span className="font-normal text-gray-500">
+                      <span className="font-normal text-[#222222]/60">
                         {` — kê: ${[p.sets ? `${p.sets} hiệp` : "", p.reps ? `${p.reps} lần` : "", p.holdSec ? `giữ ${p.holdSec}s` : ""].filter(Boolean).join(" · ")}`}
                       </span>
                     </label>
                     {row && (
                       <div className="mt-2 flex flex-wrap items-center gap-2 text-sm">
-                        <label className="flex items-center gap-1 text-gray-700">
+                        <label className="flex items-center gap-1 text-[#222222]">
                           Hiệp thực tế
                           <input
                             type="number"
@@ -1338,10 +1338,10 @@ export default function RoomWorkspacePage() {
                             onChange={(e) =>
                               setFinishTicked((prev) => ({ ...prev, [key]: { ...prev[key], setsDone: e.target.value } }))
                             }
-                            className="w-16 rounded-md border border-gray-300 px-2 py-1"
+                            className="w-16 rounded-[14px] border border-[#efeeeb] px-2 py-1"
                           />
                         </label>
-                        <label className="flex items-center gap-1 text-gray-700">
+                        <label className="flex items-center gap-1 text-[#222222]">
                           Lần/bài
                           <input
                             type="number"
@@ -1350,10 +1350,10 @@ export default function RoomWorkspacePage() {
                             onChange={(e) =>
                               setFinishTicked((prev) => ({ ...prev, [key]: { ...prev[key], repsDone: e.target.value } }))
                             }
-                            className="w-16 rounded-md border border-gray-300 px-2 py-1"
+                            className="w-16 rounded-[14px] border border-[#efeeeb] px-2 py-1"
                           />
                         </label>
-                        <label className="flex items-center gap-1 text-gray-700">
+                        <label className="flex items-center gap-1 text-[#222222]">
                           Đau khi tập (0–10)
                           <input
                             type="number"
@@ -1363,10 +1363,10 @@ export default function RoomWorkspacePage() {
                             onChange={(e) =>
                               setFinishTicked((prev) => ({ ...prev, [key]: { ...prev[key], painDuring: e.target.value } }))
                             }
-                            className="w-16 rounded-md border border-gray-300 px-2 py-1"
+                            className="w-16 rounded-[14px] border border-[#efeeeb] px-2 py-1"
                           />
                         </label>
-                        <label className="flex items-center gap-1 text-gray-700">
+                        <label className="flex items-center gap-1 text-[#222222]">
                           <input
                             type="checkbox"
                             checked={!row.completed}
@@ -1383,7 +1383,7 @@ export default function RoomWorkspacePage() {
                             setFinishTicked((prev) => ({ ...prev, [key]: { ...prev[key], note: e.target.value } }))
                           }
                           placeholder="Ghi chú riêng bài này"
-                          className="min-w-48 flex-1 rounded-md border border-gray-300 px-2 py-1"
+                          className="min-w-48 flex-1 rounded-[14px] border border-[#efeeeb] px-2 py-1"
                         />
                       </div>
                     )}
@@ -1394,21 +1394,21 @@ export default function RoomWorkspacePage() {
           )}
 
           {/* Bài ngoài đơn — hiện rõ là ngoài đơn khi bác sĩ duyệt buổi. */}
-          <div className="mt-3 rounded-md border border-dashed border-gray-300 p-3">
-            <p className="text-sm font-semibold text-gray-900">Thêm bài ngoài đơn</p>
+          <div className="mt-3 rounded-[14px] border border-dashed border-[#efeeeb] p-3">
+            <p className="text-sm font-semibold text-[#222222]">Thêm bài ngoài đơn</p>
             <div className="mt-1 flex flex-wrap gap-2">
               <input
                 type="text"
                 value={extraSearch}
                 onChange={(e) => setExtraSearch(e.target.value)}
                 placeholder="Tìm bài tập (gõ ≥ 2 ký tự)..."
-                className="min-w-56 flex-1 rounded-md border border-gray-300 px-3 py-2 text-sm"
+                className="min-w-56 flex-1 rounded-[14px] border border-[#efeeeb] px-3 py-2 text-sm"
               />
               <button
                 type="button"
                 disabled={extraSearching || extraSearch.trim().length < 2}
                 onClick={handleSearchExtraExercise}
-                className="rounded-md border border-gray-300 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+                className="rounded-[14px] border border-[#efeeeb] px-3 py-2 text-sm font-medium text-[#222222] hover:bg-[#efeeeb] disabled:opacity-50"
               >
                 {extraSearching ? "Đang tìm..." : "Tìm bài"}
               </button>
@@ -1419,7 +1419,7 @@ export default function RoomWorkspacePage() {
                   <li key={ex.id} className="flex items-center justify-between gap-2 text-sm">
                     <span>
                       {ex.name}
-                      <span className="text-gray-500">{` (${ex.code})`}</span>
+                      <span className="text-[#222222]/60">{` (${ex.code})`}</span>
                     </span>
                     <button
                       type="button"
@@ -1431,7 +1431,7 @@ export default function RoomWorkspacePage() {
                           [`ex:${ex.id}`]: { setsDone: "", repsDone: "", painDuring: "", completed: true, note: "" },
                         }));
                       }}
-                      className="rounded-md border border-gray-300 px-2 py-1 text-xs font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+                      className="rounded-[14px] border border-[#efeeeb] px-2 py-1 text-xs font-medium text-[#222222] hover:bg-[#efeeeb] disabled:opacity-50"
                     >
                       {extraPicked.some((x) => x.id === ex.id) ? "Đã thêm" : "+ Thêm vào buổi"}
                     </button>
@@ -1444,12 +1444,12 @@ export default function RoomWorkspacePage() {
               const row = finishTicked[key];
               if (!row) return null;
               return (
-                <div key={ex.id} className="mt-2 rounded-md border border-amber-200 bg-amber-50 p-2 text-sm">
+                <div key={ex.id} className="mt-2 rounded-[14px] border border-amber-200 bg-amber-50 p-2 text-sm">
                   <p className="font-medium text-amber-900">
                     {ex.name} <span className="font-normal text-amber-700">(bài ngoài đơn)</span>
                   </p>
                   <div className="mt-1 flex flex-wrap items-center gap-2">
-                    <label className="flex items-center gap-1 text-gray-700">
+                    <label className="flex items-center gap-1 text-[#222222]">
                       Hiệp
                       <input
                         type="number"
@@ -1458,10 +1458,10 @@ export default function RoomWorkspacePage() {
                         onChange={(e) =>
                           setFinishTicked((prev) => ({ ...prev, [key]: { ...prev[key], setsDone: e.target.value } }))
                         }
-                        className="w-16 rounded-md border border-gray-300 px-2 py-1"
+                        className="w-16 rounded-[14px] border border-[#efeeeb] px-2 py-1"
                       />
                     </label>
-                    <label className="flex items-center gap-1 text-gray-700">
+                    <label className="flex items-center gap-1 text-[#222222]">
                       Lần
                       <input
                         type="number"
@@ -1470,10 +1470,10 @@ export default function RoomWorkspacePage() {
                         onChange={(e) =>
                           setFinishTicked((prev) => ({ ...prev, [key]: { ...prev[key], repsDone: e.target.value } }))
                         }
-                        className="w-16 rounded-md border border-gray-300 px-2 py-1"
+                        className="w-16 rounded-[14px] border border-[#efeeeb] px-2 py-1"
                       />
                     </label>
-                    <label className="flex items-center gap-1 text-gray-700">
+                    <label className="flex items-center gap-1 text-[#222222]">
                       Đau khi tập (0–10)
                       <input
                         type="number"
@@ -1483,10 +1483,10 @@ export default function RoomWorkspacePage() {
                         onChange={(e) =>
                           setFinishTicked((prev) => ({ ...prev, [key]: { ...prev[key], painDuring: e.target.value } }))
                         }
-                        className="w-16 rounded-md border border-gray-300 px-2 py-1"
+                        className="w-16 rounded-[14px] border border-[#efeeeb] px-2 py-1"
                       />
                     </label>
-                    <label className="flex items-center gap-1 text-gray-700">
+                    <label className="flex items-center gap-1 text-[#222222]">
                       <input
                         type="checkbox"
                         checked={!row.completed}
@@ -1506,7 +1506,7 @@ export default function RoomWorkspacePage() {
                           return next;
                         });
                       }}
-                      className="rounded-md border border-gray-300 px-2 py-1 text-xs text-gray-600 hover:bg-white"
+                      className="rounded-[14px] border border-[#efeeeb] px-2 py-1 text-xs text-[#222222]/70 hover:bg-[#fffefc]"
                     >
                       Gỡ bài
                     </button>
@@ -1516,7 +1516,7 @@ export default function RoomWorkspacePage() {
             })}
           </div>
 
-          <label className="mt-3 block text-sm font-medium text-gray-700" htmlFor="finish-notes">
+          <label className="mt-3 block text-sm font-medium text-[#222222]" htmlFor="finish-notes">
             Ghi chú buổi
           </label>
           <textarea
@@ -1524,10 +1524,10 @@ export default function RoomWorkspacePage() {
             value={finishNotes}
             onChange={(e) => setFinishNotes(e.target.value)}
             rows={2}
-            className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
+            className="mt-1 w-full rounded-[14px] border border-[#efeeeb] px-3 py-2 text-sm"
             placeholder="Nhận xét chung về buổi tập (tùy chọn)"
           />
-          <label className="mt-2 flex items-center gap-2 text-sm text-gray-800">
+          <label className="mt-2 flex items-center gap-2 text-sm text-[#222222]">
             <input
               type="checkbox"
               checked={finishStoppedEarly}
@@ -1541,7 +1541,7 @@ export default function RoomWorkspacePage() {
               value={finishAdverseEvent}
               onChange={(e) => setFinishAdverseEvent(e.target.value)}
               placeholder="Mô tả sự cố (VD: đau tăng, chóng mặt) — bắt buộc khi đã tick"
-              className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
+              className="mt-1 w-full rounded-[14px] border border-[#efeeeb] px-3 py-2 text-sm"
             />
           )}
           <div className="mt-3 flex gap-2">
@@ -1549,7 +1549,7 @@ export default function RoomWorkspacePage() {
               type="button"
               disabled={finishSaving}
               onClick={handleSubmitFinish}
-              className="inline-flex items-center gap-1 rounded-md bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700 disabled:opacity-50"
+              className="inline-flex items-center gap-1 rounded-[14px] bg-[#0f3e17] px-4 py-2 text-sm font-medium text-[#fffefc] hover:bg-[#0c2f10] disabled:opacity-50"
             >
               <Check className="h-4 w-4" /> {finishSaving ? "Đang lưu..." : "Kết thúc buổi"}
             </button>
@@ -1557,7 +1557,7 @@ export default function RoomWorkspacePage() {
               type="button"
               disabled={finishSaving}
               onClick={() => setFinishTarget(null)}
-              className="rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+              className="rounded-[14px] border border-[#efeeeb] px-4 py-2 text-sm font-medium text-[#222222] hover:bg-[#efeeeb] disabled:opacity-50"
             >
               Hủy
             </button>
@@ -1567,12 +1567,12 @@ export default function RoomWorkspacePage() {
 
       {/* Form ghi kết quả */}
       {resultTarget && (
-        <div className="rounded-lg border border-emerald-300 bg-white p-4 shadow-sm">
-          <h3 className="flex items-center gap-2 text-base font-semibold text-gray-900">
-            <ClipboardList className="h-5 w-5 text-emerald-600" />
+        <div className="rounded-[14px] border border-[#efeeeb] bg-[#fffefc] p-7">
+          <h3 className="flex items-center gap-2 font-display-serif text-base text-[#0f3e17]">
+            <ClipboardList className="h-5 w-5 text-[#0f3e17]" />
             Ghi kết quả — {resultTarget.patientName} ({resultTarget.serviceName})
           </h3>
-          <p className="mt-1 text-sm text-gray-500">
+          <p className="mt-1 text-sm text-[#222222]/60">
             Mỗi dòng là một kết quả (VD: &quot;Tập gập gối 3x10, không đau&quot;). Thang điểm sẽ có ở GĐ3.
           </p>
           <div className="mt-3 space-y-2">
@@ -1587,13 +1587,13 @@ export default function RoomWorkspacePage() {
                     setResultLines(next);
                   }}
                   placeholder={`Kết quả ${idx + 1}`}
-                  className="flex-1 rounded-md border border-gray-300 px-3 py-2 text-sm"
+                  className="flex-1 rounded-[14px] border border-[#efeeeb] px-3 py-2 text-sm"
                 />
                 {resultLines.length > 1 && (
                   <button
                     type="button"
                     onClick={() => setResultLines(resultLines.filter((_, i) => i !== idx))}
-                    className="rounded-md border border-gray-300 px-2 py-2 text-sm text-gray-600 hover:bg-gray-50"
+                    className="rounded-[14px] border border-[#efeeeb] px-2 py-2 text-sm text-[#222222]/70 hover:bg-[#efeeeb]"
                     aria-label="Xóa dòng"
                   >
                     <X className="h-4 w-4" />
@@ -1604,12 +1604,12 @@ export default function RoomWorkspacePage() {
             <button
               type="button"
               onClick={() => setResultLines([...resultLines, ""])}
-              className="rounded-md border border-gray-300 px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50"
+              className="rounded-[14px] border border-[#efeeeb] px-3 py-1.5 text-sm text-[#222222] hover:bg-[#efeeeb]"
             >
               + Thêm dòng
             </button>
           </div>
-          <label className="mt-3 block text-sm font-medium text-gray-700" htmlFor="result-note">
+          <label className="mt-3 block text-sm font-medium text-[#222222]" htmlFor="result-note">
             Ghi chú
           </label>
           <textarea
@@ -1617,7 +1617,7 @@ export default function RoomWorkspacePage() {
             value={resultNote}
             onChange={(e) => setResultNote(e.target.value)}
             rows={2}
-            className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
+            className="mt-1 w-full rounded-[14px] border border-[#efeeeb] px-3 py-2 text-sm"
             placeholder="Ghi chú thêm (tùy chọn)"
           />
           <div className="mt-3 flex gap-2">
@@ -1625,7 +1625,7 @@ export default function RoomWorkspacePage() {
               type="button"
               disabled={resultSaving}
               onClick={handleSubmitResults}
-              className="inline-flex items-center gap-1 rounded-md bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700 disabled:opacity-50"
+              className="inline-flex items-center gap-1 rounded-[14px] bg-[#0f3e17] px-4 py-2 text-sm font-medium text-[#fffefc] hover:bg-[#0c2f10] disabled:opacity-50"
             >
               <Check className="h-4 w-4" /> {resultSaving ? "Đang lưu..." : "Lưu kết quả & hoàn thành"}
             </button>
@@ -1633,7 +1633,7 @@ export default function RoomWorkspacePage() {
               type="button"
               disabled={resultSaving}
               onClick={() => setResultTarget(null)}
-              className="rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+              className="rounded-[14px] border border-[#efeeeb] px-4 py-2 text-sm font-medium text-[#222222] hover:bg-[#efeeeb] disabled:opacity-50"
             >
               Hủy
             </button>
@@ -1642,7 +1642,7 @@ export default function RoomWorkspacePage() {
       )}
 
       {!canAct && role && (
-        <p className="text-sm text-gray-500">
+        <p className="text-sm text-[#222222]/60">
           Tài khoản {role === "RECEPTIONIST" ? "lễ tân" : "quản trị"} chỉ xem hàng đợi, không bấm được nút gọi hay ghi kết quả.
         </p>
       )}

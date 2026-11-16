@@ -84,12 +84,12 @@ export default function DashboardLoginPage() {
       <div className="sm:mx-auto sm:w-full sm:max-w-xl relative z-10">
         <div className="flex justify-center items-center gap-3 mb-5">
           <TsLogo size="lg" showText={true} />
-          <span className="text-[#0f3e17] bg-[#e1f4df] border border-[#cfe7d3] text-xs font-semibold px-2 py-0.5 rounded-[6px] shrink-0">
+          <span className="text-[#0f3e17] bg-[#e1f4df] border border-[#efeeeb] text-xs font-semibold px-2 py-0.5 rounded-full shrink-0">
             PORTAL
           </span>
         </div>
 
-        <h2 className="text-center text-xl sm:text-2xl font-bold tracking-tight text-[#0f3e17]">
+        <h2 className="text-center text-xl sm:text-2xl font-display-serif tracking-[-0.01em] text-[#0f3e17]">
           Đăng nhập Nhân viên & Quản trị
         </h2>
         <p className="mt-1 text-center text-xs text-[#222222]/70">
@@ -99,7 +99,7 @@ export default function DashboardLoginPage() {
 
       <div className="mt-6 sm:mx-auto sm:w-full sm:max-w-xl relative z-10 space-y-6">
         {/* ===================== KHỐI 1: FORM ĐĂNG NHẬP CHÍNH ===================== */}
-        <div className="bg-[#fffefc] border border-[#efeeeb] rounded-[16px] p-6 sm:p-8 shadow-xs">
+        <div className="bg-[#fffefc] border border-[#efeeeb] rounded-[14px] p-6 sm:p-8">
           {/* Alerts */}
           {errorMsg && (
             <div className="mt-3 p-3.5 rounded-[14px] bg-rose-50 border border-rose-200 text-rose-800 text-xs flex items-center gap-2">
@@ -109,7 +109,7 @@ export default function DashboardLoginPage() {
           )}
 
           {successMsg && (
-            <div className="mt-3 p-3.5 rounded-[14px] bg-[#e1f4df] border border-[#cfe7d3] text-[#0f3e17] text-xs flex items-center gap-2">
+            <div className="mt-3 p-3.5 rounded-[14px] bg-[#e1f4df] border border-[#efeeeb] text-[#0f3e17] text-xs flex items-center gap-2">
               <CheckCircle2 className="w-4 h-4 text-[#0f3e17] flex-shrink-0" />
               <span>{successMsg}</span>
             </div>

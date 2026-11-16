@@ -382,10 +382,10 @@ export default function TaiKhoanPage() {
         <div className="max-w-6xl mx-auto px-4 sm:px-6">
           {/* Top Banner */}
           <div className="mb-10">
-            <span className="block text-[11px] font-semibold uppercase tracking-[0.08em] text-[#0f3e17]">
+            <span className="eyebrow block text-[#0f3e17]">
               CỔNG BỆNH NHÂN ĐIỆN TỬ • BÁC SĨ THANH SANG
             </span>
-            <h1 className="text-3xl sm:text-4xl font-extrabold text-[#0f3e17] tracking-tight mt-3">
+            <h1 className="font-display-serif text-3xl sm:text-4xl tracking-tight text-[#0f3e17] mt-3">
               Hồ sơ Y tế & Lịch hẹn Khám bệnh
             </h1>
             <p className="text-sm text-[#222222]/80 mt-2">
@@ -403,7 +403,7 @@ export default function TaiKhoanPage() {
                   <button
                     type="button"
                     onClick={() => setAuthMode("login")}
-                    className={`pb-3 px-4 font-bold text-sm transition-colors border-b-2 -mb-[1px] ${
+                    className={`pb-3 px-4 font-semibold text-sm transition-colors border-b-2 -mb-[1px] ${
                       authMode === "login"
                         ? "border-[#0f3e17] text-[#0f3e17]"
                         : "border-transparent text-[#222222]/60 hover:text-[#0f3e17]"
@@ -414,7 +414,7 @@ export default function TaiKhoanPage() {
                   <button
                     type="button"
                     onClick={() => setAuthMode("register")}
-                    className={`pb-3 px-4 font-bold text-sm transition-colors border-b-2 -mb-[1px] ${
+                    className={`pb-3 px-4 font-semibold text-sm transition-colors border-b-2 -mb-[1px] ${
                       authMode === "register"
                         ? "border-[#0f3e17] text-[#0f3e17]"
                         : "border-transparent text-[#222222]/60 hover:text-[#0f3e17]"
@@ -597,7 +597,7 @@ export default function TaiKhoanPage() {
                         value={regOtp}
                         onChange={(e) => setRegOtp(e.target.value.replace(/\D/g, ""))}
                         placeholder="123456"
-                        className="w-full px-3.5 py-2.5 text-sm tracking-[0.5em] text-center font-mono bg-[#fffefc] border border-[#efeeeb] rounded-[14px] focus:outline-none focus:border-[#0f3e17]"
+                        className="w-full px-3.5 py-2.5 text-sm tracking-[0.5em] text-center font-semibold bg-[#fffefc] border border-[#efeeeb] rounded-[14px] focus:outline-none focus:border-[#0f3e17]"
                       />
                     </div>
                     <button
@@ -626,7 +626,7 @@ export default function TaiKhoanPage() {
                       <Search className="w-5 h-5" />
                     </div>
                     <div>
-                      <h3 className="font-bold text-base text-[#fffefc]">Tra cứu vé hẹn nhanh</h3>
+                      <h3 className="font-display-serif text-base tracking-tight text-[#fffefc]">Tra cứu vé hẹn nhanh</h3>
                       <p className="text-xs text-[#cfe7d3]">Không cần đăng nhập tài khoản</p>
                     </div>
                   </div>
@@ -655,8 +655,8 @@ export default function TaiKhoanPage() {
                   {/* Search Result Display */}
                   {searchResult && (
                     <div className="p-4 bg-[#fffefc]/10 rounded-[14px] border border-[#fffefc]/20 space-y-2 text-xs">
-                      <div className="flex justify-between items-center text-[#b1dbb8] font-bold pb-2 border-b border-[#fffefc]/10">
-                        <span className="font-mono">Mã vé: {searchResult.code}</span>
+                      <div className="flex justify-between items-center text-[#b1dbb8] font-semibold pb-2 border-b border-[#fffefc]/10">
+                        <span className="font-semibold">Mã vé: {searchResult.code}</span>
                         <span className="text-[#e1f4df] font-semibold text-xs inline-flex items-center gap-1">
                           {searchResult.status}
                         </span>
@@ -678,7 +678,7 @@ export default function TaiKhoanPage() {
 
                 {/* Helpful Clinic Information */}
                 <div className="bg-[#fffefc] rounded-[14px] p-6 border border-[#efeeeb] text-xs text-[#222222]/80 space-y-2.5">
-                  <h4 className="font-bold text-[#0f3e17] text-sm flex items-center gap-1.5">
+                  <h4 className="font-semibold text-[#0f3e17] text-sm flex items-center gap-1.5">
                     <ShieldCheck className="w-4 h-4 text-[#0f3e17]" />
                     <span>Lợi ích khi đăng nhập Cổng Bệnh nhân</span>
                   </h4>
@@ -694,13 +694,13 @@ export default function TaiKhoanPage() {
               {/* Patient Identity Profile Card */}
               <div className="bg-[#fffefc] rounded-[14px] p-6 sm:p-8 border border-[#efeeeb] flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
                 <div className="flex items-center gap-5">
-                  <div className="w-16 h-16 rounded-[14px] bg-[#e1f4df] border border-[#cfe7d3] text-[#0f3e17] flex items-center justify-center font-bold text-2xl">
+                  <div className="w-16 h-16 rounded-[14px] bg-[#e1f4df] text-[#0f3e17] flex items-center justify-center font-display-serif text-2xl">
                     {currentUser?.name?.charAt(0) || "P"}
                   </div>
                   <div className="space-y-1">
                     <div className="flex items-center gap-2.5">
-                      <h2 className="text-xl font-bold text-[#0f3e17]">{currentUser?.name}</h2>
-                      <span className="text-xs font-mono font-medium text-[#0f3e17]/75">
+                      <h2 className="font-display-serif text-xl tracking-tight text-[#0f3e17]">{currentUser?.name}</h2>
+                      <span className="text-xs font-semibold text-[#0f3e17]/75">
                         Hồ sơ điện tử: {myProfileCode || "—"}
                       </span>
                     </div>
@@ -816,7 +816,7 @@ export default function TaiKhoanPage() {
                       <div className="w-16 h-16 rounded-[14px] bg-[#e1f4df] text-[#0f3e17] flex items-center justify-center mx-auto">
                         <Calendar className="w-8 h-8" />
                       </div>
-                      <h3 className="text-base font-bold text-[#0f3e17]">Chưa có lịch hẹn nào</h3>
+                      <h3 className="font-display-serif text-base tracking-tight text-[#0f3e17]">Chưa có lịch hẹn nào</h3>
                       <p className="text-xs text-[#222222]/70 max-w-sm mx-auto">
                         Bạn chưa đăng ký lịch khám phục hồi chức năng nào. Hãy đặt lịch ngay để được bác sĩ chuyên khoa thăm khám.
                       </p>
@@ -836,7 +836,7 @@ export default function TaiKhoanPage() {
                           className="bg-[#fffefc] rounded-[14px] p-5 border border-[#efeeeb] space-y-3 transition-colors"
                         >
                           <div className="flex items-center justify-between pb-2 border-b border-[#efeeeb]">
-                            <span className="text-xs font-mono font-bold text-[#0f3e17]">
+                            <span className="text-xs font-semibold text-[#0f3e17]">
                               Mã vé: {apt.appointmentCode}
                             </span>
                             <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#0f3e17]">
@@ -846,7 +846,7 @@ export default function TaiKhoanPage() {
                           </div>
 
                           <div className="space-y-1.5 text-xs text-[#222222]/80">
-                            <h4 className="font-bold text-[#0f3e17] text-sm">
+                            <h4 className="font-semibold text-[#0f3e17] text-sm">
                               {apt.services?.[0]?.serviceName ?? "Khám PHCN"}
                             </h4>
                             <p><strong>Chuyên khoa:</strong> {apt.specialtyName}</p>
@@ -857,7 +857,7 @@ export default function TaiKhoanPage() {
                           </div>
 
                           <div className="pt-2 border-t border-[#efeeeb] flex items-center justify-between">
-                            <span className="text-xs font-bold text-[#0f3e17]">
+                            <span className="text-xs font-semibold text-[#0f3e17]">
                               {(apt.services?.[0]?.price ?? 0).toLocaleString("vi-VN")} đ
                             </span>
                             <button
@@ -876,7 +876,7 @@ export default function TaiKhoanPage() {
                                   createdAt: apt.createdAt ?? "",
                                 })
                               }
-                              className="inline-flex items-center gap-1.5 bg-[#e1f4df] hover:bg-[#cfe7d3] text-[#0f3e17] font-semibold text-xs px-3 py-1.5 rounded-[14px] border border-[#cfe7d3] transition-colors"
+                              className="inline-flex items-center gap-1.5 bg-[#e1f4df] hover:bg-[#cfe7d3] text-[#0f3e17] font-semibold text-xs px-3 py-1.5 rounded-[14px] transition-colors"
                             >
                               <QrCode className="w-3.5 h-3.5" />
                               <span>Mã QR Check-in</span>
@@ -894,7 +894,7 @@ export default function TaiKhoanPage() {
                 <div className="bg-[#fffefc] rounded-[14px] p-6 sm:p-8 border border-[#efeeeb] space-y-6">
                   <div className="flex items-center justify-between pb-4 border-b border-[#efeeeb]">
                     <div>
-                      <h3 className="font-bold text-[#0f3e17] text-base">Hồ sơ Lượng giá Chức năng Điện tử</h3>
+                      <h3 className="font-display-serif text-base tracking-tight text-[#0f3e17]">Hồ sơ Lượng giá Chức năng Điện tử</h3>
                       <p className="text-xs text-[#222222]/70">Bệnh án do bác sĩ phòng khám lập sau mỗi lần khám</p>
                     </div>
                   </div>
@@ -925,7 +925,7 @@ export default function TaiKhoanPage() {
                         return (
                           <div key={rec.id ?? rec.medicalRecordCode} className="p-4 rounded-[14px] border border-[#efeeeb] space-y-3">
                             <div className="flex flex-wrap justify-between items-center gap-2">
-                              <span className="font-bold text-[#0f3e17] text-sm">
+                              <span className="font-semibold text-[#0f3e17] text-sm">
                                 Bệnh án {rec.medicalRecordCode ?? ""}
                               </span>
                               <span className="text-xs text-[#222222]/60">
@@ -938,21 +938,21 @@ export default function TaiKhoanPage() {
                               </p>
                             )}
                             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
-                              <div className="p-3 bg-[#e1f4df]/40 rounded-[14px] border border-[#cfe7d3]">
+                              <div className="p-3 bg-[#e1f4df]/40 rounded-[14px]">
                                 <span className="text-[#222222]/70">Thang điểm FIM</span>
-                                <p className="text-xl font-extrabold text-[#0f3e17]">
+                                <p className="font-display-serif text-xl tracking-tight text-[#0f3e17]">
                                   {fimTotal != null ? `${fimTotal} / 126` : "—"}
                                 </p>
                               </div>
-                              <div className="p-3 bg-[#b6ced5]/30 rounded-[14px] border border-[#b6ced5]">
+                              <div className="p-3 bg-[#b6ced5]/30 rounded-[14px]">
                                 <span className="text-[#222222]/70">Mức đau (VAS)</span>
-                                <p className="text-xl font-extrabold text-[#0f3e17]">
+                                <p className="font-display-serif text-xl tracking-tight text-[#0f3e17]">
                                   {content.painScale != null ? `${content.painScale} / 10` : "—"}
                                 </p>
                               </div>
-                              <div className="p-3 bg-[#b1dbb8]/30 rounded-[14px] border border-[#b1dbb8]">
+                              <div className="p-3 bg-[#b1dbb8]/30 rounded-[14px]">
                                 <span className="text-[#222222]/70">Số đo ROM</span>
-                                <p className="text-xl font-extrabold text-[#0f3e17]">
+                                <p className="font-display-serif text-xl tracking-tight text-[#0f3e17]">
                                   {romList.length > 0 ? `${romList.length} khớp` : "—"}
                                 </p>
                               </div>
@@ -985,7 +985,7 @@ export default function TaiKhoanPage() {
                 <div className="bg-[#fffefc] rounded-[14px] p-6 sm:p-8 border border-[#efeeeb] space-y-6">
                   <div className="flex items-center justify-between pb-4 border-b border-[#efeeeb]">
                     <div>
-                      <h3 className="font-bold text-[#0f3e17] text-base">Phiếu chỉ định dịch vụ trị liệu</h3>
+                      <h3 className="font-display-serif text-base tracking-tight text-[#0f3e17]">Phiếu chỉ định dịch vụ trị liệu</h3>
                       <p className="text-xs text-[#222222]/70">Các dịch vụ bác sĩ đã chỉ định cho bạn</p>
                     </div>
                   </div>
@@ -1001,7 +1001,7 @@ export default function TaiKhoanPage() {
                       {myPrescriptions.map((rx: any) => (
                         <div key={rx.id ?? rx.prescriptionCode} className="p-4 rounded-[14px] border border-[#efeeeb] space-y-2">
                           <div className="flex flex-wrap justify-between items-center gap-2">
-                            <span className="font-bold text-[#0f3e17] text-sm">
+                            <span className="font-semibold text-[#0f3e17] text-sm">
                               Phiếu {rx.prescriptionCode ?? ""}
                             </span>
                             <span className="text-xs text-[#222222]/60">
@@ -1028,7 +1028,7 @@ export default function TaiKhoanPage() {
 
                   {/* GĐ4 — Đơn thuốc của tôi */}
                   <div className="pt-4 border-t border-[#efeeeb]">
-                    <h4 className="font-bold text-[#0f3e17] text-sm">Đơn thuốc của tôi</h4>
+                    <h4 className="font-semibold text-[#0f3e17] text-sm">Đơn thuốc của tôi</h4>
                     <p className="text-xs text-[#222222]/70 mb-3">
                       Đơn thuốc bác sĩ đã kê — mang mã đơn ra quầy để nhận thuốc (thu tiền tại quầy).
                     </p>
@@ -1039,8 +1039,8 @@ export default function TaiKhoanPage() {
                         {myMedicationPrescriptions.map((mp: any) => (
                           <div key={mp.id ?? mp.code} className="p-4 rounded-[14px] border border-[#efeeeb] space-y-2">
                             <div className="flex flex-wrap justify-between items-center gap-2">
-                              <span className="font-bold text-[#0f3e17] text-sm">
-                                Đơn thuốc <span className="font-mono">{mp.code ?? ""}</span>
+                              <span className="font-semibold text-[#0f3e17] text-sm">
+                                Đơn thuốc <span className="font-semibold">{mp.code ?? ""}</span>
                               </span>
                               <span className="text-xs text-[#222222]/60">
                                 {String(mp.createdAt ?? "").substring(0, 10)} •{" "}
@@ -1078,7 +1078,7 @@ export default function TaiKhoanPage() {
 
                   {/* GĐ4 — Bài tập của tôi (đang hiệu lực) */}
                   <div className="pt-4 border-t border-[#efeeeb]">
-                    <h4 className="font-bold text-[#0f3e17] text-sm">Bài tập của tôi</h4>
+                    <h4 className="font-semibold text-[#0f3e17] text-sm">Bài tập của tôi</h4>
                     <p className="text-xs text-[#222222]/70 mb-3">
                       Các bài tập bác sĩ/KTV đã kê và đang tập — tập đúng liều đã ghi, dừng lại nếu đau tăng.
                     </p>
@@ -1087,12 +1087,12 @@ export default function TaiKhoanPage() {
                     ) : (
                       <div className="space-y-3">
                         {myExercisePrescriptions.map((ep: any) => (
-                          <div key={ep.id ?? ep.code} className="p-4 rounded-[14px] border border-[#cfe7d3] bg-[#e1f4df]/30 space-y-1">
+                          <div key={ep.id ?? ep.code} className="p-4 rounded-[14px] bg-[#e1f4df]/30 space-y-1">
                             <div className="flex flex-wrap justify-between items-center gap-2">
-                              <span className="font-bold text-[#0f3e17] text-sm">
+                              <span className="font-semibold text-[#0f3e17] text-sm">
                                 {ep.exercise?.name ?? ep.exerciseName ?? "Bài tập"}
                               </span>
-                              <span className="text-xs text-[#222222]/60 font-mono">{ep.code ?? ""}</span>
+                              <span className="text-xs text-[#222222]/60 font-semibold">{ep.code ?? ""}</span>
                             </div>
                             <p className="text-xs text-[#222222]/80">
                               Liều tập:{" "}
@@ -1125,7 +1125,7 @@ export default function TaiKhoanPage() {
                 <div className="bg-[#fffefc] rounded-[14px] p-6 sm:p-8 border border-[#efeeeb] space-y-4">
                   <div className="flex items-center justify-between pb-3 border-b border-[#efeeeb]">
                     <div>
-                      <h3 className="font-bold text-[#0f3e17] text-base">Lịch sử Viện phí & Hóa đơn điện tử</h3>
+                      <h3 className="font-display-serif text-base tracking-tight text-[#0f3e17]">Lịch sử Viện phí & Hóa đơn điện tử</h3>
                       <p className="text-xs text-[#222222]/70">Các hóa đơn đã phát hành cho bạn</p>
                     </div>
                   </div>
@@ -1139,7 +1139,7 @@ export default function TaiKhoanPage() {
                   ) : (
                     <div className="overflow-x-auto">
                       <table className="w-full text-left text-xs border border-[#efeeeb] rounded-[14px] overflow-hidden">
-                        <thead className="bg-[#e1f4df]/40 text-[#0f3e17] font-bold text-[11px]">
+                        <thead className="bg-[#e1f4df]/40 text-[#0f3e17] font-semibold text-[11px]">
                           <tr>
                             <th className="p-3">Mã hóa đơn</th>
                             <th className="p-3">Ngày giao dịch</th>
@@ -1152,17 +1152,17 @@ export default function TaiKhoanPage() {
                         <tbody className="divide-y divide-[#efeeeb]">
                           {myInvoices.map((inv: any) => (
                             <tr key={inv.id ?? inv.invoiceCode}>
-                              <td className="p-3 font-mono font-bold text-[#0f3e17]">{inv.invoiceCode}</td>
+                              <td className="p-3 font-semibold text-[#0f3e17]">{inv.invoiceCode}</td>
                               <td className="p-3 text-[#222222]/70">{String(inv.createdAt ?? "").substring(0, 10)}</td>
                               <td className="p-3 font-semibold text-[#222222]">
                                 {(inv.invoiceDetails ?? []).map((d: any) => d.service?.name ?? d.serviceName ?? "").join(", ") || "Viện phí"}
                               </td>
-                              <td className="p-3 font-bold text-[#0f3e17]">
+                              <td className="p-3 font-semibold text-[#0f3e17]">
                                 {(inv.totalAmount ?? 0).toLocaleString("vi-VN")} đ
                               </td>
                               <td className="p-3 text-[#222222]/70">{inv.paymentMethod ?? ""}</td>
                               <td className="p-3">
-                                <span className="bg-[#e1f4df] text-[#0f3e17] px-2 py-0.5 rounded-[6px] text-[10px] font-semibold border border-[#cfe7d3]">
+                                <span className="bg-[#e1f4df] text-[#0f3e17] px-2 py-0.5 rounded-full text-[10px] font-semibold">
                                   {inv.isPaid ? "Đã thanh toán" : inv.paymentStatus ?? ""}
                                 </span>
                               </td>
@@ -1180,7 +1180,7 @@ export default function TaiKhoanPage() {
                   {/* Các buổi trị liệu của tôi */}
                   <div className="bg-[#fffefc] rounded-[14px] p-6 sm:p-8 border border-[#efeeeb] space-y-4">
                     <div className="pb-3 border-b border-[#efeeeb]">
-                      <h3 className="font-bold text-[#0f3e17] text-base">Các buổi trị liệu của tôi</h3>
+                      <h3 className="font-display-serif text-base tracking-tight text-[#0f3e17]">Các buổi trị liệu của tôi</h3>
                       <p className="text-xs text-[#222222]/70">
                         Mỗi buổi tập tại phòng khám: ngày, dịch vụ, bài đã tập, mức đau trước → sau buổi.
                       </p>
@@ -1196,8 +1196,8 @@ export default function TaiKhoanPage() {
                         {mySessions.map((s) => (
                           <div key={s.id} className="p-4 rounded-[14px] border border-[#efeeeb] space-y-1 text-xs">
                             <div className="flex flex-wrap justify-between items-center gap-2">
-                              <span className="font-bold text-[#0f3e17] text-sm">
-                                Buổi <span className="font-mono">{s.code}</span>
+                              <span className="font-semibold text-[#0f3e17] text-sm">
+                                Buổi <span className="font-semibold">{s.code}</span>
                               </span>
                               <span className="text-[#222222]/60">
                                 {String(s.startedAt ?? "").substring(0, 10)}
@@ -1243,14 +1243,14 @@ export default function TaiKhoanPage() {
                   {/* Ghi nhật ký tự tập hôm nay */}
                   <div className="bg-[#fffefc] rounded-[14px] p-6 sm:p-8 border border-[#efeeeb] space-y-4">
                     <div className="pb-3 border-b border-[#efeeeb]">
-                      <h3 className="font-bold text-[#0f3e17] text-base">Ghi nhật ký tự tập hôm nay</h3>
+                      <h3 className="font-display-serif text-base tracking-tight text-[#0f3e17]">Ghi nhật ký tự tập hôm nay</h3>
                       <p className="text-xs text-[#222222]/70">
                         Tập ở nhà xong thì ghi lại tại đây — KTV sẽ duyệt. Chỉ ghi ngày hôm nay trở về trước,
                         không ghi ngày tương lai.
                       </p>
                     </div>
                     {logMsg && (
-                      <p className="p-3 rounded-[14px] bg-[#e1f4df] border border-[#cfe7d3] text-[#0f3e17] text-xs">{logMsg}</p>
+                      <p className="p-3 rounded-[14px] bg-[#e1f4df] text-[#0f3e17] text-xs">{logMsg}</p>
                     )}
                     {logError && (
                       <p className="p-3 rounded-[14px] bg-rose-50 border border-rose-200 text-rose-700 text-xs">{logError}</p>
@@ -1316,9 +1316,9 @@ export default function TaiKhoanPage() {
                                     setLogExtraExerciseId(ex.id);
                                     setLogExercisePrescriptionId("");
                                   }}
-                                  className={`px-2 py-1 rounded-[8px] border text-[11px] font-semibold ${
+                                  className={`px-2 py-1 rounded-[14px] border text-[11px] font-semibold ${
                                     logExtraExerciseId === ex.id
-                                      ? "bg-[#0f3e17] text-[#fffefc] border-[#0f3e17]"
+                                      ? "bg-[#0f3e17] text-[#fffefc]"
                                       : "border-[#efeeeb] hover:bg-[#efeeeb]/40"
                                   }`}
                                 >
@@ -1408,7 +1408,7 @@ export default function TaiKhoanPage() {
                   {/* Nhật ký tự tập của tôi */}
                   <div className="bg-[#fffefc] rounded-[14px] p-6 sm:p-8 border border-[#efeeeb] space-y-4">
                     <div className="pb-3 border-b border-[#efeeeb]">
-                      <h3 className="font-bold text-[#0f3e17] text-base">Nhật ký tự tập của tôi</h3>
+                      <h3 className="font-display-serif text-base tracking-tight text-[#0f3e17]">Nhật ký tự tập của tôi</h3>
                       <p className="text-xs text-[#222222]/70">Các lần bạn đã ghi, kèm trạng thái duyệt của KTV.</p>
                     </div>
                     {myHomeLogs.length === 0 ? (
@@ -1418,14 +1418,14 @@ export default function TaiKhoanPage() {
                         {myHomeLogs.map((log) => (
                           <div key={log.id} className="p-4 rounded-[14px] border border-[#efeeeb] space-y-1 text-xs">
                             <div className="flex flex-wrap justify-between items-center gap-2">
-                              <span className="font-bold text-[#0f3e17] text-sm">
+                              <span className="font-semibold text-[#0f3e17] text-sm">
                                 {log.exerciseName ?? "Bài tập"}
-                                {log.code ? <span className="font-mono font-normal text-[#222222]/60"> — {log.code}</span> : ""}
+                                {log.code ? <span className="font-semibold text-[#222222]/60"> — {log.code}</span> : ""}
                               </span>
                               <span
-                                className={`px-2 py-0.5 rounded-[6px] text-[10px] font-semibold border ${
+                                className={`px-2 py-0.5 rounded-full text-[10px] font-semibold border ${
                                   log.status === "APPROVED"
-                                    ? "bg-[#e1f4df] text-[#0f3e17] border-[#cfe7d3]"
+                                    ? "bg-[#e1f4df] text-[#0f3e17]"
                                     : log.status === "REJECTED"
                                       ? "bg-rose-50 text-rose-700 border-rose-200"
                                       : "bg-amber-50 text-amber-800 border-amber-200"
@@ -1460,16 +1460,16 @@ export default function TaiKhoanPage() {
           {selectedTicketForQr && (
             <div className="fixed inset-0 z-50 bg-[#0f3e17]/60 backdrop-blur-sm flex items-center justify-center p-4">
               <div className="bg-[#fffefc] rounded-[14px] p-6 sm:p-8 max-w-sm w-full border border-[#efeeeb] text-center space-y-4">
-                <div className="w-12 h-12 rounded-[14px] bg-[#e1f4df] text-[#0f3e17] flex items-center justify-center mx-auto border border-[#cfe7d3]">
+                <div className="w-12 h-12 rounded-[14px] bg-[#e1f4df] text-[#0f3e17] flex items-center justify-center mx-auto">
                   <QrCode className="w-6 h-6" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-bold text-[#0f3e17]">Mã QR Check-in Tự Động</h3>
+                  <h3 className="font-display-serif text-lg tracking-tight text-[#0f3e17]">Mã QR Check-in Tự Động</h3>
                   <p className="text-xs text-[#222222]/70">Đưa mã này vào mắt đọc camera tại Kiosk sảnh</p>
                 </div>
 
                 {/* QR Display */}
-                <div className="p-4 bg-[#fffefc] rounded-[14px] border border-[#cfe7d3] inline-block mx-auto">
+                <div className="p-4 bg-[#fffefc] rounded-[14px] border border-[#efeeeb] inline-block mx-auto">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(
@@ -1478,12 +1478,12 @@ export default function TaiKhoanPage() {
                     alt="Mã QR vé hẹn"
                     className="w-44 h-44 object-contain mx-auto"
                   />
-                  <p className="font-mono font-black text-xl text-[#0f3e17] mt-2 tracking-widest">
+                  <p className="font-display-serif text-xl tracking-tight text-[#0f3e17] mt-2">
                     {selectedTicketForQr.code}
                   </p>
                 </div>
 
-                <div className="text-xs text-[#222222]/80 bg-[#e1f4df]/30 p-3.5 rounded-[14px] border border-[#cfe7d3] text-left space-y-1">
+                <div className="text-xs text-[#222222]/80 bg-[#e1f4df]/30 p-3.5 rounded-[14px] text-left space-y-1">
                   <p><strong>Bệnh nhân:</strong> {selectedTicketForQr.patientName}</p>
                   <p><strong>Ngày giờ:</strong> {selectedTicketForQr.date} ({selectedTicketForQr.time})</p>
                   <p><strong>Dịch vụ:</strong> {selectedTicketForQr.service}</p>

@@ -705,23 +705,23 @@ export default function DoctorWorkspacePage() {
     <div className="space-y-6 text-[#222222]">
       {/* Toast Notification khi gọi số */}
       {callToast && (
-        <div className="fixed top-20 right-6 z-50 bg-[#0f3e17] text-[#fffefc] px-4 py-2.5 rounded-[14px] text-xs font-semibold animate-in fade-in duration-200 flex items-center gap-2 border border-[#b1dbb8]">
+        <div className="fixed top-20 right-6 z-50 bg-[#0f3e17] text-[#fffefc] px-4 py-2.5 rounded-[14px] text-xs font-semibold animate-in fade-in duration-200 flex items-center gap-2 border border-[#efeeeb]">
           <Volume2 className="w-4 h-4 text-[#e1f4df] animate-pulse" />
           <span>{callToast}</span>
         </div>
       )}
 
       {/* Top Banner: Bác sĩ & Buồng khám */}
-      <div className="bg-[#e1f4df] border border-[#cfe7d3] rounded-[14px] p-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="bg-[#e1f4df] rounded-[14px] p-7 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#fffefc] border border-[#cfe7d3] text-[#0f3e17] text-xs font-semibold mb-2">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#fffefc] border border-[#efeeeb] text-[#0f3e17] text-xs font-semibold mb-2">
             <Stethoscope className="w-4 h-4 text-[#0f3e17]" />
             <span>Phân hệ Bác sĩ & Kỹ thuật viên PHCN</span>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-semibold text-[#0f3e17] tracking-tight">
+          <h1 className="font-display-serif text-2xl sm:text-3xl text-[#0f3e17] tracking-[-0.01em]">
             Bàn Khám & Lượng giá: {user?.name || "Bác sĩ Thanh Sang"}
           </h1>
-          <p className="text-xs text-[#222222]/80 mt-1 font-light">
+          <p className="text-xs text-[#222222]/80 mt-1 font-normal">
             Buồng trực: <strong className="text-[#0f3e17] font-semibold">{myRoomName || "Chưa xác định ca trực"}</strong> • 193 Quang Trung, Đại Lộc, Đà Nẵng
           </p>
         </div>
@@ -733,7 +733,7 @@ export default function DoctorWorkspacePage() {
             disabled={isCalling || isCallingAudio || queue.length === 0}
             className="flex items-center gap-2 px-5 py-3 rounded-[14px] bg-[#0f3e17] hover:bg-[#0c2f10] text-[#fffefc] text-xs font-semibold transition-colors disabled:opacity-75 cursor-pointer"
           >
-            <Volume2 className={`w-4 h-4 ${isCallingAudio ? "animate-pulse text-[#b1dbb8]" : ""}`} />
+            <Volume2 className={`w-4 h-4 ${isCallingAudio ? "animate-pulse text-[#e1f4df]" : ""}`} />
             <span>
               {isCalling
                 ? "Đang gọi bệnh nhân..."
@@ -757,7 +757,7 @@ export default function DoctorWorkspacePage() {
           Đang tải hàng đợi buồng khám...
         </div>
       ) : queueError ? (
-        <div className="bg-[#fffefc] border border-rose-200 rounded-[14px] p-6 text-center text-sm text-rose-700 space-y-3">
+        <div className="bg-[#fffefc] border border-rose-200 rounded-[14px] p-7 text-center text-sm text-rose-700 space-y-3">
           <p>{queueError}</p>
           <button
             type="button"
@@ -769,7 +769,7 @@ export default function DoctorWorkspacePage() {
         </div>
       ) : !currentPatient ? (
         <div className="bg-[#fffefc] border border-[#efeeeb] rounded-[14px] p-12 text-center space-y-3">
-          <h3 className="text-base font-bold text-[#0f3e17]">Không có lịch hẹn khám hôm nay</h3>
+          <h3 className="text-base font-semibold text-[#0f3e17]">Không có lịch hẹn khám hôm nay</h3>
           <p className="text-xs text-[#222222]/70 max-w-md mx-auto">
             Buồng khám chưa có lịch hẹn nào cho ngày hôm nay. Lịch hẹn mới đặt qua web hoặc lễ tân
             sẽ tự hiện ở đây.
@@ -780,19 +780,19 @@ export default function DoctorWorkspacePage() {
         {/* Left Column: Hàng đợi buồng khám & Hồ sơ hành chính */}
         <div className="lg:col-span-4 space-y-6">
           {/* Patient Card */}
-          <div className="bg-[#fffefc] border border-[#efeeeb] rounded-[14px] p-5 space-y-4">
+          <div className="bg-[#fffefc] border border-[#efeeeb] rounded-[14px] p-7 space-y-4">
             <div className="flex items-center justify-between pb-3 border-b border-[#efeeeb]">
-              <span className="text-xs font-bold text-[#0f3e17] uppercase tracking-wider flex items-center gap-1.5">
+              <span className="eyebrow text-[#0f3e17] flex items-center gap-1.5">
                 <span className="w-2.5 h-2.5 rounded-full bg-[#0f3e17]" />
                 Đang khám tại buồng
               </span>
-              <span className="font-mono text-xs font-bold px-2.5 py-0.5 rounded-[7px] bg-[#e1f4df] text-[#0f3e17] border border-[#cfe7d3]">
+              <span className="badge-pill bg-[#e1f4df] text-[#0f3e17]">
                 {currentPatient.queueNumber}
               </span>
             </div>
 
             <div>
-              <h3 className="text-lg font-bold text-[#0f3e17]">{currentPatient.name}</h3>
+              <h3 className="font-display-serif text-lg text-[#0f3e17]">{currentPatient.name}</h3>
               <p className="text-xs text-[#222222]/70 mt-0.5">
                 {currentPatient.gender} • Sinh năm: {currentPatient.birthYear} (
                 {new Date().getFullYear() - currentPatient.birthYear} tuổi) • SĐT: {currentPatient.phone}
@@ -811,7 +811,7 @@ export default function DoctorWorkspacePage() {
             </div>
 
             {/* Sàng lọc an toàn PHCN */}
-            <div className="p-3.5 rounded-[14px] bg-[#e1f4df]/40 border border-[#cfe7d3] text-xs space-y-1.5">
+            <div className="p-3.5 rounded-[14px] bg-[#e1f4df]/40 text-xs space-y-1.5">
               <div className="font-semibold text-[#0f3e17] flex items-center gap-1.5">
                 <AlertTriangle className="w-4 h-4 text-[#0f3e17]" />
                 Sàng lọc An toàn Trị liệu:
@@ -837,18 +837,18 @@ export default function DoctorWorkspacePage() {
               phiếu. Cần đủ 2 điều kiện: hết dịch vụ + có đánh giá kết thúc
               đợt (DISCHARGE); chưa đủ thì phải nhập lý do mới được qua. */}
           {completeRxId && (
-            <div className="bg-[#fffefc] border border-[#efeeeb] rounded-[14px] p-5 space-y-3">
-              <h4 className="text-xs font-bold text-[#0f3e17] uppercase tracking-wider flex items-center gap-2">
+            <div className="bg-[#fffefc] border border-[#efeeeb] rounded-[14px] p-7 space-y-3">
+              <h4 className="eyebrow text-[#0f3e17] flex items-center gap-2">
                 <CheckCircle2 className="w-4 h-4 text-[#0f3e17]" />
                 <span>Hoàn thành can thiệp</span>
               </h4>
               <p className="text-xs text-[#222222]/70">
-                Phiếu chỉ định: <span className="font-mono font-bold text-[#0f3e17]">{completeRxCode || completeRxId}</span>
+                Phiếu chỉ định: <span className="font-semibold text-[#0f3e17]">{completeRxCode || completeRxId}</span>
               </p>
               {completionLoading ? (
                 <p className="text-xs text-[#222222]/70">Đang kiểm tra điều kiện hoàn thành...</p>
               ) : completeRxStatus === "COMPLETED" ? (
-                <div className="p-3 rounded-[14px] bg-[#e1f4df]/60 border border-[#cfe7d3] text-xs text-[#0f3e17]">
+                <div className="p-3 rounded-[14px] bg-[#e1f4df]/60 text-xs text-[#0f3e17]">
                   <strong>Đã hoàn thành can thiệp</strong>
                   {completeRxCompletedAt && (
                     <span> — {new Date(completeRxCompletedAt).toLocaleDateString("vi-VN")}</span>
@@ -913,7 +913,7 @@ export default function DoctorWorkspacePage() {
                         type="button"
                         disabled={completeBusy || !overrideReason.trim()}
                         onClick={() => void handleCompleteIntervention(true)}
-                        className="px-4 py-2 rounded-[14px] bg-amber-600 text-white font-semibold disabled:opacity-40"
+                        className="px-4 py-2 rounded-[14px] bg-amber-600 text-[#fffefc] font-semibold disabled:opacity-40"
                       >
                         {completeBusy ? "Đang lưu..." : "Xác nhận hoàn thành (có lý do)"}
                       </button>
@@ -930,7 +930,7 @@ export default function DoctorWorkspacePage() {
 
           {/* Queue List of this Room */}
           <div className="bg-[#fffefc] border border-[#efeeeb] rounded-[14px] p-4 space-y-3">
-            <h4 className="text-xs font-bold uppercase tracking-wider text-[#0f3e17] flex items-center gap-2">
+            <h4 className="eyebrow text-[#0f3e17] flex items-center gap-2">
               <Users className="w-4 h-4 text-[#0f3e17]" />
               <span>Hàng đợi buồng này ({queue.length})</span>
             </h4>
@@ -945,24 +945,24 @@ export default function DoctorWorkspacePage() {
                   }}
                   className={`w-full text-left p-2.5 rounded-[14px] border text-xs transition-colors flex items-center justify-between ${
                     idx === activePatientIndex
-                      ? "bg-[#e1f4df] border-[#cfe7d3] text-[#0f3e17]"
+                      ? "bg-[#e1f4df] text-[#0f3e17]"
                       : "bg-[#fffefc] border-[#efeeeb] text-[#222222]/70 hover:bg-[#efeeeb]/30"
                   }`}
                 >
                   <div>
-                    <div className="font-bold flex items-center gap-1.5">
-                      <span className="font-mono text-[#0f3e17]">{item.queueNumber}</span>
+                    <div className="font-semibold flex items-center gap-1.5">
+                      <span className="font-semibold text-[#0f3e17]">{item.queueNumber}</span>
                       <span>•</span>
                       <span>{item.name}</span>
                     </div>
                     <div className="text-[11px] truncate max-w-[190px] text-[#222222]/60">{item.reason}</div>
                   </div>
                   <span
-                    className={`text-[9px] px-2 py-0.5 rounded-[6px] font-semibold ${
+                    className={`badge-pill ${
                       item.status === "SERVING"
                         ? "bg-[#0f3e17] text-[#fffefc]"
                         : item.status === "COMPLETED"
-                        ? "bg-[#e1f4df] text-[#0f3e17] border border-[#cfe7d3]"
+                        ? "bg-[#e1f4df] text-[#0f3e17]"
                         : "bg-[#efeeeb] text-[#222222]/60"
                     }`}
                   >
@@ -976,7 +976,7 @@ export default function DoctorWorkspacePage() {
 
         {/* Right Column: Tabs Thang điểm & Kê đơn */}
         <div className="lg:col-span-8 space-y-6">
-          <div className="bg-[#fffefc] border border-[#efeeeb] rounded-[14px] p-6">
+          <div className="bg-[#fffefc] border border-[#efeeeb] rounded-[14px] p-7">
             {/* Mode Tabs */}
             <div className="flex border-b border-[#efeeeb] pb-3 mb-6 gap-2 sm:gap-4 overflow-x-auto">
               <button
@@ -1030,7 +1030,7 @@ export default function DoctorWorkspacePage() {
                 {/* Phần 1: Đơn thuốc — kê từ danh mục Dược thư (GĐ4) */}
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
-                    <h4 className="text-xs font-bold text-[#0f3e17] uppercase tracking-wider flex items-center gap-2">
+                    <h4 className="eyebrow text-[#0f3e17] flex items-center gap-2">
                       <Pill className="w-4 h-4 text-[#0f3e17]" />
                       <span>Đơn thuốc Hỗ trợ Điều trị ({drugRows.length})</span>
                     </h4>
@@ -1047,13 +1047,13 @@ export default function DoctorWorkspacePage() {
                         value={allergyDraft}
                         onChange={(e) => setAllergyDraft(e.target.value)}
                         placeholder="Ví dụ: Penicillin — nổi mề đay 2023 (để trống nếu không có)"
-                        className="flex-1 px-3 py-2 rounded-[10px] bg-[#fffefc] border border-[#efeeeb] text-xs text-[#222222] focus:outline-none focus:border-[#0f3e17]"
+                        className="flex-1 px-3 py-2 rounded-[14px] bg-[#fffefc] border border-[#efeeeb] text-xs text-[#222222] focus:outline-none focus:border-[#0f3e17]"
                       />
                       <button
                         type="button"
                         onClick={handleSaveAllergies}
                         disabled={allergySaving || allergyDraft.trim() === (currentPatient?.allergies ?? "")}
-                        className="px-3 py-2 rounded-[10px] bg-[#0f3e17] text-[#fffefc] font-semibold disabled:opacity-40 shrink-0"
+                        className="px-3 py-2 rounded-[14px] bg-[#0f3e17] text-[#fffefc] font-semibold disabled:opacity-40 shrink-0"
                       >
                         {allergySaving ? "Đang lưu..." : allergySavedAt ? "Đã lưu ✓" : "Lưu dị ứng"}
                       </button>
@@ -1074,12 +1074,12 @@ export default function DoctorWorkspacePage() {
                 {/* Phần 2: Chỉ định Dịch vụ điều trị (tạo phiếu thật cho thu ngân) */}
                 <div className="space-y-3 pt-4 border-t border-[#efeeeb]">
                   <div className="flex items-center justify-between">
-                    <h4 className="text-xs font-bold text-[#0f3e17] uppercase tracking-wider flex items-center gap-2">
+                    <h4 className="eyebrow text-[#0f3e17] flex items-center gap-2">
                       <Stethoscope className="w-4 h-4 text-[#0f3e17]" />
                       <span>Chỉ định Dịch vụ điều trị ({selectedServiceIds.length} đã chọn)</span>
                     </h4>
                     {selectedServicesTotal > 0 && (
-                      <span className="text-xs font-bold text-[#0f3e17]">
+                      <span className="text-xs font-semibold text-[#0f3e17]">
                         Tạm tính: {selectedServicesTotal.toLocaleString("vi-VN")} đ
                       </span>
                     )}
@@ -1109,7 +1109,7 @@ export default function DoctorWorkspacePage() {
                             key={srv.serviceId}
                             className={`flex items-start gap-3 p-3.5 rounded-[14px] border text-xs cursor-pointer transition-colors ${
                               checked
-                                ? "bg-[#e1f4df]/60 border-[#cfe7d3]"
+                                ? "bg-[#e1f4df]/60"
                                 : "bg-[#fffefc] border-[#efeeeb] hover:bg-[#efeeeb]/30"
                             }`}
                           >
@@ -1120,7 +1120,7 @@ export default function DoctorWorkspacePage() {
                               className="mt-0.5 w-4 h-4 accent-[#0f3e17]"
                             />
                             <span className="flex-1">
-                              <span className="block font-bold text-[#0f3e17] text-sm">{srv.serviceName}</span>
+                              <span className="block font-semibold text-[#0f3e17] text-sm">{srv.serviceName}</span>
                               {srv.description && (
                                 <span className="block text-[11px] text-[#222222]/60 mt-0.5">{srv.description}</span>
                               )}
@@ -1130,7 +1130,7 @@ export default function DoctorWorkspacePage() {
                                 </span>
                               )}
                             </span>
-                            <span className="font-bold text-[#0f3e17] whitespace-nowrap">
+                            <span className="font-semibold text-[#0f3e17] whitespace-nowrap">
                               {srv.price != null ? `${srv.price.toLocaleString("vi-VN")} đ` : "Liên hệ"}
                             </span>
                           </label>
@@ -1155,9 +1155,9 @@ export default function DoctorWorkspacePage() {
                   )}
 
                   {createdPrescriptionCode && (
-                    <div className="p-3.5 rounded-[14px] bg-[#e1f4df]/60 border border-[#cfe7d3] text-xs">
-                      <span className="font-bold text-[#0f3e17]">Đã tạo phiếu chỉ định: </span>
-                      <span className="font-mono font-bold text-[#0f3e17]">{createdPrescriptionCode}</span>
+                    <div className="p-3.5 rounded-[14px] bg-[#e1f4df]/60 text-xs">
+                      <span className="font-semibold text-[#0f3e17]">Đã tạo phiếu chỉ định: </span>
+                      <span className="font-semibold text-[#0f3e17]">{createdPrescriptionCode}</span>
                       <span className="text-[#222222]/70"> — đưa mã này cho bệnh nhân ra quầy thu ngân.</span>
                     </div>
                   )}
@@ -1166,7 +1166,7 @@ export default function DoctorWorkspacePage() {
                 {/* Phần 3: Chỉ định Bài tập PHCN tại nhà — kê từ danh mục (GĐ4) */}
                 <div className="space-y-3 pt-4 border-t border-[#efeeeb]">
                   <div className="flex items-center justify-between">
-                    <h4 className="text-xs font-bold text-[#0f3e17] uppercase tracking-wider flex items-center gap-2">
+                    <h4 className="eyebrow text-[#0f3e17] flex items-center gap-2">
                       <Stethoscope className="w-4 h-4 text-[#0f3e17]" />
                       <span>Chỉ định Gói Bài tập PHCN tại nhà ({exerciseRows.length})</span>
                     </h4>
@@ -1252,7 +1252,7 @@ export default function DoctorWorkspacePage() {
                   key={key}
                   type="button"
                   onClick={() => setPrintTarget(key)}
-                  className={`flex-1 px-3 py-2 rounded-[10px] text-xs font-bold ${
+                  className={`flex-1 px-3 py-2 rounded-[14px] text-xs font-semibold ${
                     printTarget === key
                       ? "bg-[#0f3e17] text-[#fffefc]"
                       : "bg-[#fffefc] border border-[#efeeeb] text-[#222222] hover:bg-[#efeeeb]/40"
@@ -1268,7 +1268,7 @@ export default function DoctorWorkspacePage() {
               <div className="print-area">
                 <div className="border-b pb-4 border-[#efeeeb] flex justify-between items-start">
                   <div>
-                    <div className="text-xs font-bold text-[#0f3e17] uppercase">
+                    <div className="text-xs font-semibold text-[#0f3e17] uppercase">
                       {CLINIC.name.toUpperCase()}
                     </div>
                     <div className="text-[11px] text-[#222222]/60">
@@ -1276,7 +1276,7 @@ export default function DoctorWorkspacePage() {
                     </div>
                   </div>
                   <div className="text-right">
-                    <span className="text-xs font-mono font-bold px-2 py-0.5 rounded-[7px] bg-[#e1f4df] border border-[#cfe7d3] text-[#0f3e17]">
+                    <span className="badge-pill bg-[#e1f4df] text-[#0f3e17]">
                       Mã BA: TS-2026-{currentPatient.queueNumber}
                     </span>
                     <div className="text-[11px] text-[#222222]/50 mt-1">
@@ -1286,7 +1286,7 @@ export default function DoctorWorkspacePage() {
                 </div>
 
                 <div className="my-4 text-center">
-                  <h2 className="text-lg font-black text-[#0f3e17] uppercase">
+                  <h2 className="font-display-serif text-lg text-[#0f3e17] uppercase">
                     PHIẾU LƯỢNG GIÁ CHỨC NĂNG &amp; CHỈ ĐỊNH ĐIỀU TRỊ
                   </h2>
                 </div>
@@ -1307,8 +1307,8 @@ export default function DoctorWorkspacePage() {
                 </div>
 
                 <div className="my-4 space-y-3 text-xs">
-                  <div className="p-3.5 bg-[#e1f4df]/40 rounded-[14px] border border-[#cfe7d3]">
-                    <div className="flex justify-between font-bold text-[#0f3e17]">
+                  <div className="p-3.5 bg-[#e1f4df]/40 rounded-[14px]">
+                    <div className="flex justify-between font-semibold text-[#0f3e17]">
                       <span>1. Kết quả thang điểm PHCN:</span>
                       <span>{printAssessments.length > 0 ? `${printAssessments.length} lần đánh giá` : "Chưa có lần đánh giá nào trong phiên này"}</span>
                     </div>
@@ -1331,11 +1331,11 @@ export default function DoctorWorkspacePage() {
                   {/* Bài tập — đọc từ đơn bài tập đã lưu (GĐ4), không còn
                       đọc mẫu ghi cứng; đơn thuốc in ở phiếu riêng. */}
                   {(savedExpRows.length > 0 || exerciseRows.length > 0) && (
-                    <div className="p-3.5 bg-[#e1f4df]/30 rounded-[14px] border border-[#cfe7d3] text-[#0f3e17]">
-                      <div className="font-bold mb-1">
+                    <div className="p-3.5 bg-[#e1f4df]/30 rounded-[14px] text-[#0f3e17]">
+                      <div className="font-semibold mb-1">
                         3. Bài tập Phục hồi Chức năng Hướng dẫn tại nhà
                         {savedExpCode && (
-                          <span className="font-mono font-normal"> — Mã đơn: {savedExpCode}</span>
+                          <span className="font-normal"> — Mã đơn: {savedExpCode}</span>
                         )}
                         :
                       </div>
@@ -1353,12 +1353,12 @@ export default function DoctorWorkspacePage() {
                   )}
 
                   {createdPrescriptionCode && (
-                    <div className="p-3.5 bg-[#e1f4df]/40 rounded-[14px] border border-[#cfe7d3]">
-                      <div className="font-bold text-[#0f3e17] mb-1">5. Phiếu chỉ định Dịch vụ điều trị:</div>
+                    <div className="p-3.5 bg-[#e1f4df]/40 rounded-[14px]">
+                      <div className="font-semibold text-[#0f3e17] mb-1">5. Phiếu chỉ định Dịch vụ điều trị:</div>
                       <div className="text-[11px] text-[#222222]/80 space-y-1">
                         <div>
                           Mã phiếu (thu ngân quét mã này):{" "}
-                          <strong className="font-mono text-[#0f3e17]">{createdPrescriptionCode}</strong>
+                          <strong className="font-semibold text-[#0f3e17]">{createdPrescriptionCode}</strong>
                         </div>
                         {selectedServices.map((srv, i) => (
                           <div key={srv.serviceId}>
@@ -1392,7 +1392,7 @@ export default function DoctorWorkspacePage() {
                   </div>
                   <div>
                     <div className="text-[#222222]/60">Bác sĩ Chuyên khoa PHCN</div>
-                    <div className="mt-12 font-bold text-[#0f3e17]">{user?.name || "BS.CKII Lâm Thanh Tú"}</div>
+                    <div className="mt-12 font-semibold text-[#0f3e17]">{user?.name || "BS.CKII Lâm Thanh Tú"}</div>
                   </div>
                 </div>
               </div>
@@ -1403,14 +1403,14 @@ export default function DoctorWorkspacePage() {
               <div className="print-area relative">
                 {savedMp?.status === "DRAFT" && (
                   <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                    <span className="text-5xl font-black text-rose-500/20 -rotate-[20deg] uppercase tracking-widest">
+                    <span className="font-display-serif text-5xl text-rose-500/20 -rotate-[20deg] uppercase tracking-[-0.03em]">
                       Bản nháp
                     </span>
                   </div>
                 )}
                 <div className="border-b pb-4 border-[#efeeeb] flex justify-between items-start">
                   <div>
-                    <div className="text-xs font-bold text-[#0f3e17] uppercase">
+                    <div className="text-xs font-semibold text-[#0f3e17] uppercase">
                       {CLINIC.name.toUpperCase()}
                     </div>
                     <div className="text-[11px] text-[#222222]/60">
@@ -1418,7 +1418,7 @@ export default function DoctorWorkspacePage() {
                     </div>
                   </div>
                   <div className="text-right">
-                    <span className="text-xs font-mono font-bold px-2 py-0.5 rounded-[7px] bg-[#e1f4df] border border-[#cfe7d3] text-[#0f3e17]">
+                    <span className="badge-pill bg-[#e1f4df] text-[#0f3e17]">
                       Mã đơn: {savedMp?.code ?? "—"}
                     </span>
                     <div className="text-[11px] text-[#222222]/50 mt-1">
@@ -1435,7 +1435,7 @@ export default function DoctorWorkspacePage() {
                 </div>
 
                 <div className="my-4 text-center">
-                  <h2 className="text-lg font-black text-[#0f3e17] uppercase">ĐƠN THUỐC</h2>
+                  <h2 className="font-display-serif text-lg text-[#0f3e17] uppercase">ĐƠN THUỐC</h2>
                 </div>
 
                 <div className="grid grid-cols-2 gap-2 text-xs py-3 border-y border-[#efeeeb]">
@@ -1462,21 +1462,21 @@ export default function DoctorWorkspacePage() {
                     <table className="w-full text-[11px] border-collapse">
                       <thead>
                         <tr className="bg-[#e1f4df]/60 text-[#0f3e17]">
-                          <th className="border border-[#cfe7d3] px-2 py-1.5 text-left">#</th>
-                          <th className="border border-[#cfe7d3] px-2 py-1.5 text-left">Tên thuốc</th>
-                          <th className="border border-[#cfe7d3] px-2 py-1.5 text-left">Hàm lượng</th>
-                          <th className="border border-[#cfe7d3] px-2 py-1.5 text-left">Liều dùng</th>
-                          <th className="border border-[#cfe7d3] px-2 py-1.5 text-left">Tần suất</th>
-                          <th className="border border-[#cfe7d3] px-2 py-1.5 text-left">Số ngày</th>
-                          <th className="border border-[#cfe7d3] px-2 py-1.5 text-left">Số lượng</th>
-                          <th className="border border-[#cfe7d3] px-2 py-1.5 text-left">Cách dùng</th>
+                          <th className="border border-[#efeeeb] px-2 py-1.5 text-left">#</th>
+                          <th className="border border-[#efeeeb] px-2 py-1.5 text-left">Tên thuốc</th>
+                          <th className="border border-[#efeeeb] px-2 py-1.5 text-left">Hàm lượng</th>
+                          <th className="border border-[#efeeeb] px-2 py-1.5 text-left">Liều dùng</th>
+                          <th className="border border-[#efeeeb] px-2 py-1.5 text-left">Tần suất</th>
+                          <th className="border border-[#efeeeb] px-2 py-1.5 text-left">Số ngày</th>
+                          <th className="border border-[#efeeeb] px-2 py-1.5 text-left">Số lượng</th>
+                          <th className="border border-[#efeeeb] px-2 py-1.5 text-left">Cách dùng</th>
                         </tr>
                       </thead>
                       <tbody>
                         {savedMp.items.map((item, i) => (
                           <tr key={item.id}>
                             <td className="border border-[#efeeeb] px-2 py-1.5">{i + 1}</td>
-                            <td className="border border-[#efeeeb] px-2 py-1.5 font-bold">{item.name}</td>
+                            <td className="border border-[#efeeeb] px-2 py-1.5 font-semibold">{item.name}</td>
                             <td className="border border-[#efeeeb] px-2 py-1.5">{item.strength ?? "—"}</td>
                             <td className="border border-[#efeeeb] px-2 py-1.5">
                               {item.dose != null ? `${item.dose} ${item.doseUnit ?? ""}` : "—"}
@@ -1506,7 +1506,7 @@ export default function DoctorWorkspacePage() {
                   </div>
                   <div>
                     <div className="text-[#222222]/60">Bác sĩ kê đơn</div>
-                    <div className="mt-12 font-bold text-[#0f3e17]">{user?.name || "BS.CKII Lâm Thanh Tú"}</div>
+                    <div className="mt-12 font-semibold text-[#0f3e17]">{user?.name || "BS.CKII Lâm Thanh Tú"}</div>
                   </div>
                 </div>
               </div>
@@ -1517,7 +1517,7 @@ export default function DoctorWorkspacePage() {
               <div className="print-area">
                 <div className="border-b pb-4 border-[#efeeeb] flex justify-between items-start">
                   <div>
-                    <div className="text-xs font-bold text-[#0f3e17] uppercase">
+                    <div className="text-xs font-semibold text-[#0f3e17] uppercase">
                       {CLINIC.name.toUpperCase()}
                     </div>
                     <div className="text-[11px] text-[#222222]/60">
@@ -1525,7 +1525,7 @@ export default function DoctorWorkspacePage() {
                     </div>
                   </div>
                   <div className="text-right">
-                    <span className="text-xs font-mono font-bold px-2 py-0.5 rounded-[7px] bg-[#e1f4df] border border-[#cfe7d3] text-[#0f3e17]">
+                    <span className="badge-pill bg-[#e1f4df] text-[#0f3e17]">
                       Mã đơn: {savedExpCode || "—"}
                     </span>
                     <div className="text-[11px] text-[#222222]/50 mt-1">
@@ -1535,7 +1535,7 @@ export default function DoctorWorkspacePage() {
                 </div>
 
                 <div className="my-4 text-center">
-                  <h2 className="text-lg font-black text-[#0f3e17] uppercase">
+                  <h2 className="font-display-serif text-lg text-[#0f3e17] uppercase">
                     PHIẾU HƯỚNG DẪN BÀI TẬP TẠI NHÀ
                   </h2>
                 </div>
@@ -1562,8 +1562,8 @@ export default function DoctorWorkspacePage() {
                     </p>
                   )}
                   {(savedExpRows.length > 0 ? savedExpRows : exerciseRows).map((ex, i) => (
-                    <div key={i} className="p-3.5 bg-[#e1f4df]/30 rounded-[14px] border border-[#cfe7d3]">
-                      <div className="font-bold text-[#0f3e17] text-sm">
+                    <div key={i} className="p-3.5 bg-[#e1f4df]/30 rounded-[14px]">
+                      <div className="font-semibold text-[#0f3e17] text-sm">
                         {i + 1}. {ex.name}
                       </div>
                       <div className="text-[11px] text-[#222222]/80 mt-0.5">
@@ -1601,7 +1601,7 @@ export default function DoctorWorkspacePage() {
                   </div>
                   <div>
                     <div className="text-[#222222]/60">Bác sĩ / KTV kê đơn</div>
-                    <div className="mt-12 font-bold text-[#0f3e17]">{user?.name || "BS.CKII Lâm Thanh Tú"}</div>
+                    <div className="mt-12 font-semibold text-[#0f3e17]">{user?.name || "BS.CKII Lâm Thanh Tú"}</div>
                   </div>
                 </div>
               </div>

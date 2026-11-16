@@ -320,13 +320,13 @@ export default function KioskPage() {
         <div className="flex items-center gap-4">
           <TsLogo size="lg" showText={false} />
           <div>
-            <h1 className="text-2xl font-black tracking-tight text-[#0f3e17] flex items-center gap-2">
+            <h1 className="font-display-serif text-2xl tracking-tight text-[#0f3e17] flex items-center gap-2">
               THANH SANG{" "}
-              <span className="text-[#0f3e17] bg-[#e1f4df] border border-[#cfe7d3] font-bold text-xs px-2.5 py-0.5 rounded-[6px]">
+              <span className="font-sans text-[#0f3e17] bg-[#e1f4df] font-semibold text-xs px-2.5 py-0.5 rounded-full">
                 KIOSK
               </span>
             </h1>
-            <p className="text-xs text-[#222222]/60 uppercase tracking-widest font-semibold mt-0.5">
+            <p className="eyebrow text-[#222222]/60 mt-0.5">
               Cây Tự Bốc Số Tiếp Đón • 193 Quang Trung, Đại Lộc, Đà Nẵng
             </p>
           </div>
@@ -335,7 +335,7 @@ export default function KioskPage() {
         {/* Digital Clock */}
         <div className="flex items-center gap-6">
           <div className="text-right">
-            <div className="text-3xl font-black text-[#0f3e17] font-mono tracking-wider">
+            <div className="font-display-serif text-3xl tracking-tight text-[#0f3e17]">
               {currentTime || "08:30:00"}
             </div>
             <div className="text-xs text-[#222222]/60 capitalize font-medium">
@@ -365,10 +365,10 @@ export default function KioskPage() {
         {mode === "HOME" && (
           <div className="space-y-10">
             <div className="text-center space-y-2">
-              <span className="block text-xs sm:text-[13px] font-semibold text-[#0f3e17] uppercase tracking-[0.08em]">
+              <span className="eyebrow block text-[#0f3e17]">
                 Vui lòng chạm vào màn hình để chọn nhu cầu tiếp đón
               </span>
-              <h2 className="text-3xl sm:text-4xl font-extrabold text-[#0f3e17] tracking-tight">
+              <h2 className="font-display-serif text-3xl sm:text-4xl tracking-tight text-[#0f3e17]">
                 Kính Chào Quý Khách Đến Phòng Khám Bác Sĩ Thanh Sang
               </h2>
               <p className="text-sm text-[#222222]/70 max-w-xl mx-auto">
@@ -385,23 +385,23 @@ export default function KioskPage() {
                   setMode("APPOINTMENT");
                   speakVoice("Quý khách vui lòng nhập mã vé hẹn hoặc quét mã Q R trên điện thoại.");
                 }}
-                className="group relative flex flex-col items-center justify-between p-8 rounded-[14px] bg-[#e1f4df] border border-[#cfe7d3] text-center transition-colors min-h-[360px]"
+                className="group relative flex flex-col items-center justify-between p-8 rounded-[14px] bg-[#e1f4df] text-center transition-colors min-h-[360px]"
               >
-                <div className="w-20 h-20 rounded-[14px] bg-[#fffefc] border border-[#cfe7d3] flex items-center justify-center text-[#0f3e17] mb-4 group-hover:scale-105 transition-transform">
+                <div className="w-20 h-20 rounded-[14px] bg-[#fffefc] flex items-center justify-center text-[#0f3e17] mb-4 group-hover:scale-105 transition-transform">
                   <CalendarCheck className="w-10 h-10" />
                 </div>
                 <div className="space-y-2">
-                  <span className="block text-[11px] font-bold text-[#0f3e17]/80 tracking-widest uppercase">
+                  <span className="eyebrow block text-[#0f3e17]/80">
                     Bước 1
                   </span>
-                  <h3 className="text-2xl font-black text-[#0f3e17]">
+                  <h3 className="font-display-serif text-2xl tracking-tight text-[#0f3e17]">
                     ĐÃ ĐẶT LỊCH TRƯỚC
                   </h3>
                   <p className="text-xs text-[#222222]/80 leading-relaxed">
-                    Đã đăng ký qua Website hoặc có Mã vé hẹn (<strong className="text-[#0f3e17] font-mono">APT-...</strong>). Quét QR hoặc bấm SĐT.
+                    Đã đăng ký qua Website hoặc có Mã vé hẹn (<strong className="text-[#0f3e17] font-semibold">APT-...</strong>). Quét QR hoặc bấm SĐT.
                   </p>
                 </div>
-                <div className="mt-6 inline-flex items-center gap-2 text-xs font-bold text-[#0f3e17]">
+                <div className="mt-6 inline-flex items-center gap-2 text-xs font-semibold text-[#0f3e17]">
                   <span>Chạm để Check-in ngay</span>
                   <ChevronRight className="w-4 h-4" />
                 </div>
@@ -414,23 +414,23 @@ export default function KioskPage() {
                   setMode("PRIORITY");
                   speakVoice("Mời Quý khách chọn đối tượng ưu tiên để lấy số tiếp đón nhanh.");
                 }}
-                className="group relative flex flex-col items-center justify-between p-8 rounded-[14px] bg-[#b1dbb8]/40 border border-[#b1dbb8] text-center transition-colors min-h-[360px]"
+                className="group relative flex flex-col items-center justify-between p-8 rounded-[14px] bg-[#b1dbb8]/40 text-center transition-colors min-h-[360px]"
               >
-                <div className="w-20 h-20 rounded-[14px] bg-[#fffefc] border border-[#b1dbb8] flex items-center justify-center text-[#0f3e17] mb-4 group-hover:scale-105 transition-transform">
+                <div className="w-20 h-20 rounded-[14px] bg-[#fffefc] flex items-center justify-center text-[#0f3e17] mb-4 group-hover:scale-105 transition-transform">
                   <Accessibility className="w-10 h-10" />
                 </div>
                 <div className="space-y-2">
-                  <span className="block text-[11px] font-bold text-[#0f3e17]/80 tracking-widest uppercase">
+                  <span className="eyebrow block text-[#0f3e17]/80">
                     Lối Đi Riêng
                   </span>
-                  <h3 className="text-2xl font-black text-[#0f3e17]">
+                  <h3 className="font-display-serif text-2xl tracking-tight text-[#0f3e17]">
                     LẤY SỐ ƯU TIÊN
                   </h3>
                   <p className="text-xs text-[#222222]/80 leading-relaxed">
                     Dành cho <strong>Người cao tuổi (≥ 75t)</strong>, <strong>Bệnh nhân liệt/khuyết tật</strong>, hoặc <strong>Phụ nữ có thai</strong>.
                   </p>
                 </div>
-                <div className="mt-6 inline-flex items-center gap-2 text-xs font-bold text-[#0f3e17]">
+                <div className="mt-6 inline-flex items-center gap-2 text-xs font-semibold text-[#0f3e17]">
                   <span>Chạm để lấy số ưu tiên</span>
                   <ChevronRight className="w-4 h-4" />
                 </div>
@@ -443,23 +443,23 @@ export default function KioskPage() {
                   setMode("REGULAR");
                   speakVoice("Mời Quý khách chọn dịch vụ khám phục hồi chức năng.");
                 }}
-                className="group relative flex flex-col items-center justify-between p-8 rounded-[14px] bg-[#b6ced5]/40 border border-[#b6ced5] text-center transition-colors min-h-[360px]"
+                className="group relative flex flex-col items-center justify-between p-8 rounded-[14px] bg-[#b6ced5]/40 text-center transition-colors min-h-[360px]"
               >
-                <div className="w-20 h-20 rounded-[14px] bg-[#fffefc] border border-[#b6ced5] flex items-center justify-center text-[#0f3e17] mb-4 group-hover:scale-105 transition-transform">
+                <div className="w-20 h-20 rounded-[14px] bg-[#fffefc] flex items-center justify-center text-[#0f3e17] mb-4 group-hover:scale-105 transition-transform">
                   <UserCheck className="w-10 h-10" />
                 </div>
                 <div className="space-y-2">
-                  <span className="block text-[11px] font-bold text-[#0f3e17]/80 tracking-widest uppercase">
+                  <span className="eyebrow block text-[#0f3e17]/80">
                     Lần Đầu Khám
                   </span>
-                  <h3 className="text-2xl font-black text-[#0f3e17]">
+                  <h3 className="font-display-serif text-2xl tracking-tight text-[#0f3e17]">
                     KHÁM THƯỜNG
                   </h3>
                   <p className="text-xs text-[#222222]/80 leading-relaxed">
                     Bệnh nhân chưa đặt lịch hẹn trước, đến khám lượng giá ban đầu hoặc tập vật lý trị liệu trong ngày.
                   </p>
                 </div>
-                <div className="mt-6 inline-flex items-center gap-2 text-xs font-bold text-[#0f3e17]">
+                <div className="mt-6 inline-flex items-center gap-2 text-xs font-semibold text-[#0f3e17]">
                   <span>Chạm để lấy số thường</span>
                   <ChevronRight className="w-4 h-4" />
                 </div>
@@ -480,14 +480,14 @@ export default function KioskPage() {
                 <ArrowLeft className="w-4 h-4" />
                 <span>Quay lại Trang chính</span>
               </button>
-              <span className="text-xs text-[#0f3e17] font-bold uppercase tracking-wider">
+              <span className="eyebrow text-[#0f3e17]">
                 Check-in Lịch Hẹn Trước
               </span>
             </div>
 
             <div className="bg-[#fffefc] border border-[#efeeeb] rounded-[14px] p-6 sm:p-8 space-y-6">
               <div className="text-center space-y-1">
-                <h3 className="text-xl sm:text-2xl font-black text-[#0f3e17]">
+                <h3 className="font-display-serif text-xl sm:text-2xl tracking-tight text-[#0f3e17]">
                   Nhập Mã Vé Hẹn hoặc Số Điện Thoại
                 </h3>
                 <p className="text-xs text-[#222222]/70">
@@ -496,7 +496,7 @@ export default function KioskPage() {
               </div>
 
               {/* Input Display */}
-              <div className="p-4 rounded-[14px] bg-[#e1f4df]/30 border border-[#cfe7d3] text-center font-mono text-3xl sm:text-4xl font-black text-[#0f3e17] tracking-widest min-h-[72px] flex items-center justify-center">
+              <div className="p-4 rounded-[14px] bg-[#e1f4df]/30 border border-[#efeeeb] text-center font-display-serif text-3xl sm:text-4xl tracking-tight text-[#0f3e17] min-h-[72px] flex items-center justify-center">
                 {appointmentCodeInput || <span className="text-[#222222]/40 text-xl font-sans font-normal">Chạm các phím bên dưới...</span>}
               </div>
 
@@ -507,12 +507,12 @@ export default function KioskPage() {
                     key={key}
                     type="button"
                     onClick={() => handleKeypadPress(key)}
-                    className={`h-16 rounded-[14px] text-xl font-bold flex items-center justify-center transition-colors ${
+                    className={`h-16 rounded-[14px] text-xl font-semibold flex items-center justify-center transition-colors ${
                       key === "APT"
-                        ? "bg-[#e1f4df] border border-[#cfe7d3] text-[#0f3e17] font-mono"
+                        ? "bg-[#e1f4df] border border-[#efeeeb] text-[#0f3e17] font-semibold"
                         : key === "BACK"
                         ? "bg-rose-50 border border-rose-200 text-rose-800 text-sm font-semibold"
-                        : "bg-[#fffefc] hover:bg-[#e1f4df]/40 border border-[#efeeeb] text-[#222222] text-2xl font-mono"
+                        : "bg-[#fffefc] hover:bg-[#e1f4df]/40 border border-[#efeeeb] text-[#222222] text-2xl font-semibold"
                     }`}
                   >
                     {key === "BACK" ? "XÓA" : key}
@@ -554,14 +554,14 @@ export default function KioskPage() {
                 <ArrowLeft className="w-4 h-4" />
                 <span>Quay lại Trang chính</span>
               </button>
-              <span className="text-xs text-[#0f3e17] font-bold uppercase tracking-wider">
+              <span className="eyebrow text-[#0f3e17]">
                 Lấy Số Tiếp Đón Ưu Tiên
               </span>
             </div>
 
             <div className="bg-[#fffefc] border border-[#efeeeb] rounded-[14px] p-6 sm:p-8 space-y-6">
               <div className="text-center space-y-1">
-                <h3 className="text-xl sm:text-2xl font-black text-[#0f3e17]">
+                <h3 className="font-display-serif text-xl sm:text-2xl tracking-tight text-[#0f3e17]">
                   Chọn Đối Tượng Ưu Tiên Y Tế
                 </h3>
                 <p className="text-xs text-[#222222]/70">
@@ -576,11 +576,11 @@ export default function KioskPage() {
                   onClick={() => setPriorityType("ELDERLY")}
                   className={`p-4 rounded-[14px] border text-center transition-colors ${
                     priorityType === "ELDERLY"
-                      ? "bg-[#e1f4df] border-[#cfe7d3] text-[#0f3e17] font-semibold"
+                      ? "bg-[#e1f4df] border-[#efeeeb] text-[#0f3e17] font-semibold"
                       : "bg-[#fffefc] border-[#efeeeb] text-[#222222] hover:bg-[#efeeeb]/40"
                   }`}
                 >
-                  <div className="font-bold text-sm">Người cao tuổi</div>
+                  <div className="font-semibold text-sm">Người cao tuổi</div>
                   <div className="text-[11px] text-[#222222]/60 mt-1">Từ 75 tuổi trở lên</div>
                 </button>
 
@@ -589,11 +589,11 @@ export default function KioskPage() {
                   onClick={() => setPriorityType("DISABLED")}
                   className={`p-4 rounded-[14px] border text-center transition-colors ${
                     priorityType === "DISABLED"
-                      ? "bg-[#e1f4df] border-[#cfe7d3] text-[#0f3e17] font-semibold"
+                      ? "bg-[#e1f4df] border-[#efeeeb] text-[#0f3e17] font-semibold"
                       : "bg-[#fffefc] border-[#efeeeb] text-[#222222] hover:bg-[#efeeeb]/40"
                   }`}
                 >
-                  <div className="font-bold text-sm">Khuyết tật / Liệt</div>
+                  <div className="font-semibold text-sm">Khuyết tật / Liệt</div>
                   <div className="text-[11px] text-[#222222]/60 mt-1">Đi xe lăn / Nạng</div>
                 </button>
 
@@ -602,11 +602,11 @@ export default function KioskPage() {
                   onClick={() => setPriorityType("PREGNANT")}
                   className={`p-4 rounded-[14px] border text-center transition-colors ${
                     priorityType === "PREGNANT"
-                      ? "bg-[#e1f4df] border-[#cfe7d3] text-[#0f3e17] font-semibold"
+                      ? "bg-[#e1f4df] border-[#efeeeb] text-[#0f3e17] font-semibold"
                       : "bg-[#fffefc] border-[#efeeeb] text-[#222222] hover:bg-[#efeeeb]/40"
                   }`}
                 >
-                  <div className="font-bold text-sm">Phụ nữ mang thai</div>
+                  <div className="font-semibold text-sm">Phụ nữ mang thai</div>
                   <div className="text-[11px] text-[#222222]/60 mt-1">Đau khớp háng/lưng</div>
                 </button>
               </div>
@@ -635,7 +635,7 @@ export default function KioskPage() {
                       type="number"
                       value={birthYear}
                       onChange={(e) => setBirthYear(e.target.value)}
-                      className="w-full px-4 py-3 bg-[#fffefc] border border-[#efeeeb] rounded-[14px] text-sm text-[#222222] font-mono focus:outline-none focus:border-[#0f3e17]"
+                      className="w-full px-4 py-3 bg-[#fffefc] border border-[#efeeeb] rounded-[14px] text-sm text-[#222222] font-semibold focus:outline-none focus:border-[#0f3e17]"
                     />
                   </div>
                   <div>
@@ -647,7 +647,7 @@ export default function KioskPage() {
                       value={patientPhone}
                       onChange={(e) => setPatientPhone(e.target.value)}
                       placeholder="09xx.xxx.xxx"
-                      className="w-full px-4 py-3 bg-[#fffefc] border border-[#efeeeb] rounded-[14px] text-sm text-[#222222] font-mono focus:outline-none focus:border-[#0f3e17]"
+                      className="w-full px-4 py-3 bg-[#fffefc] border border-[#efeeeb] rounded-[14px] text-sm text-[#222222] font-semibold focus:outline-none focus:border-[#0f3e17]"
                     />
                   </div>
                 </div>
@@ -691,14 +691,14 @@ export default function KioskPage() {
                 <ArrowLeft className="w-4 h-4" />
                 <span>Quay lại Trang chính</span>
               </button>
-              <span className="text-xs text-[#0f3e17] font-bold uppercase tracking-wider">
+              <span className="eyebrow text-[#0f3e17]">
                 Lấy Số Khám Thường
               </span>
             </div>
 
             <div className="bg-[#fffefc] border border-[#efeeeb] rounded-[14px] p-6 sm:p-8 space-y-6">
               <div className="text-center space-y-1">
-                <h3 className="text-xl sm:text-2xl font-black text-[#0f3e17]">
+                <h3 className="font-display-serif text-xl sm:text-2xl tracking-tight text-[#0f3e17]">
                   Chọn Nhu Cầu Khám & Trị Liệu
                 </h3>
                 <p className="text-xs text-[#222222]/70">
@@ -720,7 +720,7 @@ export default function KioskPage() {
                     onClick={() => setSelectedService(srv)}
                     className={`p-4 rounded-[14px] border text-left transition-colors ${
                       selectedService === srv
-                        ? "bg-[#e1f4df] border-[#cfe7d3] text-[#0f3e17] font-semibold"
+                        ? "bg-[#e1f4df] border-[#efeeeb] text-[#0f3e17] font-semibold"
                         : "bg-[#fffefc] border-[#efeeeb] text-[#222222] hover:bg-[#efeeeb]/40"
                     }`}
                   >
@@ -760,31 +760,31 @@ export default function KioskPage() {
         {mode === "SUCCESS" && ticketResult && (
           <div className="max-w-md mx-auto w-full space-y-6 text-center">
             {/* Success Badge */}
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-[6px] bg-[#e1f4df] border border-[#cfe7d3] text-[#0f3e17] text-xs font-bold">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#e1f4df] text-[#0f3e17] text-xs font-semibold">
               <CheckCircle2 className="w-4 h-4 text-[#0f3e17]" />
               <span>LẤY SỐ THÀNH CÔNG • VUI LÒNG NHẬN PHIẾU BÊN DƯỚI</span>
             </div>
 
             {/* Ticket Card Mockup */}
-            <div className="bg-[#fffefc] text-[#222222] rounded-[14px] p-8 space-y-5 text-left border border-[#cfe7d3]">
+            <div className="bg-[#fffefc] text-[#222222] rounded-[14px] p-8 space-y-5 text-left border border-[#efeeeb]">
               <div className="text-center border-b pb-3 border-[#efeeeb]">
-                <div className="text-[11px] font-bold text-[#0f3e17] uppercase tracking-wider">
+                <div className="eyebrow text-[#0f3e17]">
                   PHÒNG KHÁM PHỤC HỒI CHỨC NĂNG BÁC SĨ THANH SANG
                 </div>
                 <div className="text-[10px] text-[#222222]/60 mt-0.5">
                   193 Quang Trung, Đại Lộc, Đà Nẵng • 0369.117.117
                 </div>
-                <h3 className="text-base font-black text-[#0f3e17] uppercase mt-1">
+                <h3 className="font-display-serif text-base tracking-tight text-[#0f3e17] uppercase mt-1">
                   PHIẾU TIẾP ĐÓN KHÁM BỆNH
                 </h3>
               </div>
 
-              <div className="text-center py-4 bg-[#e1f4df]/40 rounded-[14px] border border-[#cfe7d3]">
+              <div className="text-center py-4 bg-[#e1f4df]/40 rounded-[14px]">
                 <div className="text-xs text-[#0f3e17] font-semibold">SỐ THỨ TỰ TIẾP ĐÓN</div>
-                <div className="text-5xl font-black text-[#0f3e17] tracking-wider my-1 font-mono">
+                <div className="font-display-serif text-5xl tracking-[-0.03em] text-[#0f3e17] my-1">
                   {ticketResult.queueNumber}
                 </div>
-                <div className="text-xs font-bold text-[#0f3e17]/80">
+                <div className="text-xs font-semibold text-[#0f3e17]/80">
                   {ticketResult.roomName}
                 </div>
               </div>
@@ -812,7 +812,7 @@ export default function KioskPage() {
             {/* Actions & Auto Countdown */}
             <div className="space-y-3">
               <div className="text-xs text-[#222222]/60">
-                Tự động quay về màn hình chính sau <strong className="text-[#0f3e17] font-mono text-sm">{countdown}</strong> giây...
+                Tự động quay về màn hình chính sau <strong className="text-[#0f3e17] font-semibold text-sm">{countdown}</strong> giây...
               </div>
 
               <div className="flex gap-3">

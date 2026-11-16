@@ -107,14 +107,14 @@ export function DashboardSidebar({
       <div className="p-4 space-y-6 overflow-y-auto">
         {/* Brand Clinic Info */}
         <Link href="/" className="block" onClick={onNavigate}>
-          <div className="flex items-center gap-2.5 px-3 py-2 bg-[#e1f4df]/40 rounded-[14px] border border-[#cfe7d3] hover:bg-[#e1f4df]/60 transition-colors">
+          <div className="flex items-center gap-2.5 px-3 py-2 bg-[#e1f4df]/40 rounded-[14px] border border-[#efeeeb] hover:bg-[#e1f4df]/60 transition-colors">
             <TsLogo size="sm" showText={true} />
           </div>
         </Link>
 
         {/* Section: Chuyên môn & Nghiệp vụ */}
         <div>
-          <div className="px-3 mb-2 text-[10px] font-bold text-[#222222]/50 uppercase tracking-wider">
+          <div className="px-3 mb-2 text-[#222222]/50 eyebrow">
             Không gian nghiệp vụ
           </div>
           <nav className="space-y-1">
@@ -145,7 +145,7 @@ export function DashboardSidebar({
                       className={`text-[9px] px-2 py-0.5 rounded-[999px] font-semibold ${
                         isActive
                           ? "bg-[#fffefc]/20 text-[#fffefc]"
-                          : "bg-[#e1f4df] text-[#0f3e17] border border-[#cfe7d3]"
+                          : "bg-[#e1f4df] text-[#0f3e17] border border-[#efeeeb]"
                       }`}
                     >
                       {item.badge}
@@ -159,7 +159,7 @@ export function DashboardSidebar({
 
         {/* Section: Màn hình Phụ trợ sảnh */}
         <div>
-          <div className="px-3 mb-2 text-[10px] font-bold text-[#222222]/50 uppercase tracking-wider">
+          <div className="px-3 mb-2 text-[#222222]/50 eyebrow">
             Màn hình Ngoại vi Sảnh
           </div>
           <div className="space-y-1">
@@ -196,7 +196,7 @@ export function DashboardSidebar({
       <div className="p-4 border-t border-[#efeeeb] space-y-3">
         <div className="flex items-center justify-between text-xs px-2">
           <span className="text-[#222222]/60">Máy chủ API:</span>
-          <span className="font-mono text-[11px] font-semibold text-[#0f3e17] bg-[#e1f4df] px-2 py-0.5 rounded-[6px]">
+          <span className="text-[11px] font-semibold text-[#0f3e17] bg-[#e1f4df] px-2 py-0.5 rounded-full">
             :3000 Sẵn sàng
           </span>
         </div>

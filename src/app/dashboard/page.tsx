@@ -81,19 +81,19 @@ export default function DashboardOverviewPage() {
   return (
     <div className="space-y-6">
       {/* Welcome Banner */}
-      <div className="bg-[#e1f4df] border border-[#cfe7d3] rounded-[14px] p-6 sm:p-8 relative overflow-hidden">
+      <div className="bg-[#e1f4df] border border-[#efeeeb] rounded-[14px] p-6 sm:p-8 relative overflow-hidden">
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-[6px] bg-[#fffefc] border border-[#cfe7d3] text-[#0f3e17] text-xs font-semibold mb-3">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#fffefc] border border-[#efeeeb] text-[#0f3e17] text-xs font-semibold mb-3">
               <span className="w-2 h-2 rounded-full bg-[#0f3e17]" />
               Ca trực ngày: {new Date().toLocaleDateString("vi-VN")} • Trạng thái: Sẵn sàng
             </div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-[#0f3e17] tracking-tight">
+            <h1 className="text-2xl sm:text-3xl font-display-serif text-[#0f3e17] tracking-[-0.01em]">
               Xin chào, {user?.name || "Bác sĩ / Nhân viên"}!
             </h1>
             <p className="mt-1 text-sm text-[#222222]/80 flex items-center gap-2">
               <MapPin className="w-4 h-4 text-[#0f3e17]" />
-              <span>Đang trực tại: <strong className="text-[#0f3e17] font-bold">{(() => {
+              <span>Đang trực tại: <strong className="text-[#0f3e17] font-semibold">{(() => {
                 const myId = user?.doctor?.id ?? user?.technician?.id;
                 const mine = myId
                   ? rooms.find((r) => r.booths.some((b) => b.doctorId === myId))
@@ -119,13 +119,13 @@ export default function DashboardOverviewPage() {
         <div className="bg-[#fffefc] border border-[#efeeeb] rounded-[14px] p-5">
           <div className="flex items-center justify-between">
             <span className="text-xs text-[#222222]/70 font-semibold">Tổng tiếp đón hôm nay</span>
-            <div className="w-8 h-8 rounded-[9px] bg-[#e1f4df] flex items-center justify-center text-[#0f3e17]">
+            <div className="w-8 h-8 rounded-[14px] bg-[#e1f4df] flex items-center justify-center text-[#0f3e17]">
               <Users className="w-4 h-4" />
             </div>
           </div>
           <div className="mt-3 flex items-baseline gap-2">
-            <span className="text-3xl font-extrabold text-[#0f3e17]">42</span>
-            <span className="text-xs text-[#0f3e17] flex items-center font-bold">
+            <span className="text-3xl font-display-serif text-[#0f3e17] tracking-[-0.01em]">42</span>
+            <span className="text-xs text-[#0f3e17] flex items-center font-semibold">
               <TrendingUp className="w-3 h-3 mr-0.5" /> +15%
             </span>
           </div>
@@ -135,12 +135,12 @@ export default function DashboardOverviewPage() {
         <div className="bg-[#fffefc] border border-[#efeeeb] rounded-[14px] p-5">
           <div className="flex items-center justify-between">
             <span className="text-xs text-[#222222]/70 font-semibold">Đang chờ tại buồng</span>
-            <div className="w-8 h-8 rounded-[9px] bg-amber-50 border border-amber-200 flex items-center justify-center text-amber-700">
+            <div className="w-8 h-8 rounded-[14px] bg-amber-50 border border-amber-200 flex items-center justify-center text-amber-700">
               <Clock className="w-4 h-4" />
             </div>
           </div>
           <div className="mt-3 flex items-baseline gap-2">
-            <span className="text-3xl font-extrabold text-amber-800">08</span>
+            <span className="text-3xl font-display-serif text-amber-800 tracking-[-0.01em]">08</span>
             <span className="text-xs text-[#222222]/60 font-medium">người bệnh</span>
           </div>
           <p className="text-[11px] text-[#222222]/60 mt-1">Thời gian chờ TB: 6 phút</p>
@@ -149,12 +149,12 @@ export default function DashboardOverviewPage() {
         <div className="bg-[#fffefc] border border-[#efeeeb] rounded-[14px] p-5">
           <div className="flex items-center justify-between">
             <span className="text-xs text-[#222222]/70 font-semibold">Đã khám & Tập PHCN</span>
-            <div className="w-8 h-8 rounded-[9px] bg-[#e1f4df] flex items-center justify-center text-[#0f3e17]">
+            <div className="w-8 h-8 rounded-[14px] bg-[#e1f4df] flex items-center justify-center text-[#0f3e17]">
               <CheckCircle2 className="w-4 h-4" />
             </div>
           </div>
           <div className="mt-3 flex items-baseline gap-2">
-            <span className="text-3xl font-extrabold text-[#0f3e17]">31</span>
+            <span className="text-3xl font-display-serif text-[#0f3e17] tracking-[-0.01em]">31</span>
             <span className="text-xs text-[#222222]/60 font-medium">ca hoàn tất</span>
           </div>
           <p className="text-[11px] text-[#222222]/60 mt-1">100% đã cập nhật thang điểm FIM</p>
@@ -163,12 +163,12 @@ export default function DashboardOverviewPage() {
         <div className="bg-[#fffefc] border border-[#efeeeb] rounded-[14px] p-5">
           <div className="flex items-center justify-between">
             <span className="text-xs text-[#222222]/70 font-semibold">Doanh thu tạm tính</span>
-            <div className="w-8 h-8 rounded-[9px] bg-[#b1dbb8]/40 flex items-center justify-center text-[#0f3e17]">
+            <div className="w-8 h-8 rounded-[14px] bg-[#b1dbb8]/40 flex items-center justify-center text-[#0f3e17]">
               <CreditCard className="w-4 h-4" />
             </div>
           </div>
           <div className="mt-3 flex items-baseline gap-2">
-            <span className="text-3xl font-extrabold text-[#0f3e17]">14.8M</span>
+            <span className="text-3xl font-display-serif text-[#0f3e17] tracking-[-0.01em]">14.8M</span>
             <span className="text-xs text-[#222222]/60 font-medium">VND</span>
           </div>
           <p className="text-[11px] text-[#222222]/60 mt-1">PayOS: 82% • Tiền mặt: 18%</p>
@@ -178,17 +178,17 @@ export default function DashboardOverviewPage() {
       {/* Grid: Trạng thái các buồng khám PHCN & Lối tắt */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left 2 Cols: Tình trạng các buồng phục hồi chức năng */}
-        <div className="lg:col-span-2 bg-[#fffefc] border border-[#efeeeb] rounded-[14px] p-6">
+        <div className="lg:col-span-2 bg-[#fffefc] border border-[#efeeeb] rounded-[14px] p-7 sm:p-8">
           <div className="flex items-center justify-between mb-5">
             <div>
-              <h2 className="text-base font-bold text-[#0f3e17]">
+              <h2 className="text-base font-display-serif text-[#0f3e17] tracking-[-0.01em]">
                 Trạng thái Hoạt động các Buồng Trị liệu & Khám bệnh
               </h2>
               <p className="text-xs text-[#222222]/70">
                 Cập nhật tức thời qua kết nối WebSocket thời gian thực
               </p>
             </div>
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-[6px] bg-[#e1f4df] text-[#0f3e17] text-xs font-semibold border border-[#cfe7d3]">
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#e1f4df] text-[#0f3e17] text-xs font-semibold border border-[#efeeeb]">
               <span className="w-2 h-2 rounded-full bg-[#0f3e17]" />
               Live Sync
             </span>
@@ -222,11 +222,11 @@ export default function DashboardOverviewPage() {
                   className="p-4 rounded-[14px] border bg-[#fffefc] border-[#efeeeb] hover:bg-[#efeeeb]/40 transition-colors"
                 >
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-xs font-bold text-[#0f3e17]">{room.roomCode}</span>
+                    <span className="text-xs font-semibold text-[#0f3e17]">{room.roomCode}</span>
                     <span
-                      className={`text-[10px] px-2 py-0.5 rounded-[6px] font-semibold ${
+                      className={`text-[10px] px-2 py-0.5 rounded-full font-semibold ${
                         doctors.length > 0
-                          ? "bg-[#e1f4df] text-[#0f3e17] border border-[#cfe7d3]"
+                          ? "bg-[#e1f4df] text-[#0f3e17] border border-[#efeeeb]"
                           : "bg-[#efeeeb] text-[#222222]/70 border border-[#efeeeb]"
                       }`}
                     >
@@ -237,8 +237,8 @@ export default function DashboardOverviewPage() {
                     {room.roomName}
                   </div>
                   <div className="mt-3 flex items-center justify-between text-[11px] text-[#222222]/70 pt-2 border-t border-[#efeeeb]">
-                    <span>Bác sĩ trực: <strong className="text-[#0f3e17] font-bold">{doctors.length > 0 ? doctors.join(", ") : "—"}</strong></span>
-                    <span>Ca trực tới: <strong className="text-[#0f3e17] font-bold">{latestEnd ? new Date(latestEnd).toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" }) : "—"}</strong></span>
+                    <span>Bác sĩ trực: <strong className="text-[#0f3e17] font-semibold">{doctors.length > 0 ? doctors.join(", ") : "—"}</strong></span>
+                    <span>Ca trực tới: <strong className="text-[#0f3e17] font-semibold">{latestEnd ? new Date(latestEnd).toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" }) : "—"}</strong></span>
                   </div>
                 </div>
               );
@@ -249,7 +249,7 @@ export default function DashboardOverviewPage() {
         {/* Right 1 Col: Quick Links & Sảnh chờ */}
         <div className="space-y-4">
           <div className="bg-[#fffefc] border border-[#efeeeb] rounded-[14px] p-6">
-            <h3 className="text-sm font-bold text-[#0f3e17] mb-3.5">Màn hình Tương tác Sảnh</h3>
+            <h3 className="text-sm font-display-serif text-[#0f3e17] mb-3.5 tracking-[-0.01em]">Màn hình Tương tác Sảnh</h3>
             <div className="space-y-3">
               <Link
                 href="/tv-display"
@@ -261,7 +261,7 @@ export default function DashboardOverviewPage() {
                     <Tv className="w-5 h-5" />
                   </div>
                   <div>
-                    <div className="text-xs font-bold text-[#0f3e17]">Màn hình TV Gọi số</div>
+                    <div className="text-xs font-semibold text-[#0f3e17]">Màn hình TV Gọi số</div>
                     <div className="text-[10px] text-[#222222]/60">Chiếu trên TV phòng chờ sảnh lớn</div>
                   </div>
                 </div>
@@ -278,7 +278,7 @@ export default function DashboardOverviewPage() {
                     <MonitorSmartphone className="w-5 h-5" />
                   </div>
                   <div>
-                    <div className="text-xs font-bold text-[#0f3e17]">Cây Kiosk Bốc số Tự động</div>
+                    <div className="text-xs font-semibold text-[#0f3e17]">Cây Kiosk Bốc số Tự động</div>
                     <div className="text-[10px] text-[#222222]/60">Màn hình cảm ứng cho người bệnh</div>
                   </div>
                 </div>
@@ -288,8 +288,8 @@ export default function DashboardOverviewPage() {
           </div>
 
           {/* Quick Notice */}
-          <div className="p-4 rounded-[14px] bg-[#e1f4df]/40 border border-[#cfe7d3] text-xs text-[#222222]/80 leading-relaxed">
-            <div className="font-bold text-[#0f3e17] flex items-center gap-1.5 mb-1">
+          <div className="p-4 rounded-[14px] bg-[#e1f4df]/40 border border-[#efeeeb] text-xs text-[#222222]/80 leading-relaxed">
+            <div className="font-semibold text-[#0f3e17] flex items-center gap-1.5 mb-1">
               <Stethoscope className="w-4 h-4" />
               Lưu ý Phục hồi chức năng:
             </div>

@@ -174,13 +174,13 @@ export default function AdminWorkspacePage() {
   return (
     <div className="space-y-6 text-[#222222]">
       {/* Top Banner: Admin & System Header */}
-      <div className="bg-[#e1f4df] border border-[#cfe7d3] rounded-[14px] p-6 flex flex-col md:flex-row md:items-center justify-between gap-6">
+      <div className="bg-[#e1f4df] border border-[#efeeeb] rounded-[14px] p-6 sm:p-8 flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-[6px] bg-[#fffefc] border border-[#cfe7d3] text-[#0f3e17] text-xs font-semibold mb-2">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#fffefc] border border-[#efeeeb] text-[#0f3e17] text-xs font-semibold mb-2">
             <ShieldCheck className="w-4 h-4 text-[#0f3e17]" />
             <span>Phân hệ Báo cáo & Quản trị Hệ thống</span>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-[#0f3e17] tracking-tight">
+          <h1 className="text-2xl sm:text-3xl font-display-serif text-[#0f3e17] tracking-[-0.01em]">
             Trung tâm Điều hành & Quản trị: {user?.name || "Trần Đình Kiên"}
           </h1>
           <p className="text-xs text-[#222222]/80 mt-1">
@@ -205,13 +205,13 @@ export default function AdminWorkspacePage() {
         <div className="bg-[#fffefc] border border-[#efeeeb] rounded-[14px] p-5">
           <div className="flex items-center justify-between text-xs text-[#222222]/70 font-semibold">
             <span>Tổng Doanh thu Tháng</span>
-            <div className="w-8 h-8 rounded-[9px] bg-[#e1f4df] flex items-center justify-center text-[#0f3e17]">
+            <div className="w-8 h-8 rounded-[14px] bg-[#e1f4df] flex items-center justify-center text-[#0f3e17]">
               <CreditCard className="w-4 h-4" />
             </div>
           </div>
           <div className="mt-3 flex items-baseline gap-2">
-            <span className="text-2xl sm:text-3xl font-black text-[#0f3e17] font-mono">385.0M</span>
-            <span className="text-xs text-[#0f3e17] flex items-center font-bold">
+            <span className="text-2xl sm:text-3xl font-display-serif text-[#0f3e17] tracking-[-0.01em]">385.0M</span>
+            <span className="text-xs text-[#0f3e17] flex items-center font-semibold">
               <TrendingUp className="w-3 h-3 mr-0.5" /> +18.5%
             </span>
           </div>
@@ -221,12 +221,12 @@ export default function AdminWorkspacePage() {
         <div className="bg-[#fffefc] border border-[#efeeeb] rounded-[14px] p-5">
           <div className="flex items-center justify-between text-xs text-[#222222]/70 font-semibold">
             <span>Tổng Lượt Khám & Trị liệu</span>
-            <div className="w-8 h-8 rounded-[9px] bg-[#e1f4df] flex items-center justify-center text-[#0f3e17]">
+            <div className="w-8 h-8 rounded-[14px] bg-[#e1f4df] flex items-center justify-center text-[#0f3e17]">
               <Users className="w-4 h-4" />
             </div>
           </div>
           <div className="mt-3 flex items-baseline gap-2">
-            <span className="text-2xl sm:text-3xl font-black text-[#0f3e17] font-mono">1,248</span>
+            <span className="text-2xl sm:text-3xl font-display-serif text-[#0f3e17] tracking-[-0.01em]">1,248</span>
             <span className="text-xs text-[#0f3e17] font-semibold">+12% MoM</span>
           </div>
           <p className="text-[11px] text-[#222222]/60 mt-1">Trung bình: 42 bệnh nhân / ngày</p>
@@ -235,12 +235,12 @@ export default function AdminWorkspacePage() {
         <div className="bg-[#fffefc] border border-[#efeeeb] rounded-[14px] p-5">
           <div className="flex items-center justify-between text-xs text-[#222222]/70 font-semibold">
             <span>Tỷ lệ Phục hồi Độc lập (FIM)</span>
-            <div className="w-8 h-8 rounded-[9px] bg-[#b1dbb8]/40 flex items-center justify-center text-[#0f3e17]">
+            <div className="w-8 h-8 rounded-[14px] bg-[#b1dbb8]/40 flex items-center justify-center text-[#0f3e17]">
               <Stethoscope className="w-4 h-4" />
             </div>
           </div>
           <div className="mt-3 flex items-baseline gap-2">
-            <span className="text-2xl sm:text-3xl font-black text-[#0f3e17] font-mono">84.2%</span>
+            <span className="text-2xl sm:text-3xl font-display-serif text-[#0f3e17] tracking-[-0.01em]">84.2%</span>
             <span className="text-xs text-[#0f3e17] font-semibold">Đạt chuẩn</span>
           </div>
           <p className="text-[11px] text-[#222222]/60 mt-1">Tăng trung bình +24 điểm FIM sau liệu trình</p>
@@ -249,12 +249,12 @@ export default function AdminWorkspacePage() {
         <div className="bg-[#fffefc] border border-[#efeeeb] rounded-[14px] p-5">
           <div className="flex items-center justify-between text-xs text-[#222222]/70 font-semibold">
             <span>Tỷ lệ Quay lại Tái khám</span>
-            <div className="w-8 h-8 rounded-[9px] bg-[#b6ced5]/30 flex items-center justify-center text-[#0f3e17]">
+            <div className="w-8 h-8 rounded-[14px] bg-[#b6ced5]/30 flex items-center justify-center text-[#0f3e17]">
               <Clock className="w-4 h-4" />
             </div>
           </div>
           <div className="mt-3 flex items-baseline gap-2">
-            <span className="text-2xl sm:text-3xl font-black text-[#0f3e17] font-mono">76.4%</span>
+            <span className="text-2xl sm:text-3xl font-display-serif text-[#0f3e17] tracking-[-0.01em]">76.4%</span>
             <span className="text-xs text-[#0f3e17] font-semibold">Gắn kết cao</span>
           </div>
           <p className="text-[11px] text-[#222222]/60 mt-1">Đánh giá hài lòng 4.9 / 5.0 sao</p>
@@ -262,7 +262,7 @@ export default function AdminWorkspacePage() {
       </div>
 
       {/* Main Tabs Navigation */}
-      <div className="bg-[#fffefc] border border-[#efeeeb] rounded-[14px] p-6 space-y-6">
+      <div className="bg-[#fffefc] border border-[#efeeeb] rounded-[14px] p-7 sm:p-8 space-y-6">
         <div className="flex border-b border-[#efeeeb] pb-3 gap-2 sm:gap-4 overflow-x-auto">
           <button
             type="button"
@@ -311,7 +311,7 @@ export default function AdminWorkspacePage() {
               {/* Biểu đồ Doanh thu theo tuần (7 Cols) */}
               <div className="lg:col-span-7 bg-[#fffefc] border border-[#efeeeb] rounded-[14px] p-5 space-y-4">
                 <div className="flex items-center justify-between">
-                  <h3 className="text-xs font-bold uppercase tracking-wider text-[#0f3e17]">
+                  <h3 className="text-[#0f3e17] eyebrow">
                     Xu hướng Doanh thu 4 tuần gần nhất (Triệu VND)
                   </h3>
                   <span className="text-[11px] text-[#0f3e17] font-semibold">Tăng trưởng đều</span>
@@ -325,7 +325,7 @@ export default function AdminWorkspacePage() {
                     { week: "Tuần 4 (HT)", rev: 110.0, percent: "92%" },
                   ].map((item, idx) => (
                     <div key={idx} className="flex-1 flex flex-col items-center gap-2 h-full justify-end group">
-                      <span className="text-[11px] font-mono font-bold text-[#0f3e17] transition-colors">
+                      <span className="text-[11px] font-semibold text-[#0f3e17] transition-colors">
                         {item.rev}M
                       </span>
                       <div className="w-full max-w-[48px] bg-[#efeeeb] rounded-t-[7px] h-full flex items-end overflow-hidden">
@@ -341,13 +341,13 @@ export default function AdminWorkspacePage() {
 
                 <div className="flex justify-between items-center text-xs text-[#222222]/70 pt-1">
                   <span>Mục tiêu tháng: <strong>350.0M</strong></span>
-                  <span className="text-[#0f3e17] font-bold">Vượt mục tiêu: +110%</span>
+                  <span className="text-[#0f3e17] font-semibold">Vượt mục tiêu: +110%</span>
                 </div>
               </div>
 
               {/* Cơ cấu Tỷ trọng Dịch vụ (5 Cols) */}
               <div className="lg:col-span-5 bg-[#fffefc] border border-[#efeeeb] rounded-[14px] p-5 space-y-4">
-                <h3 className="text-xs font-bold uppercase tracking-wider text-[#0f3e17]">
+                <h3 className="text-[#0f3e17] eyebrow">
                   Cơ cấu Doanh thu theo Chuyên khoa PHCN
                 </h3>
 
@@ -355,7 +355,7 @@ export default function AdminWorkspacePage() {
                   <div>
                     <div className="flex justify-between text-[#222222] mb-1">
                       <span>Tập Phục hồi chức năng sau Tai biến 1:1</span>
-                      <strong className="text-[#0f3e17] font-mono">42% (161.7M)</strong>
+                      <strong className="text-[#0f3e17]">42% (161.7M)</strong>
                     </div>
                     <div className="w-full bg-[#efeeeb] rounded-full h-2">
                       <div className="bg-[#0f3e17] h-2 rounded-full" style={{ width: "42%" }} />
@@ -365,7 +365,7 @@ export default function AdminWorkspacePage() {
                   <div>
                     <div className="flex justify-between text-[#222222] mb-1">
                       <span>Vật lý trị liệu Giảm đau (Điện xung, Sóng ngắn, Kéo giãn)</span>
-                      <strong className="text-[#0f3e17] font-mono">28% (107.8M)</strong>
+                      <strong className="text-[#0f3e17]">28% (107.8M)</strong>
                     </div>
                     <div className="w-full bg-[#efeeeb] rounded-full h-2">
                       <div className="bg-[#0f3e17] h-2 rounded-full" style={{ width: "28%" }} />
@@ -375,7 +375,7 @@ export default function AdminWorkspacePage() {
                   <div>
                     <div className="flex justify-between text-[#222222] mb-1">
                       <span>Khám Lượng giá Ban đầu (FIM / ROM)</span>
-                      <strong className="text-[#0f3e17] font-mono">18% (69.3M)</strong>
+                      <strong className="text-[#0f3e17]">18% (69.3M)</strong>
                     </div>
                     <div className="w-full bg-[#efeeeb] rounded-full h-2">
                       <div className="bg-[#0f3e17] h-2 rounded-full" style={{ width: "18%" }} />
@@ -385,7 +385,7 @@ export default function AdminWorkspacePage() {
                   <div>
                     <div className="flex justify-between text-[#222222] mb-1">
                       <span>Thuốc hỗ trợ thần kinh & cơ xương khớp</span>
-                      <strong className="text-[#0f3e17] font-mono">12% (46.2M)</strong>
+                      <strong className="text-[#0f3e17]">12% (46.2M)</strong>
                     </div>
                     <div className="w-full bg-[#efeeeb] rounded-full h-2">
                       <div className="bg-[#0f3e17] h-2 rounded-full" style={{ width: "12%" }} />
@@ -393,7 +393,7 @@ export default function AdminWorkspacePage() {
                   </div>
                 </div>
 
-                <div className="p-3.5 rounded-[14px] bg-[#e1f4df]/40 border border-[#cfe7d3] text-[11px] text-[#0f3e17] leading-relaxed">
+                <div className="p-3.5 rounded-[14px] bg-[#e1f4df]/40 border border-[#efeeeb] text-[11px] text-[#0f3e17] leading-relaxed">
                   💡 <strong>Gợi ý vận hành:</strong> Dịch vụ tập tai biến 1:1 có biên lợi nhuận và mức độ gắn kết tái khám cao nhất (trung bình 12 buổi/liệu trình).
                 </div>
               </div>
@@ -406,7 +406,7 @@ export default function AdminWorkspacePage() {
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="text-xs font-bold uppercase tracking-wider text-[#0f3e17]">
+                <h3 className="text-[#0f3e17] eyebrow">
                   Lịch Phân ca & Buồng khám Trực tiếp
                 </h3>
                 <p className="text-xs text-[#222222]/70">
@@ -416,7 +416,7 @@ export default function AdminWorkspacePage() {
 
               <div className="flex items-center gap-2 text-xs">
                 <span className="text-[#222222]/60">Đang trực:</span>
-                <span className="px-2.5 py-0.5 rounded-[6px] bg-[#e1f4df] text-[#0f3e17] border border-[#cfe7d3] font-semibold">
+                <span className="px-2.5 py-0.5 rounded-full bg-[#e1f4df] text-[#0f3e17] border border-[#efeeeb] font-semibold">
                   {staffList.filter((s) => s.status === "ONLINE" || s.status === "BUSY").length} nhân sự
                 </span>
               </div>
@@ -437,8 +437,8 @@ export default function AdminWorkspacePage() {
                   {staffList.map((st) => (
                     <tr key={st.id} className="text-[#222222] hover:bg-[#efeeeb]/30">
                       <td className="p-2.5 pr-2">
-                        <div className="font-bold text-[#0f3e17] text-sm">{st.name}</div>
-                        <span className="text-[11px] text-[#222222]/50 font-mono">ID: {st.id}</span>
+                        <div className="font-semibold text-[#0f3e17] text-sm">{st.name}</div>
+                        <span className="text-[11px] text-[#222222]/50">ID: {st.id}</span>
                       </td>
                       <td className="p-2.5">
                         <div className="font-semibold text-[#222222]">{st.role}</div>
@@ -450,7 +450,7 @@ export default function AdminWorkspacePage() {
                           onChange={(e) =>
                             handleShiftChange(st.id, e.target.value as any)
                           }
-                          className="bg-[#fffefc] border border-[#efeeeb] rounded-[7px] px-2.5 py-1 text-xs text-[#222222] focus:outline-none focus:border-[#0f3e17]"
+                          className="bg-[#fffefc] border border-[#efeeeb] rounded-[14px] px-2.5 py-1 text-xs text-[#222222] focus:outline-none focus:border-[#0f3e17]"
                         >
                           <option value="MORNING">Ca Sáng (07:30 - 11:30)</option>
                           <option value="AFTERNOON">Ca Chiều (13:30 - 17:30)</option>
@@ -462,9 +462,9 @@ export default function AdminWorkspacePage() {
                       </td>
                       <td className="p-2.5">
                         <span
-                          className={`text-[10px] px-2 py-0.5 rounded-[6px] font-bold inline-flex items-center gap-1 ${
+                          className={`text-[10px] px-2 py-0.5 rounded-full font-semibold inline-flex items-center gap-1 ${
                             st.status === "ONLINE"
-                              ? "bg-[#e1f4df] text-[#0f3e17] border border-[#cfe7d3]"
+                              ? "bg-[#e1f4df] text-[#0f3e17] border border-[#efeeeb]"
                               : st.status === "BUSY"
                               ? "bg-amber-50 text-amber-800 border border-amber-200"
                               : "bg-[#efeeeb] text-[#222222]/60"
@@ -476,7 +476,7 @@ export default function AdminWorkspacePage() {
                                 ? "bg-[#0f3e17]"
                                 : st.status === "BUSY"
                                 ? "bg-amber-600"
-                                : "bg-slate-400"
+                                : "bg-[#222222]/30"
                             }`}
                           />
                           {st.status === "ONLINE"
@@ -499,7 +499,7 @@ export default function AdminWorkspacePage() {
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="text-xs font-bold uppercase tracking-wider text-[#0f3e17]">
+                <h3 className="text-[#0f3e17] eyebrow">
                   Bảng giá Niêm yết Dịch vụ Kỹ thuật PHCN
                 </h3>
                 <p className="text-xs text-[#222222]/70">
@@ -534,7 +534,7 @@ export default function AdminWorkspacePage() {
                     const isEditing = editingServiceId === srv.id;
                     return (
                       <tr key={srv.id} className="text-[#222222] hover:bg-[#efeeeb]/30">
-                        <td className="p-2.5 font-mono font-bold text-[#0f3e17]">{srv.code}</td>
+                        <td className="p-2.5 font-semibold text-[#0f3e17]">{srv.code}</td>
                         <td className="p-2.5 pr-2">
                           <div className="font-semibold text-[#0f3e17]">{srv.name}</div>
                           <span className="text-[10px] text-[#222222]/50 uppercase">{srv.category}</span>
@@ -547,7 +547,7 @@ export default function AdminWorkspacePage() {
                                 type="number"
                                 value={editPrice}
                                 onChange={(e) => setEditPrice(Number(e.target.value))}
-                                className="w-24 px-2 py-1 rounded-[7px] bg-[#fffefc] border border-[#0f3e17] text-[#0f3e17] font-mono text-right"
+                                className="w-24 px-2 py-1 rounded-[14px] bg-[#fffefc] border border-[#efeeeb] text-[#0f3e17] text-right"
                               />
                               <button
                                 type="button"
@@ -558,7 +558,7 @@ export default function AdminWorkspacePage() {
                               </button>
                             </div>
                           ) : (
-                            <span className="font-mono font-bold text-[#0f3e17] text-sm">
+                            <span className="font-semibold text-[#0f3e17] text-sm">
                               {srv.price.toLocaleString("vi-VN")} đ
                             </span>
                           )}
@@ -567,9 +567,9 @@ export default function AdminWorkspacePage() {
                           <button
                             type="button"
                             onClick={() => handleToggleService(srv.id)}
-                            className={`px-2.5 py-0.5 rounded-[6px] text-[10px] font-semibold ${
+                            className={`px-2.5 py-0.5 rounded-full text-[10px] font-semibold ${
                               srv.isActive
-                                ? "bg-[#e1f4df] text-[#0f3e17] border border-[#cfe7d3]"
+                                ? "bg-[#e1f4df] text-[#0f3e17] border border-[#efeeeb]"
                                 : "bg-[#efeeeb] text-[#222222]/60"
                             }`}
                           >
@@ -580,7 +580,7 @@ export default function AdminWorkspacePage() {
                           <button
                             type="button"
                             onClick={() => handleStartEdit(srv)}
-                            className="p-1.5 rounded-[7px] text-[#222222]/60 hover:text-[#0f3e17] hover:bg-[#e1f4df]/40 transition-colors"
+                            className="p-1.5 rounded-[14px] text-[#222222]/60 hover:text-[#0f3e17] hover:bg-[#e1f4df]/40 transition-colors"
                             title="Sửa đơn giá"
                           >
                             <Edit2 className="w-3.5 h-3.5" />
@@ -601,10 +601,10 @@ export default function AdminWorkspacePage() {
         <div className="fixed inset-0 z-50 bg-[#0f3e17]/60 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-[#fffefc] text-[#222222] rounded-[14px] max-w-2xl w-full p-8 border border-[#efeeeb] max-h-[90vh] overflow-y-auto">
             <div className="text-center border-b pb-4 border-[#efeeeb]">
-              <div className="text-xs font-bold text-[#0f3e17] uppercase tracking-wider">
+              <div className="text-[#0f3e17] eyebrow">
                 HỆ THỐNG PHÒNG KHÁM CHUYÊN KHOA PHỤC HỒI CHỨC NĂNG BÁC SĨ THANH SANG
               </div>
-              <h2 className="text-xl font-black text-[#0f3e17] uppercase mt-2">
+              <h2 className="text-xl font-display-serif text-[#0f3e17] uppercase mt-2 tracking-[-0.01em]">
                 BÁO CÁO HIỆU SUẤT VẬN HÀNH & TÀI CHÍNH THÁNG 11/2026
               </h2>
               <p className="text-xs text-[#222222]/70 mt-0.5">
@@ -613,14 +613,14 @@ export default function AdminWorkspacePage() {
             </div>
 
             <div className="my-4 space-y-3 text-xs">
-              <div className="grid grid-cols-2 gap-3 p-4 bg-[#e1f4df]/30 rounded-[14px] border border-[#cfe7d3]">
+              <div className="grid grid-cols-2 gap-3 p-4 bg-[#e1f4df]/30 rounded-[14px] border border-[#efeeeb]">
                 <div>
                   <span className="text-[#222222]/60">Tổng doanh thu thực tế:</span>
-                  <div className="text-base font-bold text-[#0f3e17]">385.000.000 đ (+18.5%)</div>
+                  <div className="text-base font-semibold text-[#0f3e17]">385.000.000 đ (+18.5%)</div>
                 </div>
                 <div>
                   <span className="text-[#222222]/60">Tổng lượt tiếp đón & khám:</span>
-                  <div className="text-base font-bold text-[#0f3e17]">1.248 lượt bệnh nhân</div>
+                  <div className="text-base font-semibold text-[#0f3e17]">1.248 lượt bệnh nhân</div>
                 </div>
                 <div>
                   <span className="text-[#222222]/60">Tỷ lệ thanh toán PayOS VietQR:</span>
@@ -633,7 +633,7 @@ export default function AdminWorkspacePage() {
               </div>
 
               <div className="p-4 bg-[#fffefc] rounded-[14px] border border-[#efeeeb]">
-                <div className="font-bold text-[#0f3e17] mb-2">Phân bổ Doanh thu theo Dịch vụ:</div>
+                <div className="font-semibold text-[#0f3e17] mb-2">Phân bổ Doanh thu theo Dịch vụ:</div>
                 <div className="space-y-1 text-[11px] text-[#222222]/80">
                   <div className="flex justify-between">
                     <span>• Tập Phục hồi chức năng sau Tai biến 1:1:</span>
@@ -654,7 +654,7 @@ export default function AdminWorkspacePage() {
                 </div>
               </div>
 
-              <div className="p-4 bg-[#e1f4df]/40 rounded-[14px] border border-[#cfe7d3] text-[#0f3e17] text-[11px] leading-relaxed">
+              <div className="p-4 bg-[#e1f4df]/40 rounded-[14px] border border-[#efeeeb] text-[#0f3e17] text-[11px] leading-relaxed">
                 <strong>Kết luận & Định hướng tháng 12:</strong> Phòng khám đã vận hành ổn định 4 buồng chức năng. Đề xuất tăng cường thêm 2 Kỹ thuật viên Vận động trị liệu ca chiều để giải tỏa hàng đợi sảnh chờ.
               </div>
             </div>

@@ -840,17 +840,17 @@ export default function ReceptionistWorkspacePage() {
   return (
     <div className="space-y-6 text-[#222222]">
       {/* Header Banner & Counter Selector */}
-      <div className="bg-[#e1f4df] border border-[#cfe7d3] rounded-[14px] p-4 sm:p-6 flex flex-col md:flex-row md:items-center justify-between gap-6">
+      <div className="bg-[#e1f4df] rounded-[14px] p-7 flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-[6px] bg-[#fffefc] border border-[#cfe7d3] text-[#0f3e17] text-xs font-semibold mb-2">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#fffefc] border border-[#efeeeb] text-[#0f3e17] text-xs font-semibold mb-2">
             <Users className="w-4 h-4 text-[#0f3e17]" />
             <span>Phân hệ Lễ tân Tiếp đón</span>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-[#0f3e17] tracking-tight">
+          <h1 className="font-display-serif text-2xl sm:text-3xl text-[#0f3e17] tracking-[-0.01em]">
             Quầy Tiếp nhận & Phân luồng Người bệnh
           </h1>
           <p className="text-xs text-[#222222]/80 mt-1">
-            Nhân viên ca trực: <strong className="text-[#0f3e17] font-bold">{user?.name || "Lê Hoàng Khang"}</strong> • Hệ thống tự động đồng bộ hàng đợi sảnh chờ
+            Nhân viên ca trực: <strong className="text-[#0f3e17] font-semibold">{user?.name || "Lê Hoàng Khang"}</strong> • Hệ thống tự động đồng bộ hàng đợi sảnh chờ
           </p>
         </div>
 
@@ -872,7 +872,7 @@ export default function ReceptionistWorkspacePage() {
                 setQueueFilter(v);
               }
             }}
-            className="bg-[#fffefc] border border-[#efeeeb] rounded-[8px] px-3 py-1.5 text-xs font-bold text-[#0f3e17] focus:outline-none focus:border-[#0f3e17]"
+            className="bg-[#fffefc] border border-[#efeeeb] rounded-[14px] px-3 py-1.5 text-xs font-semibold text-[#0f3e17] focus:outline-none focus:border-[#0f3e17]"
           >
             <option value="ALL">Tất cả quầy</option>
             {counters.map((c) => (
@@ -905,9 +905,9 @@ export default function ReceptionistWorkspacePage() {
         {/* Left Column: Quầy gọi số & Bệnh nhân hiện tại */}
         <div className="lg:col-span-5 space-y-6">
           {/* Current Serving Box */}
-          <div className="bg-[#fffefc] border border-[#efeeeb] rounded-[14px] p-6 space-y-4">
+          <div className="bg-[#fffefc] border border-[#efeeeb] rounded-[14px] p-7 space-y-4">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-bold uppercase tracking-wider text-[#0f3e17] flex items-center gap-1.5">
+              <span className="eyebrow text-[#0f3e17] flex items-center gap-1.5">
                 <span className="w-2.5 h-2.5 rounded-full bg-[#0f3e17]" />
                 Đang phục vụ tại quầy
               </span>
@@ -920,23 +920,23 @@ export default function ReceptionistWorkspacePage() {
 
             {displayedPatient ? (
               <div className="space-y-4">
-                <div className="text-center py-5 px-3 rounded-[14px] bg-[#e1f4df]/40 border border-[#cfe7d3]">
+                <div className="text-center py-5 px-3 rounded-[14px] bg-[#e1f4df]/40">
                   <div className="text-xs text-[#0f3e17] font-semibold">Số thứ tự tiếp nhận</div>
-                  <div className="text-4xl sm:text-5xl font-black text-[#0f3e17] tracking-wider my-1 font-mono">
+                  <div className="font-display-serif text-4xl sm:text-5xl text-[#0f3e17] tracking-[-0.03em] my-1">
                     {displayedPatient.queueNumber}
                   </div>
-                  <div className="text-lg font-bold text-[#0f3e17] mt-1">
+                  <div className="font-display-serif text-lg text-[#0f3e17] mt-1">
                     {displayedPatient.patientName}
                   </div>
                   <div className="text-xs text-[#222222]/70 mt-1">
                     Tuổi: <strong className="text-[#0f3e17]">{displayedPatient.patientAge ?? "—"}</strong>
                     {displayedPatient.isDisabled && (
-                      <span className="ml-2 px-2 py-0.5 rounded-[6px] bg-[#b1dbb8]/40 text-[#0f3e17] text-[10px] font-semibold">
+                      <span className="ml-2 px-2 py-0.5 rounded-full bg-[#b1dbb8]/40 text-[#0f3e17] text-[10px] font-semibold">
                         Khuyết tật / Liệt
                       </span>
                     )}
                     {displayedPatient.isElderly && (
-                      <span className="ml-2 px-2 py-0.5 rounded-[6px] bg-[#b6ced5]/30 text-[#0f3e17] text-[10px] font-semibold">
+                      <span className="ml-2 px-2 py-0.5 rounded-full bg-[#b6ced5]/30 text-[#0f3e17] text-[10px] font-semibold">
                         Người cao tuổi
                       </span>
                     )}
@@ -965,7 +965,7 @@ export default function ReceptionistWorkspacePage() {
                       <button
                         type="button"
                         onClick={fetchRooms}
-                        className="ml-auto px-2 py-1 rounded-[8px] bg-[#fffefc] border border-[#f5c6cb] text-[11px] font-semibold shrink-0"
+                        className="ml-auto px-2 py-1 rounded-[14px] bg-[#fffefc] border border-[#f5c6cb] text-[11px] font-semibold shrink-0"
                       >
                         Thử lại
                       </button>
@@ -1007,7 +1007,7 @@ export default function ReceptionistWorkspacePage() {
                     </div>
                   )}
                   {transferSuccessMsg && (
-                    <div className="p-2.5 rounded-[14px] bg-[#e1f4df] border border-[#cfe7d3] text-[#0f3e17] text-xs flex items-center gap-1.5">
+                    <div className="p-2.5 rounded-[14px] bg-[#e1f4df] text-[#0f3e17] text-xs flex items-center gap-1.5">
                       <Check className="w-4 h-4 text-[#0f3e17]" />
                       <span>{transferSuccessMsg}</span>
                     </div>
@@ -1065,9 +1065,9 @@ export default function ReceptionistWorkspacePage() {
           </div>
 
           {/* Realtime Waiting Queue */}
-          <div className="bg-[#fffefc] border border-[#efeeeb] rounded-[14px] p-5 space-y-3">
+          <div className="bg-[#fffefc] border border-[#efeeeb] rounded-[14px] p-7 space-y-3">
             <div className="flex items-center justify-between">
-              <h3 className="text-xs font-bold uppercase tracking-wider text-[#0f3e17] flex items-center gap-2">
+              <h3 className="eyebrow text-[#0f3e17] flex items-center gap-2">
                 <Clock className="w-4 h-4 text-[#0f3e17]" />
                 <span>Danh sách đang đợi gọi số ({waitingQueue.length})</span>
               </h3>
@@ -1089,7 +1089,7 @@ export default function ReceptionistWorkspacePage() {
                     <div key={group.counter.counterId} className="space-y-2">
                       {queueFilter === "ALL" && (
                         <div className="flex items-center justify-between pt-1">
-                          <span className="text-[11px] font-bold text-[#0f3e17] uppercase tracking-wider">
+                          <span className="eyebrow text-[#0f3e17]">
                             {group.counter.counterCode} - {group.counter.counterName}
                           </span>
                           <span className="text-[11px] text-[#222222]/50">
@@ -1100,14 +1100,14 @@ export default function ReceptionistWorkspacePage() {
                       {/* Bệnh nhân đang phục vụ: giữ lại trong danh sách, nút Gọi
                           lại chuyển xanh lá nhạt để gọi lại khi chưa nghe thấy. */}
                       {cur && (
-                        <div className="p-3 rounded-[14px] bg-[#e1f4df] border border-[#cfe7d3] flex items-center justify-between text-xs">
+                        <div className="p-3 rounded-[14px] bg-[#e1f4df] flex items-center justify-between text-xs">
                           <div className="flex items-center gap-3">
-                            <span className="w-6 text-center font-bold text-[#0f3e17]">
+                            <span className="w-6 text-center font-semibold text-[#0f3e17]">
                               <Volume2 className="w-4 h-4 mx-auto" />
                             </span>
                             <div>
-                              <div className="font-bold text-[#0f3e17] flex items-center gap-2">
-                                <span className="font-mono text-[#0f3e17]">{cur.queueNumber}</span>
+                              <div className="font-semibold text-[#0f3e17] flex items-center gap-2">
+                                <span className="font-semibold text-[#0f3e17]">{cur.queueNumber}</span>
                                 <span>•</span>
                                 <span>{cur.patientName}</span>
                               </div>
@@ -1120,7 +1120,7 @@ export default function ReceptionistWorkspacePage() {
                             type="button"
                             onClick={() => void handleRecallCurrent(group.counter.counterId, cur.queueNumber)}
                             disabled={actionLoading}
-                            className="px-3 py-1.5 rounded-[8px] bg-[#b1dbb8] hover:bg-[#9ecfa8] text-[#0f3e17] text-[11px] font-bold flex items-center gap-1 transition-colors disabled:opacity-50 flex-shrink-0"
+                            className="px-3 py-1.5 rounded-[14px] bg-[#b1dbb8] hover:bg-[#cfe7d3] text-[#0f3e17] text-[11px] font-semibold flex items-center gap-1 transition-colors disabled:opacity-50 flex-shrink-0"
                             title={`Gọi lại ${cur.patientName} (${cur.queueNumber})`}
                           >
                             <Volume2 className="w-3.5 h-3.5" />
@@ -1134,10 +1134,10 @@ export default function ReceptionistWorkspacePage() {
                           className="p-3 rounded-[14px] bg-[#fffefc] border border-[#efeeeb] flex items-center justify-between text-xs"
                         >
                           <div className="flex items-center gap-3">
-                            <span className="w-6 text-center font-bold text-[#222222]/40">#{idx + 1}</span>
+                            <span className="w-6 text-center font-semibold text-[#222222]/40">#{idx + 1}</span>
                             <div>
-                              <div className="font-bold text-[#0f3e17] flex items-center gap-2">
-                                <span className="font-mono text-[#0f3e17]">{item.queueNumber}</span>
+                              <div className="font-semibold text-[#0f3e17] flex items-center gap-2">
+                                <span className="font-semibold text-[#0f3e17]">{item.queueNumber}</span>
                                 <span>•</span>
                                 <span>{item.patientName}</span>
                               </div>
@@ -1150,7 +1150,7 @@ export default function ReceptionistWorkspacePage() {
                           </div>
                           <div className="flex items-center gap-2 flex-shrink-0">
                             {item.status === "PREPARING" ? (
-                              <span className="text-[10px] px-2 py-0.5 rounded-[6px] bg-[#e1f4df] text-[#0f3e17] font-semibold border border-[#cfe7d3]">
+                              <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#e1f4df] text-[#0f3e17] font-semibold">
                                 Đang chuẩn bị
                               </span>
                             ) : (
@@ -1158,9 +1158,9 @@ export default function ReceptionistWorkspacePage() {
                                 type="button"
                                 onClick={() => void handleCallPatient(group.counter.counterId, item.ticketId, item.queueNumber)}
                                 disabled={actionLoading}
-                                className={`px-3 py-1.5 rounded-[8px] text-[11px] font-bold flex items-center gap-1 transition-colors disabled:opacity-50 ${
+                                className={`px-3 py-1.5 rounded-[14px] text-[11px] font-semibold flex items-center gap-1 transition-colors disabled:opacity-50 ${
                                   item.callCount > 0
-                                    ? "bg-[#b1dbb8] hover:bg-[#9ecfa8] text-[#0f3e17]"
+                                    ? "bg-[#b1dbb8] hover:bg-[#cfe7d3] text-[#0f3e17]"
                                     : "bg-[#0f3e17] hover:bg-[#0c2f10] text-[#fffefc]"
                                 }`}
                                 title={`Gọi ${item.patientName} (${item.queueNumber}) vào quầy`}
@@ -1182,7 +1182,7 @@ export default function ReceptionistWorkspacePage() {
 
         {/* Right Column: Tiếp đón & Check-in QR & Cấp số */}
         <div className="lg:col-span-7 space-y-6">
-          <div className="bg-[#fffefc] border border-[#efeeeb] rounded-[14px] p-6">
+          <div className="bg-[#fffefc] border border-[#efeeeb] rounded-[14px] p-7">
             {/* Mode Tabs */}
             <div className="flex flex-wrap border-b border-[#efeeeb] pb-3 mb-6 gap-3">
               <button
@@ -1268,17 +1268,17 @@ export default function ReceptionistWorkspacePage() {
 
                 {/* Kết quả tìm thấy lịch hẹn */}
                 {foundAppointment && (
-                  <div className="p-5 rounded-[14px] bg-[#e1f4df]/40 border border-[#cfe7d3] space-y-4">
-                    <div className="flex items-center justify-between pb-3 border-b border-[#cfe7d3]">
+                  <div className="p-7 rounded-[14px] bg-[#e1f4df]/40 space-y-4">
+                    <div className="flex items-center justify-between pb-3 border-b border-[#efeeeb]">
                       <div>
-                        <span className="text-[11px] font-mono font-bold px-2 py-0.5 rounded-[7px] bg-[#0f3e17] text-[#fffefc]">
+                        <span className="badge-pill bg-[#0f3e17] text-[#fffefc]">
                           {foundAppointment.code}
                         </span>
-                        <h4 className="text-base font-bold text-[#0f3e17] mt-1.5">
+                        <h4 className="text-base font-semibold text-[#0f3e17] mt-1.5">
                           {foundAppointment.name}
                         </h4>
                       </div>
-                      <span className="px-2.5 py-0.5 rounded-[6px] bg-[#fffefc] text-[#0f3e17] border border-[#cfe7d3] text-xs font-semibold">
+                      <span className="px-2.5 py-0.5 rounded-full bg-[#fffefc] text-[#0f3e17] border border-[#efeeeb] text-xs font-semibold">
                         Đã đặt cọc qua PayOS
                       </span>
                     </div>
@@ -1303,7 +1303,7 @@ export default function ReceptionistWorkspacePage() {
                     </div>
 
                     {foundAppointment.symptoms && (
-                      <div className="p-3 rounded-[14px] bg-[#fffefc] text-xs text-[#222222]/80 border border-[#cfe7d3]">
+                      <div className="p-3 rounded-[14px] bg-[#fffefc] text-xs text-[#222222]/80 border border-[#efeeeb]">
                         <strong className="text-[#0f3e17]">Lý do khám / Triệu chứng:</strong>{" "}
                         {foundAppointment.symptoms}
                       </div>
@@ -1349,7 +1349,7 @@ export default function ReceptionistWorkspacePage() {
                 {/* Lịch hẹn đặt qua web hôm nay — bấm vào hàng để tra cứu */}
                 <div className="pt-1 border-t border-[#efeeeb]">
                   <div className="flex items-center justify-between pt-4 pb-2 gap-2 flex-wrap">
-                    <h4 className="text-xs font-bold text-[#0f3e17]">
+                    <h4 className="text-xs font-semibold text-[#0f3e17]">
                       Lịch hẹn đặt qua web ({listAppointments.length})
                     </h4>
                     <div className="flex items-center gap-2">
@@ -1357,7 +1357,7 @@ export default function ReceptionistWorkspacePage() {
                         type="date"
                         value={listDateStr}
                         onChange={(e) => setListDateStr(e.target.value)}
-                        className="px-2 py-1 bg-[#fffefc] border border-[#efeeeb] rounded-[8px] text-xs text-[#222222] focus:outline-none focus:border-[#0f3e17]"
+                        className="px-2 py-1 bg-[#fffefc] border border-[#efeeeb] rounded-[14px] text-xs text-[#222222] focus:outline-none focus:border-[#0f3e17]"
                       />
                       <button
                         type="button"
@@ -1398,18 +1398,18 @@ export default function ReceptionistWorkspacePage() {
                             setSearchQuery(code);
                             void lookupAppointment(code);
                           }}
-                          className="w-full text-left p-3 rounded-[14px] bg-[#fffefc] border border-[#efeeeb] hover:border-[#0f3e17] transition-colors disabled:opacity-70 disabled:hover:border-[#efeeeb]"
+                          className="w-full text-left p-3 rounded-[14px] bg-[#fffefc] border border-[#efeeeb] hover:bg-[#e1f4df] transition-colors disabled:opacity-70 disabled:hover:border-[#efeeeb]"
                         >
                           <div className="flex items-center justify-between gap-2">
                             <div className="min-w-0">
-                              <div className="text-xs font-bold text-[#0f3e17] truncate">
+                              <div className="text-xs font-semibold text-[#0f3e17] truncate">
                                 {apt.patientProfile?.name ?? "—"}
                                 {age != null && (
                                   <span className="font-semibold text-[#222222]/60"> • {age} tuổi</span>
                                 )}
                               </div>
                               <div className="text-[11px] text-[#222222]/70 mt-0.5">
-                                <span className="font-mono font-semibold">{code}</span>
+                                <span className="font-semibold">{code}</span>
                                 {apt.patientProfile?.phone && (
                                   <span> • {apt.patientProfile.phone}</span>
                                 )}
@@ -1422,7 +1422,7 @@ export default function ReceptionistWorkspacePage() {
                               </div>
                             </div>
                             {alreadyCheckedIn ? (
-                              <span className="text-[10px] px-2 py-0.5 rounded-[6px] bg-[#e1f4df] text-[#0f3e17] font-semibold border border-[#cfe7d3] flex-shrink-0">
+                              <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#e1f4df] text-[#0f3e17] font-semibold flex-shrink-0">
                                 Đã cấp số
                               </span>
                             ) : (
@@ -1516,8 +1516,8 @@ export default function ReceptionistWorkspacePage() {
                 </div>
 
                 {/* Sàng lọc tiêu chí ưu tiên PHCN */}
-                <div className="p-4 rounded-[14px] bg-[#e1f4df]/30 border border-[#cfe7d3] space-y-2">
-                  <span className="text-[11px] font-bold text-[#0f3e17] uppercase tracking-wider block">
+                <div className="p-4 rounded-[14px] bg-[#e1f4df]/30 space-y-2">
+                  <span className="eyebrow text-[#0f3e17] block">
                     Tiêu chí Ưu tiên Y tế & Phục hồi chức năng:
                   </span>
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
@@ -1526,7 +1526,7 @@ export default function ReceptionistWorkspacePage() {
                         type="checkbox"
                         checked={walkInIsDisabled}
                         onChange={(e) => setWalkInIsDisabled(e.target.checked)}
-                        className="rounded border-[#cfe7d3] text-[#0f3e17] focus:ring-[#0f3e17]"
+                        className="rounded border-[#efeeeb] text-[#0f3e17] focus:ring-[#0f3e17]"
                       />
                       <span>Khuyết tật / Liệt</span>
                     </label>
@@ -1536,7 +1536,7 @@ export default function ReceptionistWorkspacePage() {
                         type="checkbox"
                         checked={walkInIsElderly}
                         onChange={(e) => setWalkInIsElderly(e.target.checked)}
-                        className="rounded border-[#cfe7d3] text-[#0f3e17] focus:ring-[#0f3e17]"
+                        className="rounded border-[#efeeeb] text-[#0f3e17] focus:ring-[#0f3e17]"
                       />
                       <span>Người già (≥ 75t)</span>
                     </label>
@@ -1546,7 +1546,7 @@ export default function ReceptionistWorkspacePage() {
                         type="checkbox"
                         checked={walkInIsPregnant}
                         onChange={(e) => setWalkInIsPregnant(e.target.checked)}
-                        className="rounded border-[#cfe7d3] text-[#0f3e17] focus:ring-[#0f3e17]"
+                        className="rounded border-[#efeeeb] text-[#0f3e17] focus:ring-[#0f3e17]"
                       />
                       <span>Phụ nữ có thai</span>
                     </label>
@@ -1556,7 +1556,7 @@ export default function ReceptionistWorkspacePage() {
                         type="checkbox"
                         checked={walkInIsVip}
                         onChange={(e) => setWalkInIsVip(e.target.checked)}
-                        className="rounded border-[#cfe7d3] text-[#0f3e17] focus:ring-[#0f3e17]"
+                        className="rounded border-[#efeeeb] text-[#0f3e17] focus:ring-[#0f3e17]"
                       />
                       <span>Khám VIP</span>
                     </label>
@@ -1582,22 +1582,22 @@ export default function ReceptionistWorkspacePage() {
       {/* Modal In Phiếu Tiếp Nhận STT Chuẩn K80 */}
       {printedTicket && (
         <div className="fixed inset-0 z-50 bg-[#0f3e17]/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-[#fffefc] text-[#222222] rounded-[14px] max-w-sm w-full p-6 border border-[#efeeeb] space-y-4">
+          <div className="bg-[#fffefc] text-[#222222] rounded-[14px] max-w-sm w-full p-7 border border-[#efeeeb] space-y-4">
             <div className="text-center border-b pb-3 border-[#efeeeb]">
-              <div className="text-xs font-bold text-[#0f3e17] uppercase tracking-wide">
+              <div className="eyebrow text-[#0f3e17]">
                 PHÒNG KHÁM PHỤC HỒI CHỨC NĂNG BÁC SĨ THANH SANG
               </div>
               <div className="text-[11px] text-[#222222]/60">
                 193 Quang Trung, Đại Lộc, Đà Nẵng • Hotline: 0369.117.117
               </div>
-              <h3 className="text-base font-extrabold text-[#0f3e17] mt-2">
+              <h3 className="font-display-serif text-base text-[#0f3e17] mt-2">
                 PHIẾU TIẾP ĐÓN KHÁM BỆNH
               </h3>
             </div>
 
-            <div className="my-4 text-center py-4 bg-[#e1f4df]/40 rounded-[14px] border border-[#cfe7d3]">
+            <div className="my-4 text-center py-4 bg-[#e1f4df]/40 rounded-[14px]">
               <div className="text-xs text-[#0f3e17] font-semibold">SỐ THỨ TỰ CỦA BẠN</div>
-              <div className="text-4xl font-black text-[#0f3e17] tracking-wider my-1 font-mono">
+              <div className="font-display-serif text-4xl text-[#0f3e17] tracking-[-0.03em] my-1">
                 {printedTicket.queueNumber}
               </div>
               <div className="text-xs font-semibold text-[#0f3e17]/80">

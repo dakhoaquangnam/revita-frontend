@@ -55,15 +55,15 @@ export function DashboardHeader({
   const getRoleBadge = (role?: string) => {
     switch (role) {
       case "DOCTOR":
-        return <span className="bg-[#e1f4df] text-[#0f3e17] border border-[#cfe7d3] text-[10px] font-semibold px-2 py-0.5 rounded-[6px]">Bác sĩ PHCN</span>;
+        return <span className="bg-[#e1f4df] text-[#0f3e17] border border-[#efeeeb] text-[10px] font-semibold px-2 py-0.5 rounded-full">Bác sĩ PHCN</span>;
       case "RECEPTIONIST":
-        return <span className="bg-[#b6ced5]/40 text-[#0f3e17] border border-[#b6ced5] text-[10px] font-semibold px-2 py-0.5 rounded-[6px]">Lễ tân tiếp đón</span>;
+        return <span className="bg-[#b6ced5]/40 text-[#0f3e17] border border-[#efeeeb] text-[10px] font-semibold px-2 py-0.5 rounded-full">Lễ tân tiếp đón</span>;
       case "CASHIER":
-        return <span className="bg-[#b1dbb8]/40 text-[#0f3e17] border border-[#b1dbb8] text-[10px] font-semibold px-2 py-0.5 rounded-[6px]">Thu ngân viện phí</span>;
+        return <span className="bg-[#b1dbb8]/40 text-[#0f3e17] border border-[#efeeeb] text-[10px] font-semibold px-2 py-0.5 rounded-full">Thu ngân viện phí</span>;
       case "ADMIN":
-        return <span className="bg-[#cfe7d3]/50 text-[#0f3e17] border border-[#cfe7d3] text-[10px] font-semibold px-2 py-0.5 rounded-[6px]">Quản trị hệ thống</span>;
+        return <span className="bg-[#cfe7d3]/50 text-[#0f3e17] border border-[#efeeeb] text-[10px] font-semibold px-2 py-0.5 rounded-full">Quản trị hệ thống</span>;
       default:
-        return <span className="bg-[#efeeeb] text-[#222222] text-[10px] px-2 py-0.5 rounded-[6px]">{role || "Nhân viên"}</span>;
+        return <span className="bg-[#efeeeb] text-[#222222] text-[10px] px-2 py-0.5 rounded-full">{role || "Nhân viên"}</span>;
     }
   };
 
@@ -97,10 +97,10 @@ export function DashboardHeader({
           {/* Room Dropdown */}
           {showRoomDropdown && (
             <div
-              className="absolute left-0 mt-2 w-72 bg-[#fffefc] border border-[#efeeeb] rounded-[14px] py-2 z-50 shadow-md"
+              className="absolute left-0 mt-2 w-72 bg-[#fffefc] border border-[#efeeeb] rounded-[14px] py-2 z-50"
               onMouseLeave={() => setShowRoomDropdown(false)}
             >
-              <div className="px-3 py-1.5 border-b border-[#efeeeb] text-[11px] font-semibold text-[#0f3e17] uppercase tracking-wider">
+              <div className="px-3 py-1.5 border-b border-[#efeeeb] text-[#0f3e17] eyebrow">
                 Chuyển đổi Buồng khám / Quầy trực
               </div>
               {rooms.length === 0 && (
@@ -130,9 +130,9 @@ export function DashboardHeader({
         {/* Live Status indicator */}
         <button
           onClick={() => setIsOnline(!isOnline)}
-          className={`flex items-center gap-1.5 px-2.5 py-1 rounded-[6px] text-[11px] font-semibold border transition-colors ${
+          className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold border transition-colors ${
             isOnline
-              ? "bg-[#e1f4df] text-[#0f3e17] border-[#cfe7d3]"
+              ? "bg-[#e1f4df] text-[#0f3e17] border-[#efeeeb]"
               : "bg-amber-50 text-amber-900 border-amber-200"
           }`}
         >
@@ -171,7 +171,7 @@ export function DashboardHeader({
             onClick={() => setShowUserDropdown(!showUserDropdown)}
             className="flex items-center gap-2.5 p-1 sm:px-3 sm:py-1.5 rounded-[14px] hover:bg-[#e1f4df]/30 border border-transparent hover:border-[#efeeeb] transition-colors"
           >
-            <div className="w-8 h-8 rounded-full bg-[#0f3e17] flex items-center justify-center text-[#fffefc] font-bold text-xs">
+            <div className="w-8 h-8 rounded-full bg-[#0f3e17] flex items-center justify-center text-[#fffefc] font-semibold text-xs">
               {user?.name ? user.name.charAt(0) : "U"}
             </div>
             <div className="text-left hidden sm:block">
@@ -185,11 +185,11 @@ export function DashboardHeader({
 
           {showUserDropdown && (
             <div
-              className="absolute right-0 mt-2 w-56 bg-[#fffefc] border border-[#efeeeb] rounded-[14px] py-2 z-50 shadow-md"
+              className="absolute right-0 mt-2 w-56 bg-[#fffefc] border border-[#efeeeb] rounded-[14px] py-2 z-50"
               onMouseLeave={() => setShowUserDropdown(false)}
             >
               <div className="px-4 py-2 border-b border-[#efeeeb]">
-                <p className="text-xs font-bold text-[#0f3e17]">{user?.name || "Người dùng"}</p>
+                <p className="text-xs font-semibold text-[#0f3e17]">{user?.name || "Người dùng"}</p>
                 <p className="text-[11px] text-[#222222]/60 truncate">{user?.phone || user?.id}</p>
               </div>
 

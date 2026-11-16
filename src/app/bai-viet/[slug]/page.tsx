@@ -86,7 +86,7 @@ function BaiVietDetailContent() {
             </p>
           ) : notFound ? (
             <div className="p-12 text-center bg-[#fffefc] border border-[#efeeeb] rounded-[14px] space-y-3">
-              <h1 className="text-lg font-bold text-[#0f3e17]">
+              <h1 className="text-lg font-semibold text-[#0f3e17]">
                 Bài viết không tồn tại hoặc chưa được xuất bản
               </h1>
               <p className="text-sm text-[#222222]/70">
@@ -109,19 +109,19 @@ function BaiVietDetailContent() {
                 {(post.categories ?? []).map((cat) => (
                   <span
                     key={cat.id}
-                    className="text-[11px] font-semibold text-[#0f3e17] bg-[#e1f4df] px-2.5 py-0.5 rounded-[6px] border border-[#cfe7d3]"
+                    className="text-[11px] font-semibold text-[#0f3e17] bg-[#e1f4df] px-2.5 py-0.5 rounded-full border border-[#efeeeb]"
                   >
                     {cat.name}
                   </span>
                 ))}
                 {post.isPinned && (
-                  <span className="text-[11px] font-semibold text-[#fffefc] bg-[#0f3e17] px-2 py-0.5 rounded-[6px]">
+                  <span className="text-[11px] font-semibold text-[#fffefc] bg-[#0f3e17] px-2 py-0.5 rounded-full">
                     Ghim
                   </span>
                 )}
               </div>
 
-              <h1 className="text-2xl sm:text-3xl font-extrabold text-[#0f3e17] tracking-tight leading-snug">
+              <h1 className="text-2xl sm:text-3xl font-display-serif text-[#0f3e17] tracking-[-0.01em] leading-snug">
                 {post.title}
               </h1>
 
@@ -174,7 +174,7 @@ function BaiVietDetailContent() {
                   {(post.tags ?? []).map((tag) => (
                     <span
                       key={tag}
-                      className="text-xs px-3 py-1 rounded-[8px] bg-[#efeeeb] text-[#222222]/70"
+                      className="text-xs px-3 py-1 rounded-full bg-[#efeeeb] text-[#222222]/70"
                     >
                       #{tag}
                     </span>
@@ -183,9 +183,9 @@ function BaiVietDetailContent() {
               )}
 
               {/* CTA đặt lịch */}
-              <div className="mt-10 p-6 rounded-[14px] bg-[#e1f4df]/50 border border-[#cfe7d3] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div className="mt-10 p-6 rounded-[14px] bg-[#e1f4df]/50 border border-[#efeeeb] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
-                  <h2 className="font-bold text-[#0f3e17]">Cần tư vấn phục hồi chức năng?</h2>
+                  <h2 className="font-display-serif text-[#0f3e17]">Cần tư vấn phục hồi chức năng?</h2>
                   <p className="text-xs text-[#222222]/70 mt-1">
                     Đặt lịch khám 1:1 với Bác sĩ Thanh Sang tại 193 Quang Trung, Đại Lộc, Đà Nẵng.
                   </p>

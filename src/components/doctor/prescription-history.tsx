@@ -70,7 +70,7 @@ export default function PrescriptionHistory({
 
   return (
     <div className="space-y-3 pt-4 border-t border-[#efeeeb]">
-      <h4 className="text-xs font-bold text-[#0f3e17] uppercase tracking-wider">
+      <h4 className="eyebrow text-[#0f3e17]">
         Đơn cũ của bệnh nhân này
       </h4>
       {loading && <p className="text-xs text-[#222222]/70">Đang tải lịch sử đơn...</p>}
@@ -85,9 +85,9 @@ export default function PrescriptionHistory({
           className="p-3 rounded-[14px] bg-[#fffefc] border border-[#efeeeb] text-xs flex items-start justify-between gap-2"
         >
           <div>
-            <div className="font-bold text-[#0f3e17]">
-              Đơn thuốc <span className="font-mono">{mp.code}</span>
-              <span className="ml-2 px-2 py-0.5 rounded-[6px] bg-[#e1f4df]/60 border border-[#cfe7d3] font-semibold">
+            <div className="font-semibold text-[#0f3e17]">
+              Đơn thuốc <span>{mp.code}</span>
+              <span className="ml-2 px-2 py-0.5 rounded-full bg-[#e1f4df]/60 font-semibold">
                 {MP_STATUS_LABELS[mp.status] ?? mp.status}
               </span>
             </div>
@@ -117,7 +117,7 @@ export default function PrescriptionHistory({
                 })),
               )
             }
-            className="shrink-0 inline-flex items-center gap-1 px-2.5 py-1.5 rounded-[10px] bg-[#fffefc] border border-[#efeeeb] hover:bg-[#e1f4df]/40 text-xs font-semibold text-[#0f3e17]"
+            className="shrink-0 inline-flex items-center gap-1 px-2.5 py-1.5 rounded-[14px] bg-[#fffefc] border border-[#efeeeb] hover:bg-[#e1f4df]/40 text-xs font-semibold text-[#0f3e17]"
           >
             <RotateCcw className="w-3.5 h-3.5" /> Kê lại
           </button>
@@ -127,12 +127,12 @@ export default function PrescriptionHistory({
       {eps.map((ep) => (
         <div
           key={ep.id}
-          className="p-3 rounded-[14px] bg-[#e1f4df]/30 border border-[#cfe7d3] text-xs flex items-start justify-between gap-2"
+          className="p-3 rounded-[14px] bg-[#e1f4df]/30 text-xs flex items-start justify-between gap-2"
         >
           <div>
-            <div className="font-bold text-[#0f3e17]">
+            <div className="font-semibold text-[#0f3e17]">
               Bài tập: {ep.exercise.name}
-              <span className="ml-2 px-2 py-0.5 rounded-[6px] bg-[#fffefc] border border-[#cfe7d3] font-semibold">
+              <span className="ml-2 px-2 py-0.5 rounded-full bg-[#fffefc] border border-[#efeeeb] font-semibold">
                 {EXERCISE_STATUS_LABELS[ep.status] ?? ep.status}
               </span>
             </div>
@@ -161,7 +161,7 @@ export default function PrescriptionHistory({
                 },
               ])
             }
-            className="shrink-0 inline-flex items-center gap-1 px-2.5 py-1.5 rounded-[10px] bg-[#fffefc] border border-[#efeeeb] hover:bg-[#e1f4df]/40 text-xs font-semibold text-[#0f3e17]"
+            className="shrink-0 inline-flex items-center gap-1 px-2.5 py-1.5 rounded-[14px] bg-[#fffefc] border border-[#efeeeb] hover:bg-[#e1f4df]/40 text-xs font-semibold text-[#0f3e17]"
           >
             <RotateCcw className="w-3.5 h-3.5" /> Kê lại
           </button>
