@@ -43,6 +43,11 @@ import {
   roomService,
   getApiErrorMessage,
 } from "@/services/room.service";
+import {
+  therapyService,
+  CompletionCheck,
+} from "@/services/therapy.service";
+import { apiClient } from "@/lib/api";
 
 interface DoctorQueueItem {
   id: string;
@@ -306,6 +311,113 @@ export default function DoctorWorkspacePage() {
     setSelectedServiceIds([]);
     setServiceNote("");
     setCreatedPrescriptionCode("");
+  };
+
+  // GĐ5 — hoàn thành can thiệp: checklist + khóa phiếu (khác hẳn nút
+  // "Hoàn thành" cũ ở hàng đợi — nút cũ chỉ đổi state local, không gọi API
+  // đổi trạng thái phiếu; mục này gọi POST /prescriptions/:id/complete-intervention).
+  const [completeRxId, setCompleteRxId] = useState("");
+  const [completeRxCode, setCompleteRxCode] = useState("");
+  const [completeRxStatus, setCompleteRxStatus] = useState("");
+  const [completeRxCompletedAt, setCompleteRxCompletedAt] = useState("");
+  const [completionCheck, setCompletionCheck] = useState<CompletionCheck | null>(null);
+  const [completionLoading, setCompletionLoading] = useState(false);
+  const [completionError, setCompletionError] = useState("");
+  const [completeBusy, setCompleteBusy] = useState(false);
+  const [showOverride, setShowOverride] = useState(false);
+  const [overrideReason, setOverrideReason] = useState("");
+  const [completeDoneMsg, setCompleteDoneMsg] = useState("");
+
+  // Lấy phiếu chỉ định mới nhất của bệnh nhân đang khám + checklist hoàn
+  // thành. Không lấy được (chưa có phiếu / không có quyền) thì ẩn mục.
+  useEffect(() => {
+    const profileId = currentPatient?.patientProfileId;
+    if (!profileId) {
+      setCompleteRxId("");
+      setCompletionCheck(null);
+      return;
+    }
+    let cancelled = false;
+    setCompletionLoading(true);
+    setCompletionError("");
+    setCompleteDoneMsg("");
+    setShowOverride(false);
+    apiClient
+      .get(`/prescriptions/my/profile/${profileId}`)
+      .then((res) => {
+        const d = res.data;
+        const list: any[] = Array.isArray(d)
+          ? d
+          : Array.isArray(d?.data)
+            ? d.data
+            : [];
+        if (list.length === 0) return null;
+        const sorted = [...list].sort((a, b) =>
+          String(b.createdAt ?? "").localeCompare(String(a.createdAt ?? "")),
+        );
+        return sorted.find((p) => p.status !== "COMPLETED") ?? sorted[0];
+      })
+      .then(async (rx: any) => {
+        if (cancelled || !rx) {
+          if (!cancelled) {
+            setCompleteRxId("");
+            setCompletionCheck(null);
+          }
+          return;
+        }
+        setCompleteRxId(rx.id);
+        setCompleteRxCode(rx.prescriptionCode ?? "");
+        setCompleteRxStatus(rx.status ?? "");
+        setCompleteRxCompletedAt(rx.completedAt ?? "");
+        try {
+          const check = await therapyService.getCompletionCheck(rx.id);
+          if (!cancelled) setCompletionCheck(check);
+        } catch {
+          if (!cancelled) setCompletionCheck(null);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setCompleteRxId("");
+          setCompletionCheck(null);
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setCompletionLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [currentPatient?.patientProfileId]);
+
+  const handleCompleteIntervention = async (withReason: boolean) => {
+    if (!completeRxId) return;
+    if (withReason && !overrideReason.trim()) {
+      setCompletionError("Hoàn thành dù chưa đủ điều kiện thì bắt buộc nhập lý do.");
+      return;
+    }
+    setCompleteBusy(true);
+    setCompletionError("");
+    try {
+      const res = await therapyService.completeIntervention(
+        completeRxId,
+        withReason ? overrideReason.trim() : undefined,
+      );
+      setCompleteRxStatus("COMPLETED");
+      setCompleteRxCompletedAt(new Date().toISOString());
+      setCompleteDoneMsg(
+        withReason
+          ? `Đã hoàn thành can thiệp (ngoại lệ có lý do: ${res.completionReason ?? overrideReason.trim()}).`
+          : "Đã hoàn thành can thiệp — phiếu đã khóa, không mở thêm buổi được nữa.",
+      );
+      setShowOverride(false);
+      const check = await therapyService.getCompletionCheck(completeRxId).catch(() => null);
+      if (check) setCompletionCheck(check);
+    } catch (err: unknown) {
+      setCompletionError(getApiErrorMessage(err, "Hoàn thành can thiệp thất bại."));
+    } finally {
+      setCompleteBusy(false);
+    }
   };
 
   const [isSaved, setIsSaved] = useState(false);
@@ -806,6 +918,102 @@ export default function DoctorWorkspacePage() {
               </div>
             </div>
           </div>
+
+          {/* GĐ5 — Hoàn thành can thiệp (khóa phiếu). Khác hẳn nút "Hoàn
+              thành" ở hàng đợi — nút đó chỉ đổi state local, không khóa
+              phiếu. Cần đủ 2 điều kiện: hết dịch vụ + có đánh giá kết thúc
+              đợt (DISCHARGE); chưa đủ thì phải nhập lý do mới được qua. */}
+          {completeRxId && (
+            <div className="bg-[#fffefc] border border-[#efeeeb] rounded-[14px] p-5 space-y-3">
+              <h4 className="text-xs font-bold text-[#0f3e17] uppercase tracking-wider flex items-center gap-2">
+                <CheckCircle2 className="w-4 h-4 text-[#0f3e17]" />
+                <span>Hoàn thành can thiệp</span>
+              </h4>
+              <p className="text-xs text-[#222222]/70">
+                Phiếu chỉ định: <span className="font-mono font-bold text-[#0f3e17]">{completeRxCode || completeRxId}</span>
+              </p>
+              {completionLoading ? (
+                <p className="text-xs text-[#222222]/70">Đang kiểm tra điều kiện hoàn thành...</p>
+              ) : completeRxStatus === "COMPLETED" ? (
+                <div className="p-3 rounded-[14px] bg-[#e1f4df]/60 border border-[#cfe7d3] text-xs text-[#0f3e17]">
+                  <strong>Đã hoàn thành can thiệp</strong>
+                  {completeRxCompletedAt && (
+                    <span> — {new Date(completeRxCompletedAt).toLocaleDateString("vi-VN")}</span>
+                  )}
+                  <span className="block text-[#222222]/70 mt-0.5">
+                    Phiếu đã khóa: không mở thêm buổi trị liệu cho phiếu này nữa.
+                  </span>
+                  {completeDoneMsg && <span className="block mt-1">{completeDoneMsg}</span>}
+                </div>
+              ) : completionCheck ? (
+                <div className="space-y-2 text-xs">
+                  <p className="text-[#222222]/80">
+                    {completionCheck.finishedServices}/{completionCheck.totalServices} dịch vụ xong
+                    {" · "}
+                    {completionCheck.hasDischargeAssessment
+                      ? "✓ Đã có đánh giá kết thúc đợt"
+                      : "✗ Chưa có đánh giá kết thúc đợt (DISCHARGE)"}
+                  </p>
+                  {completionCheck.unfinishedServices.length > 0 && (
+                    <ul className="text-[#222222]/70 space-y-0.5">
+                      {completionCheck.unfinishedServices.map((s, i) => (
+                        <li key={s.id ?? i}>• {s.serviceName ?? "Dịch vụ"} — {s.status ?? "chưa xong"}</li>
+                      ))}
+                    </ul>
+                  )}
+                  {completionCheck.missing.map((m, i) => (
+                    <p key={i} className="text-amber-800">• {m}</p>
+                  ))}
+                  {completionError && <p className="text-rose-700">{completionError}</p>}
+                  <div className="flex flex-wrap gap-2 pt-1">
+                    <button
+                      type="button"
+                      disabled={completeBusy || !completionCheck.canComplete}
+                      onClick={() => void handleCompleteIntervention(false)}
+                      className="px-4 py-2 rounded-[14px] bg-[#0f3e17] text-[#fffefc] font-semibold disabled:opacity-40"
+                      title={completionCheck.canComplete ? "" : "Chưa đủ điều kiện — xem checklist phía trên"}
+                    >
+                      {completeBusy ? "Đang lưu..." : "Hoàn thành can thiệp"}
+                    </button>
+                    <button
+                      type="button"
+                      disabled={completeBusy}
+                      onClick={() => setShowOverride((v) => !v)}
+                      className="px-4 py-2 rounded-[14px] bg-[#fffefc] border border-[#efeeeb] text-[#0f3e17] font-semibold hover:bg-[#efeeeb]/40"
+                    >
+                      Hoàn thành dù chưa đủ điều kiện
+                    </button>
+                  </div>
+                  {showOverride && (
+                    <div className="space-y-2 pt-1">
+                      <label className="block text-xs font-semibold text-[#0f3e17]">
+                        Lý do hoàn thành sớm (bắt buộc):
+                      </label>
+                      <textarea
+                        rows={2}
+                        value={overrideReason}
+                        onChange={(e) => setOverrideReason(e.target.value)}
+                        placeholder="VD: bệnh nhân xin dừng điều trị, chuyển viện..."
+                        className="w-full p-3 rounded-[14px] bg-[#fffefc] border border-[#efeeeb] text-xs text-[#222222] focus:outline-none focus:border-[#0f3e17]"
+                      />
+                      <button
+                        type="button"
+                        disabled={completeBusy || !overrideReason.trim()}
+                        onClick={() => void handleCompleteIntervention(true)}
+                        className="px-4 py-2 rounded-[14px] bg-amber-600 text-white font-semibold disabled:opacity-40"
+                      >
+                        {completeBusy ? "Đang lưu..." : "Xác nhận hoàn thành (có lý do)"}
+                      </button>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <p className="text-xs text-[#222222]/70">
+                  Không kiểm tra được điều kiện hoàn thành — thử tải lại trang.
+                </p>
+              )}
+            </div>
+          )}
 
           {/* Queue List of this Room */}
           <div className="bg-[#fffefc] border border-[#efeeeb] rounded-[14px] p-4 space-y-3">

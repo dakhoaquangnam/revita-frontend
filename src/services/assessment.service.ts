@@ -181,6 +181,8 @@ export const assessmentService = {
     timepoint: string;
     appointmentId?: string;
     medicalRecordId?: string;
+    // GĐ5 — gắn lần đánh giá lại với buổi trị liệu vừa xong.
+    therapySessionId?: string;
     itemScores?: Record<string, number>;
     value?: number;
     level?: string;

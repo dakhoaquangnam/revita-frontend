@@ -18,6 +18,10 @@ import { getApiErrorMessage } from "@/services/room.service";
 interface AssessmentTabProps {
   patientProfileId: string;
   appointmentId?: string;
+  // GĐ5 — banner nhắc đánh giá lại ở màn hình phòng: mở sẵn ở thời điểm
+  // REASSESSMENT và gắn lần chấm với buổi vừa xong.
+  defaultTimepoint?: string;
+  therapySessionId?: string;
   // GĐ3 §5.4 — id các Assessment tạo trong phiên khám, để handleSaveSession
   // ghi vào content.assessmentIds khi lưu bệnh án.
   onAssessmentCreated: (id: string) => void;
@@ -33,6 +37,8 @@ const GOAL_STATUS_LABEL: Record<string, { text: string; className: string }> = {
 export default function AssessmentTab({
   patientProfileId,
   appointmentId,
+  defaultTimepoint,
+  therapySessionId,
   onAssessmentCreated,
 }: AssessmentTabProps) {
   const [scales, setScales] = useState<ScaleDef[]>([]);
@@ -40,7 +46,9 @@ export default function AssessmentTab({
   const [selectedSpecialty, setSelectedSpecialty] = useState("VLTL");
   const [selectedScaleCode, setSelectedScaleCode] = useState("");
   const [scaleDef, setScaleDef] = useState<ScaleDef | null>(null);
-  const [selectedTimepoint, setSelectedTimepoint] = useState("BASELINE");
+  const [selectedTimepoint, setSelectedTimepoint] = useState(
+    defaultTimepoint ?? "BASELINE",
+  );
 
   // Form nhập — mặc định TRỐNG (null), tất cả bắt buộc. GĐ3 sửa lỗi UI FIM cũ:
   // trước đây form điền sẵn 4–6 nên lưu không chạm vẫn ra điểm "đẹp" giả.
@@ -216,6 +224,7 @@ export default function AssessmentTab({
         specialty: selectedSpecialty,
         timepoint: selectedTimepoint,
         appointmentId,
+        therapySessionId,
         notes: assessmentNote.trim() || undefined,
       };
       if (scaleDef.kind === "MULTI_ITEM") {

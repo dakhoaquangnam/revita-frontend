@@ -14,6 +14,7 @@ import {
   PhoneCall,
   Check,
   X,
+  UserPlus,
 } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { useSocket } from "@/hooks/use-socket";
@@ -29,6 +30,20 @@ import {
   TherapyStatus,
   getApiErrorMessage,
 } from "@/services/room.service";
+import {
+  therapyService,
+  TherapySession,
+  TherapyProgress,
+  HomeExerciseLog,
+  therapySessionVas,
+  therapySessionDurationMin,
+} from "@/services/therapy.service";
+import {
+  exerciseService,
+  Exercise,
+  ExercisePrescriptionRow,
+} from "@/services/exercise.service";
+import AssessmentTab from "@/components/doctor/assessment-tab";
 
 const PHCN_SPECIALTY = "Phục hồi chức năng";
 
@@ -66,6 +81,130 @@ function fmtTime(value: string | null | undefined): string {
   return Number.isNaN(d.getTime()) ? value : d.toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" });
 }
 
+function fmtDate(value: string | null | undefined): string {
+  if (!value) return "";
+  const d = new Date(value);
+  return Number.isNaN(d.getTime()) ? value : d.toLocaleDateString("vi-VN");
+}
+
+function fmtElapsed(startedAt: string, now: number): string {
+  const ms = now - new Date(startedAt).getTime();
+  if (Number.isNaN(ms) || ms < 0) return "—";
+  const min = Math.floor(ms / 60000);
+  if (min < 60) return `${min} phút`;
+  return `${Math.floor(min / 60)} giờ ${min % 60} phút`;
+}
+
+// GĐ5 — khối mở rộng theo bệnh nhân: lịch sử buổi đã làm + nhật ký tự tập
+// chờ duyệt (KTV/bác sĩ duyệt ngay tại màn hình phòng).
+function PatientDetailPanel(props: {
+  patientName: string;
+  loading: boolean;
+  sessions: TherapySession[];
+  progress: TherapyProgress | null;
+  pendingLogs: HomeExerciseLog[];
+  canReview: boolean;
+  reviewNotes: Record<string, string>;
+  onReviewNoteChange: (id: string, value: string) => void;
+  reviewBusyId: string;
+  onReview: (log: HomeExerciseLog, status: "APPROVED" | "REJECTED") => void;
+}) {
+  const { patientName, loading, sessions, progress, pendingLogs } = props;
+  if (loading) {
+    return <p className="mt-2 text-sm text-gray-500">Đang tải lịch sử buổi của {patientName}...</p>;
+  }
+  return (
+    <div className="mt-2 space-y-3 rounded-lg border border-gray-200 bg-gray-50 p-3">
+      <div>
+        <p className="text-sm font-semibold text-gray-900">
+          Các buổi đã làm — {patientName}
+          {progress ? ` (${progress.completedSessions}/${progress.totalSessions} buổi xong)` : ""}
+        </p>
+        {sessions.length === 0 ? (
+          <p className="mt-1 text-sm text-gray-500">Chưa có buổi trị liệu nào được ghi.</p>
+        ) : (
+          <ul className="mt-1 space-y-1">
+            {sessions.map((s) => (
+              <li key={s.id} className="text-sm text-gray-700">
+                <span className="font-mono font-medium">{s.code}</span>
+                {` · ${fmtDate(s.startedAt)} ${fmtTime(s.startedAt)}`}
+                {s.services?.length
+                  ? ` · ${(s.services.map((x) => x.serviceName ?? "").filter(Boolean)).join(", ")}`
+                  : ""}
+                {s.performedByName ? ` · ${s.performedByName}` : ""}
+                {therapySessionDurationMin(s) != null ? ` · ${therapySessionDurationMin(s)} phút` : ""}
+                {therapySessionVas(s.painBefore) != null || therapySessionVas(s.painAfter) != null
+                  ? ` · VAS ${therapySessionVas(s.painBefore) ?? "—"} → ${therapySessionVas(s.painAfter) ?? "—"}`
+                  : ""}
+                {` · ${s.exercises?.length ?? 0} bài đã làm`}
+                {` · ${s.status === "COMPLETED" ? "Đã xong" : s.status === "CANCELLED" ? "Đã hủy" : "Đang làm"}`}
+              </li>
+            ))}
+          </ul>
+        )}
+        {progress && progress.goalsDue.length > 0 && (
+          <p className="mt-1 rounded-md border border-amber-300 bg-amber-50 px-2 py-1 text-sm text-amber-800">
+            Đã đủ số buổi — nên đánh giá lại:{" "}
+            {progress.goalsDue.map((g) => g.scaleNameVi ?? g.scaleCode).join(", ")}.
+          </p>
+        )}
+      </div>
+      <div>
+        <p className="text-sm font-semibold text-gray-900">
+          Nhật ký tự tập chờ duyệt ({pendingLogs.length})
+        </p>
+        {pendingLogs.length === 0 ? (
+          <p className="mt-1 text-sm text-gray-500">Không có nhật ký tự tập nào đang chờ duyệt.</p>
+        ) : (
+          <ul className="mt-1 space-y-2">
+            {pendingLogs.map((log) => (
+              <li key={log.id} className="rounded-md border border-gray-200 bg-white p-2 text-sm">
+                <p className="text-gray-800">
+                  <span className="font-mono font-medium">{log.code ?? ""}</span>
+                  {` · ${fmtDate(log.loggedDate ?? log.createdAt)}`}
+                  {` · ${log.exerciseName ?? "Bài tập"}`}
+                  {log.setsDone != null ? ` · ${log.setsDone} hiệp` : ""}
+                  {log.repsDone != null ? ` · ${log.repsDone} lần` : ""}
+                  {log.painDuring != null ? ` · đau ${log.painDuring}/10` : ""}
+                  {log.completed === false ? " · bỏ dở" : ""}
+                </p>
+                {log.note && <p className="text-gray-600">Ghi chú: {log.note}</p>}
+                {props.canReview && (
+                  <div className="mt-1 flex flex-wrap items-center gap-2">
+                    <input
+                      type="text"
+                      value={props.reviewNotes[log.id] ?? ""}
+                      onChange={(e) => props.onReviewNoteChange(log.id, e.target.value)}
+                      placeholder="Ghi chú duyệt (tùy chọn)"
+                      className="min-w-48 flex-1 rounded-md border border-gray-300 px-2 py-1 text-sm"
+                    />
+                    <button
+                      type="button"
+                      disabled={props.reviewBusyId !== ""}
+                      onClick={() => props.onReview(log, "APPROVED")}
+                      className="rounded-md bg-emerald-600 px-2 py-1 text-xs font-medium text-white hover:bg-emerald-700 disabled:opacity-50"
+                    >
+                      {props.reviewBusyId === `APPROVED-${log.id}` ? "Đang duyệt..." : "Duyệt"}
+                    </button>
+                    <button
+                      type="button"
+                      disabled={props.reviewBusyId !== ""}
+                      onClick={() => props.onReview(log, "REJECTED")}
+                      className="rounded-md border border-rose-300 px-2 py-1 text-xs font-medium text-rose-700 hover:bg-rose-50 disabled:opacity-50"
+                    >
+                      {props.reviewBusyId === `REJECTED-${log.id}` ? "Đang xử lý..." : "Từ chối"}
+                    </button>
+                  </div>
+                )}
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+    </div>
+  );
+}
+
 export default function RoomWorkspacePage() {
   const { user } = useAuth();
   const { socket, isConnected } = useSocket("/counters", true);
@@ -88,6 +227,50 @@ export default function RoomWorkspacePage() {
   const [resultNote, setResultNote] = useState("");
   const [resultSaving, setResultSaving] = useState(false);
 
+  // GĐ5 — buổi trị liệu: buổi đang chạy theo từng dịch vụ (map theo
+  // PrescriptionService id), form bắt đầu/kết thúc buổi, nhắc đánh giá lại.
+  const [sessionsByService, setSessionsByService] = useState<Record<string, TherapySession>>({});
+  const [nowTick, setNowTick] = useState<number>(() => Date.now());
+  const [startTarget, setStartTarget] = useState<TherapyQueueItem | null>(null);
+  const [startSelectedIds, setStartSelectedIds] = useState<string[]>([]);
+  const [startPainBefore, setStartPainBefore] = useState("");
+  const [startSaving, setStartSaving] = useState(false);
+  const [finishTarget, setFinishTarget] = useState<{
+    item: TherapyQueueItem;
+    session: TherapySession;
+  } | null>(null);
+  const [finishLoading, setFinishLoading] = useState(false);
+  const [finishPainAfter, setFinishPainAfter] = useState("");
+  const [finishNotes, setFinishNotes] = useState("");
+  const [finishStoppedEarly, setFinishStoppedEarly] = useState(false);
+  const [finishAdverseEvent, setFinishAdverseEvent] = useState("");
+  const [finishSaving, setFinishSaving] = useState(false);
+  // Bài trong đơn ACTIVE của bệnh nhân đang kết thúc buổi + bài ngoài đơn.
+  const [finishPrescriptions, setFinishPrescriptions] = useState<ExercisePrescriptionRow[]>([]);
+  const [finishTicked, setFinishTicked] = useState<
+    Record<string, { setsDone: string; repsDone: string; painDuring: string; completed: boolean; note: string }>
+  >({});
+  const [extraSearch, setExtraSearch] = useState("");
+  const [extraResults, setExtraResults] = useState<Exercise[]>([]);
+  const [extraSearching, setExtraSearching] = useState(false);
+  const [extraPicked, setExtraPicked] = useState<Exercise[]>([]);
+  // Banner nhắc đánh giá lại sau khi kết thúc 1 buổi (GĐ5 §3, Q4: 5 buổi).
+  const [reassessBanner, setReassessBanner] = useState<{
+    patientProfileId: string;
+    patientName: string;
+    sessionId: string;
+    goalsDue: TherapyProgress["goalsDue"];
+  } | null>(null);
+  const [showReassessForm, setShowReassessForm] = useState(false);
+  // Lịch sử buổi + nhật ký tự tập chờ duyệt của 1 bệnh nhân (mở theo dòng).
+  const [expandedPatientId, setExpandedPatientId] = useState("");
+  const [expandedSessions, setExpandedSessions] = useState<TherapySession[]>([]);
+  const [expandedProgress, setExpandedProgress] = useState<TherapyProgress | null>(null);
+  const [expandedPendingLogs, setExpandedPendingLogs] = useState<HomeExerciseLog[]>([]);
+  const [expandedLoading, setExpandedLoading] = useState(false);
+  const [reviewNotes, setReviewNotes] = useState<Record<string, string>>({});
+  const [reviewBusyId, setReviewBusyId] = useState("");
+
   // Quyền thao tác: DOCTOR mọi nút; TECHNICIAN chỉ dịch vụ gán cho mình;
   // RECEPTIONIST/ADMIN chỉ xem (theo thiết kế §4.4.1).
   const role = user?.role ?? "";
@@ -96,7 +279,11 @@ export default function RoomWorkspacePage() {
   const canAct = role === "DOCTOR" || role === "TECHNICIAN";
   const canActOn = (item: TherapyQueueItem) => {
     if (role === "DOCTOR") return true;
-    if (role === "TECHNICIAN") return item.technicianId === myTechnicianId;
+    if (role === "TECHNICIAN") {
+      // GĐ5 Q6: dịch vụ chưa có người gán thì KTV trực được bấm "Nhận".
+      if (!item.doctorId && !item.technicianId) return true;
+      return item.technicianId === myTechnicianId;
+    }
     return false;
   };
 
@@ -147,8 +334,43 @@ export default function RoomWorkspacePage() {
     if (selectedRoomId) fetchQueue(selectedRoomId);
   }, [selectedRoomId, fetchQueue]);
 
-  // Đồng bộ: poll 15s + nghe WS broadcast (lễ tân chuyển phòng, bác sĩ/KTV
-  // gọi bệnh nhân) rồi tải lại hàng đợi.
+  // GĐ5 — đếm thời gian buổi đang chạy (làm mới mỗi 30 giây).
+  useEffect(() => {
+    const id = setInterval(() => setNowTick(Date.now()), 30000);
+    return () => clearInterval(id);
+  }, []);
+
+  // GĐ5 — tải buổi đang chạy của các dịch vụ SERVING (để hiện thẻ buổi).
+  const servingIdsKey = (queue?.therapyQueue ?? [])
+    .filter((t) => t.status === "SERVING")
+    .map((t) => t.id)
+    .sort()
+    .join(",");
+  useEffect(() => {
+    if (!servingIdsKey) return;
+    let cancelled = false;
+    const ids = servingIdsKey.split(",");
+    Promise.all(
+      ids.map(async (id) => {
+        try {
+          const list = await therapyService.getServiceSessions(id);
+          const open = list.find((s) => s.status === "IN_PROGRESS") ?? list[0];
+          return open ? ([id, open] as const) : null;
+        } catch {
+          return null;
+        }
+      }),
+    ).then((pairs) => {
+      if (cancelled) return;
+      const next: Record<string, TherapySession> = {};
+      for (const p of pairs) if (p) next[p[0]] = p[1];
+      setSessionsByService((prev) => ({ ...prev, ...next }));
+    });
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [servingIdsKey]);
   const selectedRoomRef = useRef(selectedRoomId);
   selectedRoomRef.current = selectedRoomId;
   const fetchQueueRef = useRef(fetchQueue);
@@ -220,12 +442,257 @@ export default function RoomWorkspacePage() {
     });
   };
 
-  const handleStart = (item: TherapyQueueItem) => {
-    if (!confirmServingConflict(item)) return;
-    void runAction(`start-${item.id}`, async () => {
-      await roomService.updateStatus(item.id, "SERVING", "Bắt đầu thực hiện dịch vụ");
-      return `Đã bắt đầu ${item.serviceName} cho ${item.patientName}.`;
-    });
+  // GĐ5 Q1 — "Bắt đầu" mở form chọn dịch vụ: 1 buổi gồm NHIỀU dịch vụ
+  // WAITING của cùng 1 bệnh nhân (mặc định tick dịch vụ đang bấm) + VAS
+  // trước buổi tùy chọn (Q3). Chỉ tạo buổi xong mới đổi trạng thái.
+  const openStartForm = (item: TherapyQueueItem) => {
+    setStartTarget(item);
+    setStartSelectedIds([item.id]);
+    setStartPainBefore("");
+    clearMsg();
+  };
+
+  const toggleStartService = (id: string) => {
+    setStartSelectedIds((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
+    );
+  };
+
+  const handleSubmitStart = async () => {
+    if (!startTarget || startSelectedIds.length === 0) return;
+    if (!confirmServingConflict(startTarget)) return;
+    const painBefore =
+      startPainBefore.trim() === "" ? undefined : Number(startPainBefore);
+    if (painBefore !== undefined && (Number.isNaN(painBefore) || painBefore < 0 || painBefore > 10)) {
+      setActionError("VAS trước buổi phải từ 0 đến 10 (hoặc để trống).");
+      return;
+    }
+    setStartSaving(true);
+    clearMsg();
+    try {
+      // 1. Tạo buổi trước — lỗi thì KHÔNG đổi trạng thái (tránh buổi ma).
+      const session = await therapyService.startSession({
+        prescriptionServiceIds: startSelectedIds,
+        painBefore,
+      });
+      // 2. Mới đổi từng dịch vụ sang SERVING (bỏ qua dịch vụ nào backend
+      // đã tự chuyển SERVING khi tạo buổi).
+      const startedServices = Array.isArray(session.services) ? session.services : [];
+      for (const id of startSelectedIds) {
+        const svc = startedServices.find((s) => s.id === id);
+        if (svc && svc.status === "SERVING") continue;
+        try {
+          await roomService.updateStatus(id, "SERVING", "Bắt đầu thực hiện dịch vụ");
+        } catch (err: unknown) {
+          // Buổi đã tạo nhưng đổi trạng thái 1 dịch vụ lỗi: báo rõ, không
+          // giấu — buổi vẫn có thể kết thúc từ thẻ buổi đang chạy.
+          setActionError(
+            `Đã tạo buổi ${session.code} nhưng chưa chuyển được 1 dịch vụ sang phục vụ: ${getApiErrorMessage(err, "")}`,
+          );
+        }
+      }
+      setSessionsByService((prev) => {
+        const next = { ...prev };
+        for (const id of startSelectedIds) next[id] = session;
+        return next;
+      });
+      setActionMsg(
+        `Đã bắt đầu buổi ${session.code} (${startSelectedIds.length} dịch vụ) cho ${startTarget.patientName}.`,
+      );
+      setStartTarget(null);
+      setStartSelectedIds([]);
+      if (selectedRoomId) await fetchQueue(selectedRoomId, true);
+    } catch (err: unknown) {
+      setActionError(getApiErrorMessage(err, "Không bắt đầu được buổi trị liệu."));
+    } finally {
+      setStartSaving(false);
+    }
+  };
+
+  // GĐ5 — mở form kết thúc buổi. Dịch vụ đã SERVING mà chưa có buổi (VD:
+  // được gọi thẳng vào phục vụ) thì tạo buổi ngay lúc này rồi mới mở form.
+  const openFinishForm = async (item: TherapyQueueItem) => {
+    setFinishLoading(true);
+    clearMsg();
+    try {
+      let session = sessionsByService[item.id];
+      if (!session || session.status !== "IN_PROGRESS") {
+        const list = await therapyService.getServiceSessions(item.id);
+        session = list.find((s) => s.status === "IN_PROGRESS") ?? list[0];
+      }
+      if (!session) {
+        session = await therapyService.startSession({
+          prescriptionServiceIds: [item.id],
+        });
+        setSessionsByService((prev) => ({ ...prev, [item.id]: session as TherapySession }));
+      }
+      const prescriptions = await exerciseService
+        .listPatientExercisePrescriptions(item.patientProfileId, { status: "ACTIVE", limit: 50 })
+        .then((r) => r.data)
+        .catch(() => []);
+      setFinishPrescriptions(prescriptions);
+      // Mặc định không tick bài nào — KTV chỉ tick bài đã làm thật trong
+      // buổi (tránh ghi khống cả đơn vào buổi).
+      setFinishTicked({});
+      setExtraPicked([]);
+      setExtraSearch("");
+      setExtraResults([]);
+      setFinishPainAfter("");
+      setFinishNotes("");
+      setFinishStoppedEarly(false);
+      setFinishAdverseEvent("");
+      setFinishTarget({ item, session });
+    } catch (err: unknown) {
+      setActionError(getApiErrorMessage(err, "Không mở được form kết thúc buổi."));
+    } finally {
+      setFinishLoading(false);
+    }
+  };
+
+  const handleSearchExtraExercise = async () => {
+    const q = extraSearch.trim();
+    if (q.length < 2) return;
+    setExtraSearching(true);
+    try {
+      const res = await exerciseService.listExercises({ search: q, limit: 10 });
+      setExtraResults(res.data);
+    } catch {
+      setExtraResults([]);
+    } finally {
+      setExtraSearching(false);
+    }
+  };
+
+  // GĐ5 — kết thúc buổi: ghi từng bài đã tick rồi PATCH finish → dịch vụ
+  // sang WAITING_RESULT → form "Ghi kết quả" như cũ hiện ra.
+  const handleSubmitFinish = async () => {
+    if (!finishTarget) return;
+    const { item, session } = finishTarget;
+    const painAfter =
+      finishPainAfter.trim() === "" ? undefined : Number(finishPainAfter);
+    if (painAfter !== undefined && (Number.isNaN(painAfter) || painAfter < 0 || painAfter > 10)) {
+      setActionError("VAS sau buổi phải từ 0 đến 10 (hoặc để trống).");
+      return;
+    }
+    if (finishStoppedEarly && !finishAdverseEvent.trim()) {
+      setActionError("Đã tick dừng sớm / có sự cố thì nhập rõ sự cố đã xảy ra.");
+      return;
+    }
+    setFinishSaving(true);
+    clearMsg();
+    try {
+      // Ghi bài trong đơn đã tick.
+      for (const p of finishPrescriptions) {
+        const row = finishTicked[`rx:${p.id}`];
+        if (!row) continue;
+        // Bài tick nhưng bỏ dở vẫn ghi (completed=false) để có dấu vết.
+        await therapyService.addSessionExercise(session.id, {
+          exercisePrescriptionId: p.id,
+          exerciseId: p.exerciseId,
+          setsDone: row.setsDone.trim() === "" ? undefined : Number(row.setsDone),
+          repsDone: row.repsDone.trim() === "" ? undefined : Number(row.repsDone),
+          painDuring: row.painDuring.trim() === "" ? undefined : Number(row.painDuring),
+          completed: row.completed,
+          note: row.note.trim() || undefined,
+        });
+      }
+      // Bài ngoài đơn (không có exercisePrescriptionId — hiện rõ khi duyệt).
+      for (const ex of extraPicked) {
+        const row = finishTicked[`ex:${ex.id}`];
+        if (!row) continue;
+        await therapyService.addSessionExercise(session.id, {
+          exerciseId: ex.id,
+          setsDone: row.setsDone.trim() === "" ? undefined : Number(row.setsDone),
+          repsDone: row.repsDone.trim() === "" ? undefined : Number(row.repsDone),
+          painDuring: row.painDuring.trim() === "" ? undefined : Number(row.painDuring),
+          completed: row.completed,
+          note: row.note.trim() || undefined,
+        });
+      }
+      await therapyService.finishSession(session.id, {
+        painAfter,
+        notes: finishNotes.trim() || undefined,
+        adverseEvent: finishAdverseEvent.trim() || undefined,
+        stoppedEarly: finishStoppedEarly,
+      });
+      setSessionsByService((prev) => {
+        const next = { ...prev };
+        delete next[item.id];
+        return next;
+      });
+      setFinishTarget(null);
+      setActionMsg(`Đã kết thúc buổi ${session.code} cho ${item.patientName} — nhập kết quả để hoàn thành dịch vụ.`);
+      if (selectedRoomId) await fetchQueue(selectedRoomId, true);
+      // Mở form "Ghi kết quả" như cũ (dịch vụ nay ở WAITING_RESULT).
+      setResultTarget({ ...item, status: "WAITING_RESULT" });
+      setResultLines([""]);
+      setResultNote("");
+      // Nhắc đánh giá lại nếu bệnh nhân đã đủ số buổi (Q4: 5 buổi).
+      try {
+        const progress = await therapyService.getProgress(item.patientProfileId);
+        if (progress.goalsDue.length > 0) {
+          setReassessBanner({
+            patientProfileId: item.patientProfileId,
+            patientName: item.patientName,
+            sessionId: session.id,
+            goalsDue: progress.goalsDue,
+          });
+        }
+      } catch {
+        // Không tải được tiến độ thì chỉ mất banner nhắc, không chặn luồng.
+      }
+    } catch (err: unknown) {
+      setActionError(getApiErrorMessage(err, "Kết thúc buổi thất bại."));
+    } finally {
+      setFinishSaving(false);
+    }
+  };
+
+  // GĐ5 — mở/đóng khối "Các buổi đã làm" + nhật ký tự tập chờ duyệt của 1
+  // bệnh nhân (đọc từ GET /therapy-sessions/patient/:id và
+  // GET /home-exercise-logs/patient/:id?status=PENDING).
+  const togglePatientDetail = async (item: TherapyQueueItem) => {
+    if (expandedPatientId === item.patientProfileId) {
+      setExpandedPatientId("");
+      return;
+    }
+    setExpandedPatientId(item.patientProfileId);
+    setExpandedLoading(true);
+    try {
+      const [sessions, progress, logs] = await Promise.all([
+        therapyService.getPatientSessions(item.patientProfileId).catch(() => [] as TherapySession[]),
+        therapyService.getProgress(item.patientProfileId).catch(() => null),
+        therapyService
+          .getPatientHomeLogs(item.patientProfileId, { status: "PENDING" })
+          .catch(() => [] as HomeExerciseLog[]),
+      ]);
+      setExpandedSessions(sessions);
+      setExpandedProgress(progress);
+      setExpandedPendingLogs(logs);
+    } finally {
+      setExpandedLoading(false);
+    }
+  };
+
+  const handleReviewLog = async (log: HomeExerciseLog, status: "APPROVED" | "REJECTED") => {
+    setReviewBusyId(`${status}-${log.id}`);
+    clearMsg();
+    try {
+      await therapyService.reviewHomeLog(log.id, {
+        status,
+        reviewNote: reviewNotes[log.id]?.trim() || undefined,
+      });
+      setExpandedPendingLogs((prev) => prev.filter((l) => l.id !== log.id));
+      setActionMsg(
+        status === "APPROVED"
+          ? `Đã duyệt nhật ký tự tập ${log.code ?? ""}.`
+          : `Đã từ chối nhật ký tự tập ${log.code ?? ""}.`,
+      );
+    } catch (err: unknown) {
+      setActionError(getApiErrorMessage(err, "Duyệt nhật ký thất bại."));
+    } finally {
+      setReviewBusyId("");
+    }
   };
 
   const handleComplete = (item: TherapyQueueItem) =>
@@ -303,41 +770,62 @@ export default function RoomWorkspacePage() {
     const busy = busyId !== "";
     const b = (key: string) => busyId === key;
     if (item.status === "WAITING" || item.status === "RETURNING") {
+      // GĐ5 Q6: dịch vụ chưa có người gán thì hiện "Nhận" (gọi
+      // call-patient như "Mời", backend gán luôn cho người đang trực).
+      const unassigned = !item.doctorId && !item.technicianId;
       return (
         <button
           type="button"
           disabled={busy}
           onClick={() => handleCallTherapy(item)}
-          className="inline-flex items-center gap-1 rounded-md bg-blue-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+          className={`inline-flex items-center gap-1 rounded-md px-3 py-1.5 text-sm font-medium text-white disabled:opacity-50 ${
+            unassigned
+              ? "bg-teal-600 hover:bg-teal-700"
+              : "bg-blue-600 hover:bg-blue-700"
+          }`}
         >
-          <PhoneCall className="h-4 w-4" />
-          {b(`call-${item.id}`) ? "Đang gọi..." : "Mời vào"}
+          {unassigned ? <UserPlus className="h-4 w-4" /> : <PhoneCall className="h-4 w-4" />}
+          {b(`call-${item.id}`) ? "Đang xử lý..." : unassigned ? "Nhận" : "Mời vào"}
         </button>
       );
     }
     // PREPARING (do call-next-patient đặt người kế tiếp): bấm "Bắt đầu" để
-    // vào phục vụ thay vì gọi lại.
+    // mở form buổi trị liệu (GĐ5: tạo buổi trước, rồi mới vào phục vụ).
     if (item.status === "PREPARING") {
       return (
         <button
           type="button"
           disabled={busy}
-          onClick={() => handleStart(item)}
+          onClick={() => openStartForm(item)}
           className="inline-flex items-center gap-1 rounded-md bg-green-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-green-700 disabled:opacity-50"
         >
           <Play className="h-4 w-4" />
-          {b(`start-${item.id}`) ? "Đang bắt đầu..." : "Bắt đầu"}
+          Bắt đầu
         </button>
       );
     }
     if (item.status === "SERVING") {
+      const session = sessionsByService[item.id];
       return (
         <span className="flex flex-wrap gap-2">
           <button
             type="button"
+            disabled={busy || finishLoading}
+            onClick={() => void openFinishForm(item)}
+            className="inline-flex items-center gap-1 rounded-md bg-emerald-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-emerald-700 disabled:opacity-50"
+          >
+            <ClipboardList className="h-4 w-4" />
+            {finishLoading && finishTarget?.item.id === item.id
+              ? "Đang mở..."
+              : session
+                ? `Kết thúc buổi ${session.code}`
+                : "Kết thúc buổi"}
+          </button>
+          <button
+            type="button"
             disabled={busy}
             onClick={() => openResultForm(item)}
-            className="inline-flex items-center gap-1 rounded-md bg-emerald-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-emerald-700 disabled:opacity-50"
+            className="inline-flex items-center gap-1 rounded-md border border-emerald-300 px-3 py-1.5 text-sm font-medium text-emerald-700 hover:bg-emerald-50 disabled:opacity-50"
           >
             <ClipboardList className="h-4 w-4" /> Ghi kết quả
           </button>
@@ -577,6 +1065,19 @@ export default function RoomWorkspacePage() {
                   {servingTherapy.technicianName ? ` · KTV. ${servingTherapy.technicianName}` : ""}
                   {servingTherapy.boothCode ? ` · ${servingTherapy.boothCode}` : ""}
                 </p>
+                {/* GĐ5 — thẻ buổi đang chạy: mã buổi, người thực hiện, giờ bắt đầu, đếm thời gian. */}
+                {sessionsByService[servingTherapy.id] && (
+                  <p className="mt-1 text-sm text-green-800">
+                    Buổi <span className="font-mono font-semibold">{sessionsByService[servingTherapy.id].code}</span>
+                    {sessionsByService[servingTherapy.id].performedByName
+                      ? ` · ${sessionsByService[servingTherapy.id].performedByName}`
+                      : ""}
+                    {` · bắt đầu ${fmtTime(sessionsByService[servingTherapy.id].startedAt)} · đã ${fmtElapsed(sessionsByService[servingTherapy.id].startedAt, nowTick)}`}
+                    {therapySessionVas(sessionsByService[servingTherapy.id].painBefore) != null
+                      ? ` · VAS trước buổi: ${therapySessionVas(sessionsByService[servingTherapy.id].painBefore)}/10`
+                      : ""}
+                  </p>
+                )}
                 <div className="mt-2">{therapyButtons(servingTherapy)}</div>
               </div>
             )}
@@ -585,31 +1086,484 @@ export default function RoomWorkspacePage() {
             ) : (
               <ul className="mt-3 divide-y divide-gray-100">
                 {waitingTherapy.map((t) => (
-                  <li key={t.id} className="flex flex-wrap items-center justify-between gap-2 py-2">
-                    <div>
-                      <p className="font-medium text-gray-900">
-                        {t.patientName} — {t.serviceName}
-                      </p>
-                      <p className="text-sm text-gray-600">
-                        {t.prescriptionCode}
-                        {t.doctorName ? ` · BS. ${t.doctorName}` : ""}
-                        {t.technicianName ? ` · KTV. ${t.technicianName}` : ""}
-                        {t.boothCode ? ` · ${t.boothCode}` : ""}
-                      </p>
-                    </div>
-                    <span className="flex flex-wrap items-center gap-2">
-                      <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${THERAPY_STATUS_STYLE[t.status] ?? "bg-gray-100 text-gray-600"}`}>
-                        {THERAPY_STATUS_LABEL[t.status] ?? t.status}
+                  <li key={t.id} className="py-2">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <div>
+                        <p className="font-medium text-gray-900">
+                          {t.patientName} — {t.serviceName}
+                        </p>
+                        <p className="text-sm text-gray-600">
+                          {t.prescriptionCode}
+                          {t.doctorName ? ` · BS. ${t.doctorName}` : ""}
+                          {t.technicianName ? ` · KTV. ${t.technicianName}` : ""}
+                          {t.boothCode ? ` · ${t.boothCode}` : ""}
+                        </p>
+                      </div>
+                      <span className="flex flex-wrap items-center gap-2">
+                        <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${THERAPY_STATUS_STYLE[t.status] ?? "bg-gray-100 text-gray-600"}`}>
+                          {THERAPY_STATUS_LABEL[t.status] ?? t.status}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => void togglePatientDetail(t)}
+                          className="rounded-md border border-gray-300 px-2 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-50"
+                        >
+                          {expandedPatientId === t.patientProfileId ? "Ẩn lịch sử buổi" : "Buổi đã làm"}
+                        </button>
+                        {therapyButtons(t)}
                       </span>
-                      {therapyButtons(t)}
-                    </span>
+                    </div>
+                    {expandedPatientId === t.patientProfileId && (
+                      <PatientDetailPanel
+                        patientName={t.patientName}
+                        loading={expandedLoading}
+                        sessions={expandedSessions}
+                        progress={expandedProgress}
+                        pendingLogs={expandedPendingLogs}
+                        canReview={canAct}
+                        reviewNotes={reviewNotes}
+                        onReviewNoteChange={(id, v) =>
+                          setReviewNotes((prev) => ({ ...prev, [id]: v }))
+                        }
+                        reviewBusyId={reviewBusyId}
+                        onReview={handleReviewLog}
+                      />
+                    )}
                   </li>
                 ))}
               </ul>
             )}
           </section>
+
+          {/* GĐ5 — banner nhắc đánh giá lại (hiện sau khi kết thúc 1 buổi
+              mà bệnh nhân đã đủ số buổi theo mục tiêu, mặc định 5 buổi). */}
+          {reassessBanner && (
+            <section className="rounded-lg border border-amber-300 bg-amber-50 p-4">
+              <h2 className="flex items-center gap-2 text-base font-semibold text-amber-900">
+                <AlertCircle className="h-5 w-5 text-amber-600" />
+                Đã đủ số buổi — nên đánh giá lại
+              </h2>
+              <p className="mt-1 text-sm text-amber-800">
+                {reassessBanner.patientName} đã đủ số buổi. Nên đánh giá lại:{" "}
+                {reassessBanner.goalsDue
+                  .map((g) => g.scaleNameVi ?? g.scaleCode)
+                  .join(", ")}
+                .
+              </p>
+              <div className="mt-2 flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  onClick={() => setShowReassessForm((v) => !v)}
+                  className="rounded-md bg-amber-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-amber-700"
+                >
+                  {showReassessForm ? "Ẩn form đánh giá" : "Đánh giá ngay"}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setReassessBanner(null);
+                    setShowReassessForm(false);
+                  }}
+                  className="rounded-md border border-amber-300 px-3 py-1.5 text-sm font-medium text-amber-800 hover:bg-amber-100"
+                >
+                  Để sau
+                </button>
+              </div>
+              {showReassessForm && (
+                <div className="mt-3 rounded-lg border border-amber-200 bg-white p-3">
+                  <p className="mb-2 text-xs text-gray-500">
+                    Chấm ở thời điểm Tái đánh giá, gắn với buổi {""}
+                    vừa xong — thang BS-only vẫn chỉ bác sĩ chấm (quyền GĐ3).
+                  </p>
+                  <AssessmentTab
+                    patientProfileId={reassessBanner.patientProfileId}
+                    defaultTimepoint="REASSESSMENT"
+                    therapySessionId={reassessBanner.sessionId}
+                    onAssessmentCreated={() => {
+                      setReassessBanner(null);
+                      setShowReassessForm(false);
+                      setActionMsg("Đã lưu lần đánh giá lại.");
+                    }}
+                  />
+                </div>
+              )}
+            </section>
+          )}
         </div>
       ) : null}
+
+      {/* GĐ5 — Form bắt đầu buổi: chọn nhiều dịch vụ WAITING của cùng 1
+          bệnh nhân (Q1) + VAS trước buổi tùy chọn (Q3). */}
+      {startTarget && (
+        <div className="rounded-lg border border-green-300 bg-white p-4 shadow-sm">
+          <h3 className="flex items-center gap-2 text-base font-semibold text-gray-900">
+            <Play className="h-5 w-5 text-green-600" />
+            Bắt đầu buổi trị liệu — {startTarget.patientName}
+          </h3>
+          <p className="mt-1 text-sm text-gray-500">
+            1 buổi có thể gồm nhiều dịch vụ của cùng bệnh nhân. Buổi chỉ được tạo khi bấm
+            &quot;Bắt đầu buổi&quot; — nếu tạo buổi lỗi thì dịch vụ không đổi trạng thái.
+          </p>
+          <div className="mt-3 space-y-2">
+            {(queue?.therapyQueue ?? [])
+              .filter(
+                (t) =>
+                  t.patientProfileId === startTarget.patientProfileId &&
+                  (t.status === "WAITING" || t.status === "PREPARING"),
+              )
+              .map((t) => (
+                <label key={t.id} className="flex items-center gap-2 text-sm text-gray-800">
+                  <input
+                    type="checkbox"
+                    checked={startSelectedIds.includes(t.id)}
+                    onChange={() => toggleStartService(t.id)}
+                  />
+                  <span>
+                    {t.serviceName}
+                    <span className="text-gray-500">
+                      {` (${THERAPY_STATUS_LABEL[t.status] ?? t.status})`}
+                      {t.doctorName ? ` · BS. ${t.doctorName}` : ""}
+                      {t.technicianName ? ` · KTV. ${t.technicianName}` : ""}
+                    </span>
+                  </span>
+                </label>
+              ))}
+          </div>
+          <label className="mt-3 block text-sm font-medium text-gray-700" htmlFor="pain-before">
+            Đau trước buổi (VAS 0–10, tùy chọn)
+          </label>
+          <input
+            id="pain-before"
+            type="number"
+            min={0}
+            max={10}
+            value={startPainBefore}
+            onChange={(e) => setStartPainBefore(e.target.value)}
+            placeholder="Để trống nếu bệnh nhân không đau"
+            className="mt-1 w-64 rounded-md border border-gray-300 px-3 py-2 text-sm"
+          />
+          <div className="mt-3 flex gap-2">
+            <button
+              type="button"
+              disabled={startSaving || startSelectedIds.length === 0}
+              onClick={handleSubmitStart}
+              className="inline-flex items-center gap-1 rounded-md bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700 disabled:opacity-50"
+            >
+              <Play className="h-4 w-4" /> {startSaving ? "Đang bắt đầu..." : `Bắt đầu buổi (${startSelectedIds.length} dịch vụ)`}
+            </button>
+            <button
+              type="button"
+              disabled={startSaving}
+              onClick={() => setStartTarget(null)}
+              className="rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+            >
+              Hủy
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* GĐ5 — Form kết thúc buổi: VAS sau buổi (tùy chọn) + bài đã làm
+          (tick từ đơn ACTIVE + thêm bài ngoài đơn) + ghi chú + sự cố. */}
+      {finishTarget && (
+        <div className="rounded-lg border border-emerald-300 bg-white p-4 shadow-sm">
+          <h3 className="flex items-center gap-2 text-base font-semibold text-gray-900">
+            <ClipboardList className="h-5 w-5 text-emerald-600" />
+            Kết thúc buổi {finishTarget.session.code} — {finishTarget.item.patientName} ({finishTarget.item.serviceName})
+          </h3>
+          <label className="mt-3 block text-sm font-medium text-gray-700" htmlFor="pain-after">
+            Đau sau buổi (VAS 0–10, tùy chọn)
+          </label>
+          <input
+            id="pain-after"
+            type="number"
+            min={0}
+            max={10}
+            value={finishPainAfter}
+            onChange={(e) => setFinishPainAfter(e.target.value)}
+            placeholder="Để trống nếu không đo"
+            className="mt-1 w-64 rounded-md border border-gray-300 px-3 py-2 text-sm"
+          />
+
+          <p className="mt-4 text-sm font-semibold text-gray-900">Bài đã làm trong buổi</p>
+          {finishPrescriptions.length === 0 ? (
+            <p className="mt-1 text-sm text-gray-500">
+              Bệnh nhân chưa có đơn bài tập nào đang hiệu lực — chỉ ghi được bài ngoài đơn bên dưới.
+            </p>
+          ) : (
+            <div className="mt-2 space-y-3">
+              {finishPrescriptions.map((p) => {
+                const key = `rx:${p.id}`;
+                const row = finishTicked[key];
+                return (
+                  <div key={p.id} className="rounded-md border border-gray-200 p-3">
+                    <label className="flex items-center gap-2 text-sm font-medium text-gray-900">
+                      <input
+                        type="checkbox"
+                        checked={!!row}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setFinishTicked((prev) => ({
+                              ...prev,
+                              [key]: {
+                                setsDone: p.sets != null ? String(p.sets) : "",
+                                repsDone: p.reps != null ? String(p.reps) : "",
+                                painDuring: "",
+                                completed: true,
+                                note: "",
+                              },
+                            }));
+                          } else {
+                            setFinishTicked((prev) => {
+                              const next = { ...prev };
+                              delete next[key];
+                              return next;
+                            });
+                          }
+                        }}
+                      />
+                      {p.exercise?.name ?? "Bài tập"}
+                      <span className="font-normal text-gray-500">
+                        {` — kê: ${[p.sets ? `${p.sets} hiệp` : "", p.reps ? `${p.reps} lần` : "", p.holdSec ? `giữ ${p.holdSec}s` : ""].filter(Boolean).join(" · ")}`}
+                      </span>
+                    </label>
+                    {row && (
+                      <div className="mt-2 flex flex-wrap items-center gap-2 text-sm">
+                        <label className="flex items-center gap-1 text-gray-700">
+                          Hiệp thực tế
+                          <input
+                            type="number"
+                            min={0}
+                            value={row.setsDone}
+                            onChange={(e) =>
+                              setFinishTicked((prev) => ({ ...prev, [key]: { ...prev[key], setsDone: e.target.value } }))
+                            }
+                            className="w-16 rounded-md border border-gray-300 px-2 py-1"
+                          />
+                        </label>
+                        <label className="flex items-center gap-1 text-gray-700">
+                          Lần/bài
+                          <input
+                            type="number"
+                            min={0}
+                            value={row.repsDone}
+                            onChange={(e) =>
+                              setFinishTicked((prev) => ({ ...prev, [key]: { ...prev[key], repsDone: e.target.value } }))
+                            }
+                            className="w-16 rounded-md border border-gray-300 px-2 py-1"
+                          />
+                        </label>
+                        <label className="flex items-center gap-1 text-gray-700">
+                          Đau khi tập (0–10)
+                          <input
+                            type="number"
+                            min={0}
+                            max={10}
+                            value={row.painDuring}
+                            onChange={(e) =>
+                              setFinishTicked((prev) => ({ ...prev, [key]: { ...prev[key], painDuring: e.target.value } }))
+                            }
+                            className="w-16 rounded-md border border-gray-300 px-2 py-1"
+                          />
+                        </label>
+                        <label className="flex items-center gap-1 text-gray-700">
+                          <input
+                            type="checkbox"
+                            checked={!row.completed}
+                            onChange={(e) =>
+                              setFinishTicked((prev) => ({ ...prev, [key]: { ...prev[key], completed: !e.target.checked } }))
+                            }
+                          />
+                          Bỏ dở bài này
+                        </label>
+                        <input
+                          type="text"
+                          value={row.note}
+                          onChange={(e) =>
+                            setFinishTicked((prev) => ({ ...prev, [key]: { ...prev[key], note: e.target.value } }))
+                          }
+                          placeholder="Ghi chú riêng bài này"
+                          className="min-w-48 flex-1 rounded-md border border-gray-300 px-2 py-1"
+                        />
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          {/* Bài ngoài đơn — hiện rõ là ngoài đơn khi bác sĩ duyệt buổi. */}
+          <div className="mt-3 rounded-md border border-dashed border-gray-300 p-3">
+            <p className="text-sm font-semibold text-gray-900">Thêm bài ngoài đơn</p>
+            <div className="mt-1 flex flex-wrap gap-2">
+              <input
+                type="text"
+                value={extraSearch}
+                onChange={(e) => setExtraSearch(e.target.value)}
+                placeholder="Tìm bài tập (gõ ≥ 2 ký tự)..."
+                className="min-w-56 flex-1 rounded-md border border-gray-300 px-3 py-2 text-sm"
+              />
+              <button
+                type="button"
+                disabled={extraSearching || extraSearch.trim().length < 2}
+                onClick={handleSearchExtraExercise}
+                className="rounded-md border border-gray-300 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+              >
+                {extraSearching ? "Đang tìm..." : "Tìm bài"}
+              </button>
+            </div>
+            {extraResults.length > 0 && (
+              <ul className="mt-2 space-y-1">
+                {extraResults.map((ex) => (
+                  <li key={ex.id} className="flex items-center justify-between gap-2 text-sm">
+                    <span>
+                      {ex.name}
+                      <span className="text-gray-500">{` (${ex.code})`}</span>
+                    </span>
+                    <button
+                      type="button"
+                      disabled={extraPicked.some((x) => x.id === ex.id)}
+                      onClick={() => {
+                        setExtraPicked((prev) => [...prev, ex]);
+                        setFinishTicked((prev) => ({
+                          ...prev,
+                          [`ex:${ex.id}`]: { setsDone: "", repsDone: "", painDuring: "", completed: true, note: "" },
+                        }));
+                      }}
+                      className="rounded-md border border-gray-300 px-2 py-1 text-xs font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+                    >
+                      {extraPicked.some((x) => x.id === ex.id) ? "Đã thêm" : "+ Thêm vào buổi"}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+            {extraPicked.map((ex) => {
+              const key = `ex:${ex.id}`;
+              const row = finishTicked[key];
+              if (!row) return null;
+              return (
+                <div key={ex.id} className="mt-2 rounded-md border border-amber-200 bg-amber-50 p-2 text-sm">
+                  <p className="font-medium text-amber-900">
+                    {ex.name} <span className="font-normal text-amber-700">(bài ngoài đơn)</span>
+                  </p>
+                  <div className="mt-1 flex flex-wrap items-center gap-2">
+                    <label className="flex items-center gap-1 text-gray-700">
+                      Hiệp
+                      <input
+                        type="number"
+                        min={0}
+                        value={row.setsDone}
+                        onChange={(e) =>
+                          setFinishTicked((prev) => ({ ...prev, [key]: { ...prev[key], setsDone: e.target.value } }))
+                        }
+                        className="w-16 rounded-md border border-gray-300 px-2 py-1"
+                      />
+                    </label>
+                    <label className="flex items-center gap-1 text-gray-700">
+                      Lần
+                      <input
+                        type="number"
+                        min={0}
+                        value={row.repsDone}
+                        onChange={(e) =>
+                          setFinishTicked((prev) => ({ ...prev, [key]: { ...prev[key], repsDone: e.target.value } }))
+                        }
+                        className="w-16 rounded-md border border-gray-300 px-2 py-1"
+                      />
+                    </label>
+                    <label className="flex items-center gap-1 text-gray-700">
+                      Đau khi tập (0–10)
+                      <input
+                        type="number"
+                        min={0}
+                        max={10}
+                        value={row.painDuring}
+                        onChange={(e) =>
+                          setFinishTicked((prev) => ({ ...prev, [key]: { ...prev[key], painDuring: e.target.value } }))
+                        }
+                        className="w-16 rounded-md border border-gray-300 px-2 py-1"
+                      />
+                    </label>
+                    <label className="flex items-center gap-1 text-gray-700">
+                      <input
+                        type="checkbox"
+                        checked={!row.completed}
+                        onChange={(e) =>
+                          setFinishTicked((prev) => ({ ...prev, [key]: { ...prev[key], completed: !e.target.checked } }))
+                        }
+                      />
+                      Bỏ dở bài này
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setExtraPicked((prev) => prev.filter((x) => x.id !== ex.id));
+                        setFinishTicked((prev) => {
+                          const next = { ...prev };
+                          delete next[key];
+                          return next;
+                        });
+                      }}
+                      className="rounded-md border border-gray-300 px-2 py-1 text-xs text-gray-600 hover:bg-white"
+                    >
+                      Gỡ bài
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          <label className="mt-3 block text-sm font-medium text-gray-700" htmlFor="finish-notes">
+            Ghi chú buổi
+          </label>
+          <textarea
+            id="finish-notes"
+            value={finishNotes}
+            onChange={(e) => setFinishNotes(e.target.value)}
+            rows={2}
+            className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
+            placeholder="Nhận xét chung về buổi tập (tùy chọn)"
+          />
+          <label className="mt-2 flex items-center gap-2 text-sm text-gray-800">
+            <input
+              type="checkbox"
+              checked={finishStoppedEarly}
+              onChange={(e) => setFinishStoppedEarly(e.target.checked)}
+            />
+            Dừng sớm / có sự cố trong buổi
+          </label>
+          {finishStoppedEarly && (
+            <input
+              type="text"
+              value={finishAdverseEvent}
+              onChange={(e) => setFinishAdverseEvent(e.target.value)}
+              placeholder="Mô tả sự cố (VD: đau tăng, chóng mặt) — bắt buộc khi đã tick"
+              className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
+            />
+          )}
+          <div className="mt-3 flex gap-2">
+            <button
+              type="button"
+              disabled={finishSaving}
+              onClick={handleSubmitFinish}
+              className="inline-flex items-center gap-1 rounded-md bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700 disabled:opacity-50"
+            >
+              <Check className="h-4 w-4" /> {finishSaving ? "Đang lưu..." : "Kết thúc buổi"}
+            </button>
+            <button
+              type="button"
+              disabled={finishSaving}
+              onClick={() => setFinishTarget(null)}
+              className="rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+            >
+              Hủy
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Form ghi kết quả */}
       {resultTarget && (

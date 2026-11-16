@@ -8,6 +8,14 @@ import { authService, UserProfile } from "@/services/auth.service";
 import { appointmentService } from "@/services/appointment.service";
 import { apiClient } from "@/lib/api";
 import {
+  therapyService,
+  TherapySession,
+  HomeExerciseLog,
+  therapySessionVas,
+  therapySessionDurationMin,
+} from "@/services/therapy.service";
+import { exerciseService, Exercise } from "@/services/exercise.service";
+import {
   User,
   Phone,
   Lock,
@@ -42,7 +50,7 @@ export default function TaiKhoanPage() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [currentUser, setCurrentUser] = useState<UserProfile | null>(null);
   const [authMode, setAuthMode] = useState<"login" | "register">("login");
-  const [activeTab, setActiveTab] = useState<"appointments" | "records" | "prescriptions" | "invoices">("appointments");
+  const [activeTab, setActiveTab] = useState<"appointments" | "records" | "prescriptions" | "invoices" | "sessions">("appointments");
 
   // Login form state
   const [loginPhone, setLoginPhone] = useState("");
@@ -71,6 +79,23 @@ export default function TaiKhoanPage() {
   // GĐ4 — đơn thuốc + đơn bài tập của bệnh nhân (xem ở tab Đơn thuốc).
   const [myMedicationPrescriptions, setMyMedicationPrescriptions] = useState<any[]>([]);
   const [myExercisePrescriptions, setMyExercisePrescriptions] = useState<any[]>([]);
+  // GĐ5 — các buổi trị liệu của tôi + nhật ký tự tập ở nhà.
+  const [mySessions, setMySessions] = useState<TherapySession[]>([]);
+  const [myHomeLogs, setMyHomeLogs] = useState<HomeExerciseLog[]>([]);
+  const [logExercisePrescriptionId, setLogExercisePrescriptionId] = useState("");
+  const [logExtraSearch, setLogExtraSearch] = useState("");
+  const [logExtraResults, setLogExtraResults] = useState<Exercise[]>([]);
+  const [logExtraSearching, setLogExtraSearching] = useState(false);
+  const [logExtraExerciseId, setLogExtraExerciseId] = useState("");
+  const [logSetsDone, setLogSetsDone] = useState("");
+  const [logRepsDone, setLogRepsDone] = useState("");
+  const [logHoldSecDone, setLogHoldSecDone] = useState("");
+  const [logPainDuring, setLogPainDuring] = useState("");
+  const [logCompleted, setLogCompleted] = useState(true);
+  const [logNote, setLogNote] = useState("");
+  const [logSaving, setLogSaving] = useState(false);
+  const [logMsg, setLogMsg] = useState("");
+  const [logError, setLogError] = useState("");
   const [myInvoices, setMyInvoices] = useState<any[]>([]);
   const [portalLoading, setPortalLoading] = useState(false);
   const [portalError, setPortalError] = useState("");
@@ -117,13 +142,16 @@ export default function TaiKhoanPage() {
       if (profileId) {
         setMyProfileId(profileId);
         setMyProfileCode(profileCode);
-        const [recordsRes, rxRes, invRes, medRes, exRes] = await Promise.allSettled([
+        const [recordsRes, rxRes, invRes, medRes, exRes, sessRes, logsRes] = await Promise.allSettled([
           apiClient.get(`/medical-records/patient-profile/${profileId}`),
           apiClient.get(`/prescriptions/my/profile/${profileId}`),
           apiClient.get(`/invoice-payments/history/${profileId}`),
           // GĐ4 — đơn thuốc + đơn bài tập đang hiệu lực của bệnh nhân.
           apiClient.get(`/medication-prescriptions/mine/profiles/${profileId}`),
           apiClient.get(`/exercise-prescriptions/patient/${profileId}?status=ACTIVE&limit=20`),
+          // GĐ5 — các buổi trị liệu + nhật ký tự tập của chính mình.
+          therapyService.getPatientSessions(profileId),
+          therapyService.getMyHomeLogs({ patientProfileId: profileId }),
         ]);
         const unwrap = (r: any): any[] => {
           const d = r.status === "fulfilled" ? r.value?.data : null;
@@ -139,6 +167,8 @@ export default function TaiKhoanPage() {
         setMyInvoices(unwrap(invRes));
         setMyMedicationPrescriptions(unwrap(medRes));
         setMyExercisePrescriptions(unwrap(exRes));
+        setMySessions(sessRes.status === "fulfilled" ? sessRes.value : []);
+        setMyHomeLogs(logsRes.status === "fulfilled" ? logsRes.value : []);
       }
     } catch (err: any) {
       setPortalError(
@@ -237,6 +267,74 @@ export default function TaiKhoanPage() {
     authService.logout();
     setIsLoggedIn(false);
     setCurrentUser(null);
+  };
+
+  // GĐ5 Q7 — ghi nhật ký tự tập hôm nay: chọn bài từ đơn ACTIVE của mình
+  // hoặc bài ngoài đơn (tìm theo tên), nhập hiệp/lần thực tế + đau khi tập.
+  const handleSearchLogExtra = async () => {
+    const q = logExtraSearch.trim();
+    if (q.length < 2) return;
+    setLogExtraSearching(true);
+    try {
+      const res = await exerciseService.listExercises({ search: q, limit: 10 });
+      setLogExtraResults(res.data);
+    } catch {
+      setLogExtraResults([]);
+    } finally {
+      setLogExtraSearching(false);
+    }
+  };
+
+  const handleSubmitHomeLog = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLogMsg("");
+    setLogError("");
+    if (!myProfileId) {
+      setLogError("Chưa xác định được hồ sơ của bạn.");
+      return;
+    }
+    const selectedRx = myExercisePrescriptions.find(
+      (ep: any) => ep.id === logExercisePrescriptionId,
+    );
+    const exerciseId = selectedRx?.exerciseId ?? logExtraExerciseId;
+    if (!exerciseId) {
+      setLogError("Chọn một bài tập từ đơn của bạn hoặc tìm bài ngoài đơn.");
+      return;
+    }
+    const pain =
+      logPainDuring.trim() === "" ? undefined : Number(logPainDuring);
+    if (pain !== undefined && (Number.isNaN(pain) || pain < 0 || pain > 10)) {
+      setLogError("Đau khi tập phải từ 0 đến 10 (hoặc để trống).");
+      return;
+    }
+    setLogSaving(true);
+    try {
+      const created = await therapyService.createHomeLog({
+        patientProfileId: myProfileId,
+        exercisePrescriptionId: selectedRx?.id,
+        exerciseId,
+        setsDone: logSetsDone.trim() === "" ? undefined : Number(logSetsDone),
+        repsDone: logRepsDone.trim() === "" ? undefined : Number(logRepsDone),
+        holdSecDone: logHoldSecDone.trim() === "" ? undefined : Number(logHoldSecDone),
+        painDuring: pain,
+        completed: logCompleted,
+        note: logNote.trim() || undefined,
+      });
+      setMyHomeLogs((prev) => [created, ...prev]);
+      setLogMsg(`Đã ghi nhật ký tự tập ${created.code ?? ""} — đang chờ KTV duyệt.`);
+      setLogSetsDone("");
+      setLogRepsDone("");
+      setLogHoldSecDone("");
+      setLogPainDuring("");
+      setLogNote("");
+    } catch (err: any) {
+      setLogError(
+        err.response?.data?.message ||
+          "Không ghi được nhật ký tự tập. Vui lòng thử lại.",
+      );
+    } finally {
+      setLogSaving(false);
+    }
   };
 
   // Quick lookup ticket — tra cứu thật theo mã hẹn trên backend trước,
@@ -687,6 +785,19 @@ export default function TaiKhoanPage() {
                   <CreditCard className="w-4 h-4" />
                   <span>Lịch sử Hóa đơn & VietQR</span>
                 </button>
+
+                <button
+                  type="button"
+                  onClick={() => setActiveTab("sessions")}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-[14px] text-xs font-semibold transition-colors ${
+                    activeTab === "sessions"
+                      ? "bg-[#0f3e17] text-[#fffefc]"
+                      : "bg-[#fffefc] text-[#222222]/70 hover:bg-[#efeeeb]/40 border border-[#efeeeb]"
+                  }`}
+                >
+                  <Stethoscope className="w-4 h-4" />
+                  <span>Buổi trị liệu & Tự tập</span>
+                </button>
               </div>
 
               {/* TAB 1: APPOINTMENTS — lịch hẹn thật từ backend */}
@@ -1061,6 +1172,285 @@ export default function TaiKhoanPage() {
                       </table>
                     </div>
                   )}
+                </div>
+              )}
+              {/* TAB 5 (GĐ5): BUỔI TRỊ LIỆU + NHẬT KÝ TỰ TẬP */}
+              {activeTab === "sessions" && (
+                <div className="space-y-6">
+                  {/* Các buổi trị liệu của tôi */}
+                  <div className="bg-[#fffefc] rounded-[14px] p-6 sm:p-8 border border-[#efeeeb] space-y-4">
+                    <div className="pb-3 border-b border-[#efeeeb]">
+                      <h3 className="font-bold text-[#0f3e17] text-base">Các buổi trị liệu của tôi</h3>
+                      <p className="text-xs text-[#222222]/70">
+                        Mỗi buổi tập tại phòng khám: ngày, dịch vụ, bài đã tập, mức đau trước → sau buổi.
+                      </p>
+                    </div>
+                    {portalLoading ? (
+                      <p className="text-sm text-[#222222]/70 text-center py-8">Đang tải các buổi trị liệu...</p>
+                    ) : mySessions.length === 0 ? (
+                      <p className="text-sm text-[#222222]/70 text-center py-8">
+                        Chưa có buổi trị liệu nào được ghi. Buổi tập sẽ hiện ở đây sau mỗi lần bạn tập tại phòng khám.
+                      </p>
+                    ) : (
+                      <div className="space-y-3">
+                        {mySessions.map((s) => (
+                          <div key={s.id} className="p-4 rounded-[14px] border border-[#efeeeb] space-y-1 text-xs">
+                            <div className="flex flex-wrap justify-between items-center gap-2">
+                              <span className="font-bold text-[#0f3e17] text-sm">
+                                Buổi <span className="font-mono">{s.code}</span>
+                              </span>
+                              <span className="text-[#222222]/60">
+                                {String(s.startedAt ?? "").substring(0, 10)}
+                                {s.performedByName ? ` • ${s.performedByName}` : ""}
+                                {therapySessionDurationMin(s) != null ? ` • ${therapySessionDurationMin(s)} phút` : ""}
+                                {` • ${s.status === "COMPLETED" ? "Đã xong" : s.status === "CANCELLED" ? "Đã hủy" : "Đang làm"}`}
+                              </span>
+                            </div>
+                            {s.services?.length ? (
+                              <p className="text-[#222222]/80">
+                                Dịch vụ: {s.services.map((x) => x.serviceName ?? "").filter(Boolean).join(", ")}
+                              </p>
+                            ) : null}
+                            <p className="text-[#222222]/80">
+                              Mức đau (VAS):{" "}
+                              <strong>
+                                {therapySessionVas(s.painBefore) != null ? `${therapySessionVas(s.painBefore)}/10` : "—"}
+                                {" → "}
+                                {therapySessionVas(s.painAfter) != null ? `${therapySessionVas(s.painAfter)}/10` : "—"}
+                              </strong>
+                              {` • ${s.exercises?.length ?? 0} bài đã tập`}
+                            </p>
+                            {(s.exercises ?? []).length > 0 && (
+                              <ul className="text-[#222222]/70 space-y-0.5">
+                                {s.exercises!.map((ex) => (
+                                  <li key={ex.id}>
+                                    • {ex.exerciseName ?? "Bài tập"}
+                                    {ex.setsDone != null ? ` — ${ex.setsDone} hiệp` : ""}
+                                    {ex.repsDone != null ? ` · ${ex.repsDone} lần` : ""}
+                                    {ex.painDuring != null ? ` · đau ${ex.painDuring}/10` : ""}
+                                    {ex.completed === false ? " · bỏ dở" : ""}
+                                  </li>
+                                ))}
+                              </ul>
+                            )}
+                            {s.notes && <p className="text-[#222222]/70">Ghi chú buổi: {s.notes}</p>}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Ghi nhật ký tự tập hôm nay */}
+                  <div className="bg-[#fffefc] rounded-[14px] p-6 sm:p-8 border border-[#efeeeb] space-y-4">
+                    <div className="pb-3 border-b border-[#efeeeb]">
+                      <h3 className="font-bold text-[#0f3e17] text-base">Ghi nhật ký tự tập hôm nay</h3>
+                      <p className="text-xs text-[#222222]/70">
+                        Tập ở nhà xong thì ghi lại tại đây — KTV sẽ duyệt. Chỉ ghi ngày hôm nay trở về trước,
+                        không ghi ngày tương lai.
+                      </p>
+                    </div>
+                    {logMsg && (
+                      <p className="p-3 rounded-[14px] bg-[#e1f4df] border border-[#cfe7d3] text-[#0f3e17] text-xs">{logMsg}</p>
+                    )}
+                    {logError && (
+                      <p className="p-3 rounded-[14px] bg-rose-50 border border-rose-200 text-rose-700 text-xs">{logError}</p>
+                    )}
+                    <form onSubmit={handleSubmitHomeLog} className="space-y-4">
+                      <div>
+                        <label className="block text-xs font-semibold text-[#0f3e17] mb-1">
+                          Bài tập trong đơn của bạn *
+                        </label>
+                        <select
+                          value={logExercisePrescriptionId}
+                          onChange={(e) => {
+                            setLogExercisePrescriptionId(e.target.value);
+                            if (e.target.value) setLogExtraExerciseId("");
+                          }}
+                          className="w-full px-3.5 py-2.5 text-sm bg-[#fffefc] border border-[#efeeeb] rounded-[14px] focus:outline-none focus:border-[#0f3e17]"
+                        >
+                          <option value="">— Chọn bài trong đơn —</option>
+                          {myExercisePrescriptions.map((ep: any) => (
+                            <option key={ep.id} value={ep.id}>
+                              {ep.exercise?.name ?? "Bài tập"}
+                              {` (${[ep.sets ? `${ep.sets} hiệp` : "", ep.reps ? `${ep.reps} lần` : ""].filter(Boolean).join(" · ")})`}
+                            </option>
+                          ))}
+                        </select>
+                        {myExercisePrescriptions.length === 0 && (
+                          <p className="text-[11px] text-[#222222]/60 mt-1">
+                            Bạn chưa có bài tập nào đang tập — dùng ô tìm bài ngoài đơn bên dưới.
+                          </p>
+                        )}
+                      </div>
+                      <div>
+                        <label className="block text-xs font-semibold text-[#0f3e17] mb-1">
+                          Hoặc bài ngoài đơn (tìm theo tên)
+                        </label>
+                        <div className="flex gap-2">
+                          <input
+                            type="text"
+                            value={logExtraSearch}
+                            onChange={(e) => setLogExtraSearch(e.target.value)}
+                            placeholder="Gõ ≥ 2 ký tự, VD: gập gối..."
+                            className="flex-1 px-3.5 py-2.5 text-sm bg-[#fffefc] border border-[#efeeeb] rounded-[14px] focus:outline-none focus:border-[#0f3e17]"
+                          />
+                          <button
+                            type="button"
+                            disabled={logExtraSearching || logExtraSearch.trim().length < 2}
+                            onClick={handleSearchLogExtra}
+                            className="px-4 py-2.5 rounded-[14px] border border-[#efeeeb] text-xs font-semibold hover:bg-[#efeeeb]/40 disabled:opacity-50"
+                          >
+                            {logExtraSearching ? "Đang tìm..." : "Tìm bài"}
+                          </button>
+                        </div>
+                        {logExtraResults.length > 0 && (
+                          <ul className="mt-2 space-y-1">
+                            {logExtraResults.map((ex) => (
+                              <li key={ex.id} className="flex items-center justify-between gap-2 text-xs">
+                                <span>
+                                  {ex.name} <span className="text-[#222222]/60">({ex.code})</span>
+                                </span>
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setLogExtraExerciseId(ex.id);
+                                    setLogExercisePrescriptionId("");
+                                  }}
+                                  className={`px-2 py-1 rounded-[8px] border text-[11px] font-semibold ${
+                                    logExtraExerciseId === ex.id
+                                      ? "bg-[#0f3e17] text-[#fffefc] border-[#0f3e17]"
+                                      : "border-[#efeeeb] hover:bg-[#efeeeb]/40"
+                                  }`}
+                                >
+                                  {logExtraExerciseId === ex.id ? "Đã chọn" : "Chọn bài này"}
+                                </button>
+                              </li>
+                            ))}
+                          </ul>
+                        )}
+                      </div>
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                        <div>
+                          <label className="block text-xs font-semibold text-[#0f3e17] mb-1">Hiệp đã tập</label>
+                          <input
+                            type="number"
+                            min={0}
+                            value={logSetsDone}
+                            onChange={(e) => setLogSetsDone(e.target.value)}
+                            placeholder="VD: 3"
+                            className="w-full px-3.5 py-2.5 text-sm bg-[#fffefc] border border-[#efeeeb] rounded-[14px] focus:outline-none focus:border-[#0f3e17]"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-semibold text-[#0f3e17] mb-1">Lần/bài</label>
+                          <input
+                            type="number"
+                            min={0}
+                            value={logRepsDone}
+                            onChange={(e) => setLogRepsDone(e.target.value)}
+                            placeholder="VD: 10"
+                            className="w-full px-3.5 py-2.5 text-sm bg-[#fffefc] border border-[#efeeeb] rounded-[14px] focus:outline-none focus:border-[#0f3e17]"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-semibold text-[#0f3e17] mb-1">Giữ (giây)</label>
+                          <input
+                            type="number"
+                            min={0}
+                            value={logHoldSecDone}
+                            onChange={(e) => setLogHoldSecDone(e.target.value)}
+                            placeholder="VD: 5"
+                            className="w-full px-3.5 py-2.5 text-sm bg-[#fffefc] border border-[#efeeeb] rounded-[14px] focus:outline-none focus:border-[#0f3e17]"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-semibold text-[#0f3e17] mb-1">Đau khi tập (0–10)</label>
+                          <input
+                            type="number"
+                            min={0}
+                            max={10}
+                            value={logPainDuring}
+                            onChange={(e) => setLogPainDuring(e.target.value)}
+                            placeholder="Để trống nếu không đau"
+                            className="w-full px-3.5 py-2.5 text-sm bg-[#fffefc] border border-[#efeeeb] rounded-[14px] focus:outline-none focus:border-[#0f3e17]"
+                          />
+                        </div>
+                      </div>
+                      <label className="flex items-center gap-2 text-xs text-[#222222]">
+                        <input
+                          type="checkbox"
+                          checked={!logCompleted}
+                          onChange={(e) => setLogCompleted(!e.target.checked)}
+                          className="w-4 h-4 accent-[#0f3e17]"
+                        />
+                        Tôi đã bỏ dở bài này (không tập hết)
+                      </label>
+                      <div>
+                        <label className="block text-xs font-semibold text-[#0f3e17] mb-1">Ghi chú</label>
+                        <textarea
+                          rows={2}
+                          value={logNote}
+                          onChange={(e) => setLogNote(e.target.value)}
+                          placeholder="VD: tập xong thấy nhẹ người, gối hơi mỏi..."
+                          className="w-full p-3 rounded-[14px] bg-[#fffefc] border border-[#efeeeb] text-xs text-[#222222] focus:outline-none focus:border-[#0f3e17]"
+                        />
+                      </div>
+                      <button
+                        type="submit"
+                        disabled={logSaving}
+                        className="bg-[#0f3e17] hover:bg-[#0c2f10] text-[#fffefc] font-semibold text-sm py-3 px-6 rounded-[14px] transition-colors disabled:opacity-50"
+                      >
+                        {logSaving ? "Đang ghi..." : "Ghi nhật ký tự tập"}
+                      </button>
+                    </form>
+                  </div>
+
+                  {/* Nhật ký tự tập của tôi */}
+                  <div className="bg-[#fffefc] rounded-[14px] p-6 sm:p-8 border border-[#efeeeb] space-y-4">
+                    <div className="pb-3 border-b border-[#efeeeb]">
+                      <h3 className="font-bold text-[#0f3e17] text-base">Nhật ký tự tập của tôi</h3>
+                      <p className="text-xs text-[#222222]/70">Các lần bạn đã ghi, kèm trạng thái duyệt của KTV.</p>
+                    </div>
+                    {myHomeLogs.length === 0 ? (
+                      <p className="text-sm text-[#222222]/70 text-center py-8">Chưa có nhật ký tự tập nào.</p>
+                    ) : (
+                      <div className="space-y-3">
+                        {myHomeLogs.map((log) => (
+                          <div key={log.id} className="p-4 rounded-[14px] border border-[#efeeeb] space-y-1 text-xs">
+                            <div className="flex flex-wrap justify-between items-center gap-2">
+                              <span className="font-bold text-[#0f3e17] text-sm">
+                                {log.exerciseName ?? "Bài tập"}
+                                {log.code ? <span className="font-mono font-normal text-[#222222]/60"> — {log.code}</span> : ""}
+                              </span>
+                              <span
+                                className={`px-2 py-0.5 rounded-[6px] text-[10px] font-semibold border ${
+                                  log.status === "APPROVED"
+                                    ? "bg-[#e1f4df] text-[#0f3e17] border-[#cfe7d3]"
+                                    : log.status === "REJECTED"
+                                      ? "bg-rose-50 text-rose-700 border-rose-200"
+                                      : "bg-amber-50 text-amber-800 border-amber-200"
+                                }`}
+                              >
+                                {log.status === "APPROVED" ? "Đã duyệt" : log.status === "REJECTED" ? "Từ chối" : "Chờ duyệt"}
+                              </span>
+                            </div>
+                            <p className="text-[#222222]/80">
+                              {String(log.loggedDate ?? log.createdAt ?? "").substring(0, 10)}
+                              {log.setsDone != null ? ` • ${log.setsDone} hiệp` : ""}
+                              {log.repsDone != null ? ` • ${log.repsDone} lần` : ""}
+                              {log.holdSecDone != null ? ` • giữ ${log.holdSecDone} giây` : ""}
+                              {log.painDuring != null ? ` • đau ${log.painDuring}/10` : ""}
+                              {log.completed === false ? " • bỏ dở" : ""}
+                            </p>
+                            {log.note && <p className="text-[#222222]/70">Ghi chú của bạn: {log.note}</p>}
+                            {log.reviewNote && (
+                              <p className="text-[#0f3e17]">Ghi chú của KTV: {log.reviewNote}</p>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 </div>
               )}
             </div>
