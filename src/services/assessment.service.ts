@@ -140,9 +140,9 @@ export const SPECIALTY_OPTIONS = [
 ];
 
 export const TIMEPOINT_OPTIONS = [
-  { value: "BASELINE", label: "Đầu vào (ĐV)" },
-  { value: "REASSESSMENT", label: "Tái đánh giá (TĐG)" },
-  { value: "DISCHARGE", label: "Ra viện (RV)" },
+  { value: "BASELINE", label: "Đầu vào" },
+  { value: "REASSESSMENT", label: "Tái đánh giá" },
+  { value: "DISCHARGE", label: "Ra viện" },
 ];
 
 export function vietnameseBadge(status: string): { text: string; className: string } {

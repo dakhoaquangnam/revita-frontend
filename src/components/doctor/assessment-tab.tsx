@@ -405,9 +405,9 @@ export default function AssessmentTab({
                 active ? "bg-[#0f3e17] text-[#fffefc] border-[#0f3e17]" : "bg-[#fffefc] border-[#efeeeb] hover:border-[#0f3e17]"
               }`}
             >
-              <div className="text-xs font-bold">{s.nameVi}</div>
+              <div className="text-xs font-bold">{s.code}</div>
               <div className={`text-[10px] mt-0.5 ${active ? "text-[#e1f4df]" : "text-[#222222]/60"}`}>
-                {s.code} • {s.assessorType === "TB" ? "Tự báo cáo" : s.assessorType === "NT" ? "Đo số" : "Quan sát"}
+                {s.assessorType === "TB" ? "Tự báo cáo" : s.assessorType === "NT" ? "Đo số" : "Quan sát"}
               </div>
               <span className={`inline-block mt-1 text-[10px] px-2 py-0.5 rounded-[6px] border font-semibold ${active ? "bg-[#fffefc]/15 text-[#fffefc] border-transparent" : badge.className}`}>
                 {badge.text}
@@ -797,7 +797,7 @@ export default function AssessmentTab({
       <div className="space-y-3 border-t border-[#efeeeb] pt-4">
         <h4 className="text-xs font-bold text-[#0f3e17] uppercase tracking-wider">Mục tiêu điều trị</h4>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
-          <label>
+          <label className="min-w-0">
             <span className="text-[#222222]/60">Gắn thang (để trống = mục tiêu tự do)</span>
             <select
               value={goalScaleCode}
@@ -811,7 +811,7 @@ export default function AssessmentTab({
             </select>
           </label>
           {goalScaleDef && goalScaleDef.kind === "MULTI_ITEM" && (
-            <label>
+            <label className="min-w-0">
               <span className="text-[#222222]/60">Trên 1 mục của thang (tùy chọn)</span>
               <select
                 value={goalItemKey}
@@ -825,7 +825,7 @@ export default function AssessmentTab({
               </select>
             </label>
           )}
-          <label>
+          <label className="min-w-0">
             <span className="text-[#222222]/60">Tiêu đề mục tiêu</span>
             <input
               value={goalTitle}
@@ -834,8 +834,8 @@ export default function AssessmentTab({
               className="mt-1 w-full bg-[#fffefc] border border-[#efeeeb] rounded-[7px] px-2 py-2 focus:outline-none focus:border-[#0f3e17]"
             />
           </label>
-          <div className="grid grid-cols-3 gap-2">
-            <label>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:col-span-2 min-w-0">
+            <label className="min-w-0">
               <span className="text-[#222222]/60">Mốc (tự điền)</span>
               <input
                 type="number"
@@ -844,7 +844,7 @@ export default function AssessmentTab({
                 className="mt-1 w-full bg-[#fffefc] border border-[#efeeeb] rounded-[7px] px-2 py-2 font-bold text-[#0f3e17] focus:outline-none focus:border-[#0f3e17]"
               />
             </label>
-            <label>
+            <label className="min-w-0">
               <span className="text-[#222222]/60">Mục tiêu *</span>
               <input
                 type="number"
@@ -853,13 +853,13 @@ export default function AssessmentTab({
                 className="mt-1 w-full bg-[#fffefc] border border-[#efeeeb] rounded-[7px] px-2 py-2 font-bold text-[#0f3e17] focus:outline-none focus:border-[#0f3e17]"
               />
             </label>
-            <label>
+            <label className="min-w-0">
               <span className="text-[#222222]/60">Ngày đích (mặc định +4 tuần)</span>
               <input
                 type="date"
                 value={goalDate}
                 onChange={(e) => setGoalDate(e.target.value)}
-                className="mt-1 w-full bg-[#fffefc] border border-[#efeeeb] rounded-[7px] px-2 py-2 focus:outline-none focus:border-[#0f3e17]"
+                className="mt-1 w-full min-w-0 bg-[#fffefc] border border-[#efeeeb] rounded-[7px] px-2 py-2 focus:outline-none focus:border-[#0f3e17]"
               />
             </label>
           </div>
