@@ -53,6 +53,14 @@ body {
   font-weight: 300;
 }
 
+/* Net 500 cho tieu de/so o muc Quy trinh (yeu cau cua anh 16/11).
+   Khong dung Tailwind font-medium o day: .font-display-serif ghi cung
+   font-weight 300 va thang utility do, nen can class rieng. */
+.font-display-serif-medium {
+  font-family: var(--font-display-serif), "Cormorant Garamond", Georgia, serif;
+  font-weight: 500;
+}
+
 /* Eyebrow Label — DESIGN.md: Suisse Intl 11px/600, uppercase, tracking 0.08em,
    chỉ dùng cho nhãn phân mục, không dùng ở chỗ khác. */
 .eyebrow {
