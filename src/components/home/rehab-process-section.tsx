@@ -77,7 +77,7 @@ export function RehabProcessSection() {
                     </div>
                   </div>
 
-                  <h3 className="text-lg font-display-serif font-medium text-[#0f3e17]">
+                  <h3 className="text-xl font-display-serif font-medium text-[#0c2f10]">
                     {item.title}
                   </h3>
                   <p className="text-xs font-medium text-[#0f3e17]/70 mt-0.5">
@@ -101,7 +101,7 @@ export function RehabProcessSection() {
         {/* Call to action card */}
         <div className="mt-12 p-8 rounded-[14px] bg-[#d2edcb] border border-[#efeeeb] flex flex-col sm:flex-row items-center justify-between gap-6">
           <div>
-            <h3 className="text-xl font-display-serif font-medium text-[#0f3e17]">
+            <h3 className="text-xl font-display-serif font-medium text-[#0c2f10]">
               Cần tư vấn trực tiếp lộ trình phục hồi phù hợp với bạn?
             </h3>
             <p className="text-sm text-[#222222]/80 mt-1">
