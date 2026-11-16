@@ -290,8 +290,42 @@ export default function ReceptionistWorkspacePage() {
     }
     setActionLoading(true);
     try {
-      await receptionistService.callNextPatient(targetCounterId);
+      const res = await receptionistService.callNextPatient(targetCounterId);
       await refreshDisplayedQueues();
+      const patient = res?.patient;
+      if (patient) {
+        // Gọi trúng quầy khác ở chế độ "Tất cả quầy": khung "Đang phục vụ"
+        // chỉ hiện bệnh nhân của quầy đang trực nên phải báo rõ, nếu không
+        // lễ tân tưởng gọi không được rồi bấm đi bấm lại.
+        const calledCounterId = patient.counterId || targetCounterId;
+        if (calledCounterId !== activeCounterId) {
+          const counter = counters.find(
+            (c) => c.counterId === calledCounterId,
+          );
+          const counterLabel =
+            patient.counterName ||
+            counter?.counterName ||
+            patient.counterCode ||
+            counter?.counterCode ||
+            "";
+          const who = patient.patientName
+            ? `${patient.patientName}${patient.queueNumber ? ` (${patient.queueNumber})` : ""}`
+            : patient.queueNumber || "bệnh nhân";
+          const where = counter?.counterCode || patient.counterCode || counterLabel;
+          alert(
+            `Đã gọi ${who} tại ${counterLabel}.` +
+              (where
+                ? ` Bệnh nhân hiện ở mục "${where}" trong danh sách bên dưới.`
+                : ""),
+          );
+        }
+      } else {
+        alert(
+          queueFilter === "ALL"
+            ? "Hiện không còn bệnh nhân nào đang đợi ở các quầy."
+            : "Hiện không còn bệnh nhân nào đang đợi ở quầy này.",
+        );
+      }
     } catch (err: any) {
       alert(
         "Lỗi khi gọi số: " +
