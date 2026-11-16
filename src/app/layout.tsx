@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
-import { Be_Vietnam_Pro } from "next/font/google";
+import { Be_Vietnam_Pro, Cormorant_Garamond } from "next/font/google";
 import QueryProvider from "@/components/providers/query-provider";
 import { ConditionalChatbot } from "@/components/chatbot/conditional-chatbot";
 import "./globals.css";
@@ -9,6 +9,15 @@ const beVietnamPro = Be_Vietnam_Pro({
   variable: "--font-be-vietnam-pro",
   subsets: ["latin", "vietnamese"],
   weight: ["300", "400", "500", "600", "700"],
+  display: "swap",
+});
+
+// DESIGN.md (Ease Health): Faire Octave weight 300 cho mọi tiêu đề hiển thị;
+// Cormorant Garamond là bản thay thế được chỉ định, có subset tiếng Việt.
+const displaySerif = Cormorant_Garamond({
+  variable: "--font-display-serif",
+  subsets: ["latin", "vietnamese"],
+  weight: ["300"],
   display: "swap",
 });
 
@@ -45,7 +54,7 @@ export default function RootLayout({
   return (
     <html
       lang="vi"
-      className={`${beVietnamPro.variable} h-full antialiased`}
+      className={`${beVietnamPro.variable} ${displaySerif.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-[#fffefc] text-[#222222] font-sans">
         <QueryProvider>

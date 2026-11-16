@@ -45,6 +45,23 @@ body {
 }
 
 /* Botanical Utility Classes */
+
+/* DESIGN.md: Faire Octave (thay thế: Cormorant Garamond) weight 300 cho mọi
+   tiêu đề hiển thị — serif mảnh, tracking chặt, không bao giờ in đậm. */
+.font-display-serif {
+  font-family: var(--font-display-serif), "Cormorant Garamond", Georgia, serif;
+  font-weight: 300;
+}
+
+/* Eyebrow Label — DESIGN.md: Suisse Intl 11px/600, uppercase, tracking 0.08em,
+   chỉ dùng cho nhãn phân mục, không dùng ở chỗ khác. */
+.eyebrow {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
 .bg-forest-ink {
   background-color: #0f3e17;
 }

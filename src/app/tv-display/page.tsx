@@ -255,21 +255,24 @@ export default function TvDisplayPage() {
 
   return (
     <div className="min-h-screen bg-[#fffefc] text-[#222222] flex flex-col justify-between select-none relative font-sans">
-      {/* TOP HEADER: Branding & Sync Indicator & Controls */}
+      {/* TOP HEADER: Branding & Sync Indicator & Controls — DESIGN.md:
+          serif 300 cho tên phòng khám, eyebrow 11px/600 cho nhãn phân mục,
+          badge pill 999px, không viền màu, chỉ hairline Border Mist. */}
       <header className="px-8 py-5 flex items-center justify-between border-b border-[#efeeeb] bg-[#fffefc] z-20">
         <div className="flex items-center gap-4">
           <TsLogo size="lg" showText={false} />
           <div>
-            <div className="flex items-center gap-2">
-              <h1 className="text-2xl font-black tracking-tight text-[#0f3e17]">
-                PHÒNG KHÁM PHỤC HỒI CHỨC NĂNG BÁC SĨ THANH SANG
+            <div className="eyebrow text-[#0f3e17]">Phòng chờ • Phục hồi chức năng</div>
+            <div className="flex items-center gap-3 mt-1">
+              <h1 className="font-display-serif text-3xl lg:text-[40px] leading-[1.1] tracking-[-0.01em] text-[#0f3e17]">
+                Phòng khám Phục hồi chức năng Bác sĩ Thanh Sang
               </h1>
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-[6px] bg-[#e1f4df] text-[#0f3e17] border border-[#cfe7d3] text-xs font-semibold">
+              <span className="badge-pill badge-pill-cream flex-shrink-0">
                 <span className="w-2 h-2 rounded-full bg-[#0f3e17]" />
                 {isConnected ? "WEBSOCKET LIVE" : "ĐANG KẾT NỐI"}
               </span>
             </div>
-            <p className="text-xs text-[#222222]/60 font-semibold tracking-wider uppercase mt-0.5">
+            <p className="text-xs text-[#222222]/60 font-medium tracking-wider uppercase mt-1">
               193 Quang Trung, Đại Lộc, Đà Nẵng • Hotline: 0369.117.117
             </p>
           </div>
@@ -278,10 +281,10 @@ export default function TvDisplayPage() {
         {/* Right Header: Clock & Controls */}
         <div className="flex items-center gap-6">
           <div className="text-right">
-            <div className="text-3xl font-black text-[#0f3e17] font-mono tracking-wider">
+            <div className="font-display-serif text-4xl leading-none tracking-[-0.01em] text-[#0f3e17]">
               {currentTime || "08:30:00"}
             </div>
-            <div className="text-xs text-[#222222]/60 capitalize font-medium">
+            <div className="text-xs text-[#222222]/60 capitalize font-medium mt-1">
               {currentDate || "Thứ năm, 12/11/2026"}
             </div>
           </div>
@@ -295,10 +298,10 @@ export default function TvDisplayPage() {
                 speakVoice("Hệ thống phát thanh gọi số phòng khám Bác sĩ Thanh Sang đã sẵn sàng.");
               }
             }}
-            className={`flex items-center gap-2 px-3.5 py-2.5 rounded-[14px] border text-xs font-semibold transition-colors cursor-pointer ${
+            className={`flex items-center gap-2 px-3.5 py-2.5 rounded-[14px] text-xs font-semibold transition-colors cursor-pointer ${
               soundEnabled
-                ? "bg-[#e1f4df] border-[#cfe7d3] text-[#0f3e17]"
-                : "bg-[#fffefc] border-[#efeeeb] text-[#222222]/70 hover:bg-[#efeeeb]/40"
+                ? "bg-[#e1f4df] text-[#0f3e17]"
+                : "bg-[#fffefc] border border-[#efeeeb] text-[#222222]/70 hover:bg-[#efeeeb]/40"
             }`}
             title="Bật âm thanh loa phát thanh tiếng Việt"
           >
@@ -323,34 +326,26 @@ export default function TvDisplayPage() {
         {/* ===================== LEFT SPOTLIGHT: LƯỢT GỌI NỔI BẬT (7 COLS) ===================== */}
         <div className="lg:col-span-7 flex flex-col justify-between">
           <div
-            className={`h-full rounded-[14px] p-8 sm:p-10 flex flex-col justify-between transition-colors border ${
-              isFlashing
-                ? "bg-[#b1dbb8]/50 border-[#0f3e17]"
-                : "bg-[#e1f4df] border-[#cfe7d3]"
+            className={`h-full rounded-[14px] p-8 sm:p-10 flex flex-col justify-between transition-colors ${
+              isFlashing ? "bg-[#b1dbb8]/60" : "bg-[#e1f4df]"
             }`}
           >
             {/* Top Indicator */}
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <span
-                  className={`inline-flex items-center gap-2 px-3 py-1 rounded-[6px] text-xs font-bold uppercase tracking-wider ${
-                    isFlashing
-                      ? "bg-[#0f3e17] text-[#fffefc]"
-                      : "bg-[#0f3e17] text-[#fffefc]"
-                  }`}
-                >
+                <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#0f3e17] text-[#fffefc] eyebrow">
                   <Bell className="w-4 h-4" />
                   <span>{isFlashing ? "ĐANG PHÁT LOA GỌI SỐ" : spotlight ? "SỐ VỪA ĐƯỢC GỌI" : "CHỜ LƯỢT GỌI"}</span>
                 </span>
 
                 {spotlight?.isPriority && (
-                  <span className="px-2.5 py-1 rounded-[6px] bg-[#fffefc] border border-[#cfe7d3] text-[#0f3e17] text-xs font-bold">
+                  <span className="badge-pill badge-pill-cream">
                     ƯU TIÊN Y TẾ
                   </span>
                 )}
               </div>
 
-              <div className="text-xs text-[#222222]/70 flex items-center gap-1 font-mono">
+              <div className="text-xs text-[#222222]/70 flex items-center gap-1">
                 <Clock className="w-4 h-4 text-[#0f3e17]" />
                 <span>Thời gian: {spotlight?.calledAt ?? "--:--:--"}</span>
               </div>
@@ -358,37 +353,37 @@ export default function TvDisplayPage() {
 
             {/* Giant Number Display */}
             <div className="my-8 text-center space-y-4">
-              <div className="text-sm sm:text-base font-bold text-[#0f3e17]/80 uppercase tracking-widest">
-                XIN MỜI BỆNH NHÂN CÓ SỐ THỨ TỰ
+              <div className="eyebrow text-[#0f3e17]/80">
+                Xin mời bệnh nhân có số thứ tự
               </div>
 
               <div
-                className={`text-6xl sm:text-8xl lg:text-9xl font-black font-mono tracking-widest leading-none text-[#0f3e17] transition-transform ${
+                className={`font-display-serif text-7xl sm:text-8xl lg:text-9xl tracking-[-0.03em] leading-none text-[#0f3e17] transition-transform ${
                   isFlashing ? "scale-105" : ""
                 }`}
               >
                 {spotlight?.queueNumber ?? "—"}
               </div>
 
-              <div className="text-2xl sm:text-4xl font-extrabold text-[#0f3e17] tracking-wide uppercase pt-2">
+              <div className="font-display-serif text-3xl sm:text-5xl text-[#0f3e17] tracking-[-0.01em] uppercase pt-2">
                 {spotlight?.patientName ?? "Chưa có lượt gọi nào"}
               </div>
             </div>
 
-            {/* Destination Room / Counter Box */}
-            <div className="p-6 rounded-[14px] bg-[#fffefc] border border-[#cfe7d3] flex items-center justify-between gap-4">
+            {/* Destination Room / Counter Box — Product Preview Card: cream, phẳng, không viền */}
+            <div className="p-6 rounded-[14px] bg-[#fffefc] flex items-center justify-between gap-4">
               <div className="flex items-center gap-4">
-                <div className="w-14 h-14 rounded-[14px] bg-[#e1f4df] border border-[#cfe7d3] flex items-center justify-center text-[#0f3e17] flex-shrink-0">
+                <div className="w-14 h-14 rounded-[14px] bg-[#e1f4df] flex items-center justify-center text-[#0f3e17] flex-shrink-0">
                   <MapPin className="w-7 h-7" />
                 </div>
                 <div>
-                  <div className="text-xs font-semibold text-[#222222]/60 uppercase tracking-wider">
-                    VUI LÒNG ĐẾN
+                  <div className="eyebrow text-[#222222]/60">
+                    Vui lòng đến
                   </div>
-                  <div className="text-xl sm:text-2xl font-black text-[#0f3e17]">
+                  <div className="font-display-serif text-2xl sm:text-3xl tracking-[-0.01em] text-[#0f3e17] mt-1">
                     {spotlight?.counterName ?? "Màn hình sẽ tự cập nhật khi lễ tân gọi số"}
                   </div>
-                  <div className="text-xs text-[#0f3e17] font-medium">
+                  <div className="text-xs text-[#0f3e17] font-medium mt-0.5">
                     {spotlight?.roomName ?? ""}
                   </div>
                 </div>
@@ -396,7 +391,7 @@ export default function TvDisplayPage() {
 
               <div className="text-right hidden sm:block">
                 <span className="text-xs text-[#222222]/60">Trạng thái</span>
-                <div className="text-sm font-bold text-[#0f3e17] flex items-center gap-1.5 justify-end">
+                <div className="text-sm font-semibold text-[#0f3e17] flex items-center gap-1.5 justify-end">
                   <span className="w-2.5 h-2.5 rounded-full bg-[#0f3e17]" />
                   Mời vào phòng
                 </div>
@@ -407,13 +402,13 @@ export default function TvDisplayPage() {
 
         {/* ===================== RIGHT OVERVIEW: BẢNG TỔNG HỢP CÁC BUỒNG (5 COLS) ===================== */}
         <div className="lg:col-span-5 flex flex-col justify-between space-y-4">
-          <div className="bg-[#fffefc] border border-[#efeeeb] rounded-[14px] p-6 h-full flex flex-col justify-between">
+          <div className="bg-[#cfe7d3] rounded-[14px] p-6 h-full flex flex-col justify-between">
             <div>
-              <div className="flex items-center justify-between pb-3 border-b border-[#efeeeb]">
+              <div className="flex items-center justify-between pb-3 border-b border-[#fffefc]/70">
                 <div className="flex items-center gap-2">
                   <Tv className="w-5 h-5 text-[#0f3e17]" />
-                  <h3 className="text-sm font-black text-[#0f3e17] uppercase tracking-wider">
-                    HÀNG ĐỢI CÁC QUẦY TIẾP NHẬN
+                  <h3 className="text-sm font-semibold text-[#0f3e17] uppercase tracking-wider">
+                    Hàng đợi các quầy tiếp nhận
                   </h3>
                 </div>
                 <span className="text-xs text-[#222222]/60">Hôm nay • tự cập nhật 15 giây</span>
@@ -422,7 +417,7 @@ export default function TvDisplayPage() {
               {/* Hàng đợi thật từng quầy (đồng bộ từ lễ tân/kiosk) */}
               <div className="space-y-3 mt-4">
                 {counters.length === 0 && (
-                  <div className="p-4 rounded-[14px] bg-[#e1f4df]/20 text-center text-xs text-[#222222]/60">
+                  <div className="p-4 rounded-[14px] bg-[#fffefc] text-center text-xs text-[#222222]/60">
                     Đang tải hàng đợi các quầy...
                   </div>
                 )}
@@ -436,10 +431,10 @@ export default function TvDisplayPage() {
                   return (
                     <div
                       key={c.counterId}
-                      className="p-3.5 rounded-[14px] bg-[#fffefc] border border-[#efeeeb] hover:bg-[#e1f4df]/20 transition-colors"
+                      className="p-3.5 rounded-[14px] bg-[#fffefc]"
                     >
                       <div className="flex items-center justify-between">
-                        <div className="font-bold text-[#0f3e17] text-xs sm:text-sm">
+                        <div className="font-semibold text-[#0f3e17] text-xs sm:text-sm">
                           {c.counterCode} - {c.counterName}
                         </div>
                         <span className="text-[11px] text-[#222222]/60">
@@ -450,10 +445,10 @@ export default function TvDisplayPage() {
                       <div className="flex items-center justify-between mt-2">
                         <div className="text-xs text-[#222222]/60 font-medium">Đang phục vụ:</div>
                         <div className="text-right">
-                          <div className="text-xl font-black font-mono text-[#0f3e17]">
+                          <div className="font-display-serif text-3xl leading-none text-[#0f3e17]">
                             {current?.queueNumber ?? "—"}
                           </div>
-                          <div className="text-[10px] text-[#222222]/60 truncate max-w-[180px]">
+                          <div className="text-[10px] text-[#222222]/60 truncate max-w-[180px] mt-1">
                             {current?.patientName ?? "Quầy đang trống"}
                           </div>
                         </div>
@@ -466,7 +461,7 @@ export default function TvDisplayPage() {
                               key={t.ticketId || i}
                               className="flex items-center justify-between text-[11px]"
                             >
-                              <span className="font-mono font-bold text-[#0f3e17]">
+                              <span className="font-semibold text-[#0f3e17]">
                                 {t.queueNumber}
                               </span>
                               <span className="text-[#222222]/70 truncate max-w-[180px]">
@@ -482,11 +477,11 @@ export default function TvDisplayPage() {
               </div>
             </div>
 
-            {/* Quick Rehab Reminder */}
-            <div className="mt-4 p-4 rounded-[14px] bg-[#e1f4df]/40 border border-[#cfe7d3] text-xs space-y-1.5 text-[#0f3e17]">
-              <div className="font-bold flex items-center gap-1.5">
-                <Heart className="w-4 h-4 text-[#0f3e17]" />
-                <span>Lưu ý Phục hồi chức năng:</span>
+            {/* Quick Rehab Reminder — Sage Feature Card: phẳng, không viền */}
+            <div className="mt-4 p-5 rounded-[14px] bg-[#b1dbb8] text-xs space-y-1.5 text-[#0f3e17]">
+              <div className="font-display-serif text-lg leading-snug flex items-center gap-1.5">
+                <Heart className="w-4 h-4 text-[#0f3e17] flex-shrink-0" />
+                <span>Lưu ý Phục hồi chức năng</span>
               </div>
               <p className="text-[11px] text-[#222222]/80 leading-relaxed">
                 Người bệnh sau tai biến hoặc phẫu thuật dây chằng gối cần có người nhà đi cùng hỗ trợ khi di chuyển lên phòng tập tầng 2.
@@ -496,14 +491,15 @@ export default function TvDisplayPage() {
         </div>
       </main>
 
-      {/* FOOTER */}
-      <footer className="border-t border-[#efeeeb] bg-[#fffefc] py-3.5 px-8 flex items-center justify-between gap-6 z-20">
-        <div className="flex-1 flex items-center gap-3 overflow-hidden">
-          <span className="px-2.5 py-1 rounded-[6px] bg-[#0f3e17] text-[#fffefc] text-xs font-semibold flex-shrink-0">
+      {/* FOOTER — thông báo rút gọn + co lại được (min-w-0) để không tràn
+          khỏi khung hình; badge pill 999px theo DESIGN.md. */}
+      <footer className="border-t border-[#efeeeb] bg-[#fffefc] py-3.5 px-8 flex items-center justify-between gap-6 z-20 flex-wrap">
+        <div className="flex-1 flex items-start gap-3 min-w-0">
+          <span className="px-2.5 py-1 rounded-full bg-[#0f3e17] text-[#fffefc] text-xs font-semibold flex-shrink-0 mt-0.5">
             THÔNG BÁO BÁC SĨ THANH SANG
           </span>
-          <div className="text-xs text-[#222222]/80 whitespace-nowrap overflow-hidden text-ellipsis font-medium">
-            Phòng khám chuyên khoa Phục hồi chức năng Bác sĩ Thanh Sang (193 Quang Trung, Đại Lộc, Đà Nẵng • Hotline: 0369.117.117) làm việc liên tục từ 07:30 đến 19:30 hàng ngày • Quý khách có thể tự bốc số ưu tiên tại Kiosk sảnh hoặc quét mã QR check-in trên điện thoại • Thanh toán viện phí không dùng tiền mặt qua VietQR thuận tiện.
+          <div className="text-xs text-[#222222]/80 leading-relaxed font-medium min-w-0">
+            Phòng khám chuyên khoa Phục hồi chức năng Bác sĩ Thanh Sang — 193 Quang Trung, Đại Lộc, Đà Nẵng • Hotline: 0369.117.117 • Làm việc 07:30–19:30 hằng ngày • Bốc số tại Kiosk sảnh hoặc quét mã QR check-in • Thanh toán qua VietQR.
           </div>
         </div>
 
