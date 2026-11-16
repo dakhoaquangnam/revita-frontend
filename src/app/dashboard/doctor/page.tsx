@@ -5,7 +5,6 @@ import {
   Stethoscope,
   Users,
   Volume2,
-  FileSpreadsheet,
   Pill,
   ShieldCheck,
   AlertTriangle,
@@ -17,7 +16,6 @@ import { useAuth } from "@/hooks/use-auth";
 import { ttsService } from "@/services/tts.service";
 import {
   doctorService,
-  RomMeasurement,
   DrugRow,
   ExerciseRow,
   MedicationPrescription,
@@ -68,37 +66,8 @@ interface DoctorQueueItem {
   status: "SERVING" | "WAITING" | "COMPLETED";
 }
 
-// Mẫu khởi tạo phiếu khám — bác sĩ chỉnh theo từng bệnh nhân.
-// Khi chuyển sang bệnh nhân khác, phiếu được đặt lại mẫu này để số liệu
-// của bệnh nhân trước không lọt sang bệnh án bệnh nhân sau.
-// GĐ3: FIM_TEMPLATE đã xóa — thang điểm FIM nay là Assessment có cấu trúc
-// (tab Thang điểm, mặc định trống, đủ 18 mục, không điền sẵn điểm).
-const ROM_TEMPLATE: RomMeasurement[] = [
-  {
-    joint: "Khớp Gối Phải",
-    movement: "Gập gối (Flexion)",
-    leftAngle: 135,
-    rightAngle: 85,
-    normalRange: "0° - 135°",
-    targetAngle: 110,
-  },
-  {
-    joint: "Khớp Vai Phải",
-    movement: "Gập vai (Forward Flexion)",
-    leftAngle: 175,
-    rightAngle: 110,
-    normalRange: "0° - 180°",
-    targetAngle: 140,
-  },
-  {
-    joint: "Cổ Chân Phải",
-    movement: "Gập mu bàn chân (Dorsiflexion)",
-    leftAngle: 20,
-    rightAngle: 5,
-    normalRange: "0° - 20°",
-    targetAngle: 15,
-  },
-];
+// 16/11: tab ROM nhập nhanh (ROM_TEMPLATE) đã bỏ — đo ROM nay chỉ làm ở
+// tab Thang điểm (Assessment ROM có cấu trúc, 12 khớp).
 
 // GĐ4: mẫu thuốc/bài tập ghi cứng đã bỏ — đơn thuốc kê từ danh mục Dược
 // thư (724 thuốc), bài tập kê từ danh mục bài tập PHCN (38 bài). Không
@@ -254,12 +223,11 @@ export default function DoctorWorkspacePage() {
     loadServices();
   }, [doctorId]);
 
-  // Tab nghiệp vụ: 'FIM' | 'ROM' | 'RX'
-  const [activeTab, setActiveTab] = useState<"FIM" | "ROM" | "RX">("FIM");
+  // Tab nghiệp vụ: 'FIM' | 'RX' (tab ROM nhập nhanh đã bỏ 16/11)
+  const [activeTab, setActiveTab] = useState<"FIM" | "RX">("FIM");
 
   // Thông tin khám lâm sàng (mẫu khởi tạo; bác sĩ chỉnh theo từng bệnh nhân)
   const [diagnosis, setDiagnosis] = useState("");
-  const [painScale, setPainScale] = useState(0);
   const [doctorNotes, setDoctorNotes] = useState("");
 
   // GĐ3 — id các Assessment tạo trong phiên khám (tab Thang điểm), để ghi
@@ -267,11 +235,6 @@ export default function DoctorWorkspacePage() {
   // đã bỏ: điểm FIM nay chỉ nằm ở bảng Assessment, không còn trong content.
   const [sessionAssessmentIds, setSessionAssessmentIds] = useState<string[]>([]);
   const [printAssessments, setPrintAssessments] = useState<AssessmentRecord[]>([]);
-
-  // Đo góc vận động khớp (ROM) — tab 2 giữ lại để nhập nhanh; số liệu ROM
-  // có cấu trúc nằm ở Assessment (tab Thang điểm), content bệnh án không
-  // còn ghi romList (GĐ3 §5.4).
-  const [romList, setRomList] = useState<RomMeasurement[]>([...ROM_TEMPLATE]);
 
   // GĐ4 — đơn thuốc & bài tập kê từ danh mục thật (Dược thư 724 thuốc,
   // 38 bài tập PHCN), không còn mẫu ghi cứng. Bắt đầu rỗng cho mỗi bệnh nhân.
@@ -298,11 +261,9 @@ export default function DoctorWorkspacePage() {
   // Đặt lại phiếu khám về mẫu khi chuyển bệnh nhân.
   const resetExamForm = () => {
     setDiagnosis("");
-    setPainScale(0);
     setDoctorNotes("");
     setSessionAssessmentIds([]);
     setPrintAssessments([]);
-    setRomList([...ROM_TEMPLATE]);
     setDrugRows([]);
     setExerciseRows([]);
     setSavedMp(null);
@@ -629,33 +590,10 @@ export default function DoctorWorkspacePage() {
     if (!currentPatient) return;
     setIsSaved(true);
     try {
-      // GĐ3 §5.4 — VAS: slider đau ở đầu trang là nhập nhanh; nếu mức đau
-      // khác lần VAS gần nhất thì tạo 1 Assessment VAS kèm theo (không tạo
-      // trùng nếu đã có VAS trong phiên). Lỗi tạo VAS không chặn lưu bệnh án
-      // nhưng phải hiện rõ, không âm thầm bỏ qua.
+      // 16/11: thước VAS nhanh ở thẻ bệnh nhân đã bỏ theo yêu cầu — điểm
+      // đau nay chỉ nhập ở tab Thang điểm (Assessment VAS có cấu trúc).
+      // assessmentIds chỉ còn các Assessment tạo ở tab Thang điểm.
       const assessmentIds = [...sessionAssessmentIds];
-      let vasError = "";
-      try {
-        const latestVas = await assessmentService.getPatientAssessments(
-          currentPatient.patientProfileId,
-          { scaleCode: "VAS", limit: 1 },
-        );
-        const lastValue = latestVas.data[0]?.value;
-        if (lastValue !== painScale) {
-          const vas = await assessmentService.createAssessment({
-            patientProfileId: currentPatient.patientProfileId,
-            scaleCode: "VAS",
-            condition: "GENERAL",
-            specialty: "VLTL",
-            timepoint: latestVas.data[0] ? "REASSESSMENT" : "BASELINE",
-            appointmentId: currentPatient.id,
-            value: painScale,
-          });
-          assessmentIds.push(vas.id);
-        }
-      } catch (err: any) {
-        vasError = getApiErrorMessage(err, "Không lưu được điểm đau VAS.");
-      }
 
       // 1. Lưu bệnh án thật. Lỗi phải nổi lên — không được báo đã lưu
       // trong khi backend chưa ghi gì.
@@ -671,7 +609,6 @@ export default function DoctorWorkspacePage() {
         templateId: phcnTemplateId || undefined,
         content: {
           diagnosis,
-          painScale,
           assessmentIds,
           doctorNotes,
         },
@@ -750,10 +687,6 @@ export default function DoctorWorkspacePage() {
       setQueue((prev) =>
         prev.map((p, idx) => (idx === activePatientIndex ? { ...p, status: "COMPLETED" } : p))
       );
-
-      if (vasError) {
-        alert("Bệnh án đã lưu, nhưng " + vasError);
-      }
 
       setTimeout(() => {
         setIsSaved(false);
@@ -897,26 +830,6 @@ export default function DoctorWorkspacePage() {
               </div>
             </div>
 
-            {/* Thước đo mức độ đau VAS */}
-            <div className="space-y-1.5 pt-1">
-              <div className="flex justify-between text-xs">
-                <span className="font-medium text-[#222222]/80">Thang đo mức độ đau (VAS 0 - 10):</span>
-                <strong className="text-[#0f3e17] font-bold">{painScale}/10</strong>
-              </div>
-              <input
-                type="range"
-                min={0}
-                max={10}
-                value={painScale}
-                onChange={(e) => setPainScale(Number(e.target.value))}
-                className="w-full accent-[#0f3e17] bg-[#efeeeb] h-2 rounded-lg cursor-pointer"
-              />
-              <div className="flex justify-between text-[10px] text-[#222222]/50">
-                <span>0: Không đau</span>
-                <span>5: Đau vừa</span>
-                <span>10: Rất dữ dội</span>
-              </div>
-            </div>
           </div>
 
           {/* GĐ5 — Hoàn thành can thiệp (khóa phiếu). Khác hẳn nút "Hoàn
@@ -1061,7 +974,7 @@ export default function DoctorWorkspacePage() {
           </div>
         </div>
 
-        {/* Right Column: Tabs Lượng giá FIM & Đo ROM & Kê đơn */}
+        {/* Right Column: Tabs Thang điểm & Kê đơn */}
         <div className="lg:col-span-8 space-y-6">
           <div className="bg-[#fffefc] border border-[#efeeeb] rounded-[14px] p-6">
             {/* Mode Tabs */}
@@ -1081,19 +994,6 @@ export default function DoctorWorkspacePage() {
 
               <button
                 type="button"
-                onClick={() => setActiveTab("ROM")}
-                className={`flex items-center gap-2 px-4 py-2.5 rounded-[14px] text-xs font-semibold transition-colors whitespace-nowrap ${
-                  activeTab === "ROM"
-                    ? "bg-[#0f3e17] text-[#fffefc]"
-                    : "text-[#222222]/70 hover:text-[#0f3e17] hover:bg-[#e1f4df]/40"
-                }`}
-              >
-                <FileSpreadsheet className="w-4 h-4" />
-                <span>2. Đo Góc Vận động Khớp (ROM)</span>
-              </button>
-
-              <button
-                type="button"
                 onClick={() => setActiveTab("RX")}
                 className={`flex items-center gap-2 px-4 py-2.5 rounded-[14px] text-xs font-semibold transition-colors whitespace-nowrap ${
                   activeTab === "RX"
@@ -1102,7 +1002,7 @@ export default function DoctorWorkspacePage() {
                 }`}
               >
                 <Pill className="w-4 h-4" />
-                <span>3. Kê đơn & Chỉ định Bài tập</span>
+                <span>2. Kê đơn & Chỉ định Bài tập</span>
               </button>
             </div>
 
@@ -1123,82 +1023,8 @@ export default function DoctorWorkspacePage() {
               </p>
             )}
 
-            {/* TAB 2: ĐO GÓC VẬN ĐỘNG KHỚP (ROM) */}
-            {activeTab === "ROM" && (
-              <div className="space-y-6">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs text-[#0f3e17] font-semibold">
-                    Bảng Đo Góc Vận động Khớp (Goniometer Range of Motion)
-                  </span>
-                  <span className="text-[11px] text-[#0f3e17]/80 font-medium">So sánh bên lành vs bên bệnh</span>
-                </div>
 
-                <div className="space-y-4">
-                  {romList.map((rom, index) => {
-                    const percent = Math.min(100, Math.round((rom.rightAngle / rom.targetAngle) * 100));
-                    return (
-                      <div
-                        key={index}
-                        className="p-4 rounded-[14px] bg-[#fffefc] border border-[#efeeeb] space-y-3"
-                      >
-                        <div className="flex items-center justify-between text-xs">
-                          <div>
-                            <span className="font-bold text-[#0f3e17] text-sm">{rom.joint}</span>
-                            <span className="text-[#222222]/60 ml-2">({rom.movement})</span>
-                          </div>
-                          <span className="text-[11px] px-2.5 py-0.5 rounded-[6px] bg-[#e1f4df] text-[#0f3e17] border border-[#cfe7d3]">
-                            Chuẩn: {rom.normalRange}
-                          </span>
-                        </div>
-
-                        <div className="grid grid-cols-3 gap-3 text-xs">
-                          <div>
-                            <span className="text-[#222222]/60">Bên lành (Trái):</span>
-                            <div className="font-bold text-[#222222] mt-0.5">{rom.leftAngle}°</div>
-                          </div>
-                          <div>
-                            <span className="text-[#222222]/60">Bên tổn thương (Phải):</span>
-                            <div className="flex items-center gap-1.5 mt-0.5">
-                              <input
-                                type="number"
-                                value={rom.rightAngle}
-                                onChange={(e) => {
-                                  const updated = [...romList];
-                                  updated[index].rightAngle = Number(e.target.value);
-                                  setRomList(updated);
-                                }}
-                                className="w-16 px-2 py-0.5 rounded-[7px] bg-[#fffefc] border border-[#efeeeb] text-[#0f3e17] font-bold focus:outline-none focus:border-[#0f3e17]"
-                              />
-                              <span className="text-[#222222]/60">°</span>
-                            </div>
-                          </div>
-                          <div>
-                            <span className="text-[#222222]/60">Mục tiêu giai đoạn:</span>
-                            <div className="font-bold text-[#0f3e17] mt-0.5">{rom.targetAngle}°</div>
-                          </div>
-                        </div>
-
-                        {/* Progress Bar */}
-                        <div>
-                          <div className="flex justify-between text-[11px] text-[#222222]/60 mb-1">
-                            <span>Mức độ phục hồi góc độ:</span>
-                            <strong className="text-[#0f3e17]">{percent}%</strong>
-                          </div>
-                          <div className="w-full bg-[#efeeeb] rounded-full h-2 overflow-hidden">
-                            <div
-                              className="bg-[#0f3e17] h-2 rounded-full transition-all duration-500"
-                              style={{ width: `${percent}%` }}
-                            />
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-
-            {/* TAB 3: KÊ ĐƠN THUỐC & BÀI TẬP PHCN TẠI NHÀ */}
+            {/* TAB 2: KÊ ĐƠN THUỐC & BÀI TẬP PHCN TẠI NHÀ */}
             {activeTab === "RX" && (
               <div className="space-y-6">
                 {/* Phần 1: Đơn thuốc — kê từ danh mục Dược thư (GĐ4) */}
@@ -1497,9 +1323,6 @@ export default function DoctorWorkspacePage() {
                           </strong>
                         </div>
                       ))}
-                    </div>
-                    <div className="text-[11px] text-[#222222]/70 mt-1">
-                      Thang đo mức độ đau VAS: {painScale}/10.
                     </div>
                   </div>
 
