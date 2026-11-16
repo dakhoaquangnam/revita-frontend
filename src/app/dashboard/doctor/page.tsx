@@ -1086,7 +1086,7 @@ export default function DoctorWorkspacePage() {
                   </div>
 
                   <p className="text-[11px] text-[#222222]/60 leading-relaxed">
-                    Tick chọn dịch vụ cần làm cho bệnh nhân này. Khi bấm “Hoàn tất Ca khám &amp; Lưu Bệnh án”,
+                    Tick chọn dịch vụ cần làm cho bệnh nhân này. Khi bấm nút Lưu,
                     hệ thống tạo phiếu chỉ định thật — thu ngân quét mã phiếu để lập hóa đơn. Không chọn
                     dịch vụ nào thì không tạo phiếu.
                   </p>
@@ -1209,20 +1209,22 @@ export default function DoctorWorkspacePage() {
                 <button
                   type="button"
                   onClick={() => setShowPrintModal(true)}
-                  className="px-4 py-2.5 rounded-[14px] bg-[#fffefc] border border-[#efeeeb] hover:bg-[#efeeeb]/40 text-[#0f3e17] text-xs font-semibold flex items-center gap-2 transition-colors"
+                  title="Xem & In Phiếu Kết quả"
+                  aria-label="Xem & In Phiếu Kết quả"
+                  className="p-2.5 rounded-[14px] bg-[#fffefc] border border-[#efeeeb] hover:bg-[#efeeeb]/40 text-[#0f3e17] flex items-center justify-center transition-colors"
                 >
                   <Printer className="w-4 h-4" />
-                  <span>Xem & In Phiếu Kết quả</span>
                 </button>
 
                 <button
                   type="button"
                   onClick={handleSaveSession}
                   disabled={isSaved}
-                  className="px-6 py-2.5 rounded-[14px] bg-[#0f3e17] hover:bg-[#0c2f10] text-[#fffefc] text-xs font-semibold flex items-center gap-2 transition-colors"
+                  title="Hoàn tất Ca khám & Lưu Bệnh án"
+                  aria-label="Hoàn tất Ca khám & Lưu Bệnh án"
+                  className="p-2.5 rounded-[14px] bg-[#0f3e17] hover:bg-[#0c2f10] text-[#fffefc] flex items-center justify-center transition-colors disabled:opacity-50"
                 >
                   <Save className="w-4 h-4" />
-                  <span>{isSaved ? "Đang đồng bộ..." : "Hoàn tất Ca khám & Lưu Bệnh án"}</span>
                 </button>
               </div>
             </div>
@@ -1492,7 +1494,7 @@ export default function DoctorWorkspacePage() {
                     </table>
                   ) : (
                     <p className="text-xs text-[#222222]/70">
-                      Phiên này chưa kê thuốc nào. Kê thuốc ở tab “Kê đơn” rồi bấm “Hoàn tất Ca khám &amp; Lưu Bệnh án”.
+                      Phiên này chưa kê thuốc nào. Kê thuốc ở tab “Kê đơn” rồi bấm nút Lưu.
                     </p>
                   )}
                 </div>
@@ -1556,7 +1558,7 @@ export default function DoctorWorkspacePage() {
                 <div className="my-4 space-y-2 text-xs">
                   {(savedExpRows.length > 0 ? savedExpRows : exerciseRows).length === 0 && (
                     <p className="text-[#222222]/70">
-                      Phiên này chưa kê bài tập nào. Chọn bài ở tab “Kê đơn” rồi bấm “Hoàn tất Ca khám &amp; Lưu Bệnh án”.
+                      Phiên này chưa kê bài tập nào. Chọn bài ở tab “Kê đơn” rồi bấm nút Lưu.
                     </p>
                   )}
                   {(savedExpRows.length > 0 ? savedExpRows : exerciseRows).map((ex, i) => (
