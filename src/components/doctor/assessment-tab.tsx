@@ -6,7 +6,6 @@ import {
   CONDITION_OPTIONS,
   SPECIALTY_OPTIONS,
   TIMEPOINT_OPTIONS,
-  vietnameseBadge,
   type AssessmentRecord,
   type GoalWithProgress,
   type MeasureInput,
@@ -365,7 +364,7 @@ export default function AssessmentTab({
   return (
     <div className="space-y-6">
       {/* Chọn bệnh lý + chuyên ngành + thang */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         <label className="text-xs">
           <span className="text-[#222222]/60">Bệnh lý</span>
           <select
@@ -390,35 +389,24 @@ export default function AssessmentTab({
             ))}
           </select>
         </label>
+        <label className="text-xs">
+          <span className="text-[#222222]/60">Thang điểm</span>
+          <select
+            value={selectedScaleCode}
+            onChange={(e) => setSelectedScaleCode(e.target.value)}
+            className="mt-1 w-full bg-[#fffefc] border border-[#efeeeb] rounded-[7px] px-2 py-2 text-xs font-semibold text-[#0f3e17] focus:outline-none focus:border-[#0f3e17]"
+          >
+            <option value="">— Chọn thang điểm —</option>
+            {scales.map((s) => (
+              <option key={s.code} value={s.code}>{s.code}</option>
+            ))}
+          </select>
+        </label>
       </div>
 
-      <div className="flex flex-wrap gap-2">
-        {scales.map((s) => {
-          const badge = vietnameseBadge(s.vietnameseStatus);
-          const active = s.code === selectedScaleCode;
-          return (
-            <button
-              key={s.code}
-              type="button"
-              onClick={() => setSelectedScaleCode(s.code)}
-              className={`px-3 py-2 rounded-[14px] border text-left transition-colors ${
-                active ? "bg-[#0f3e17] text-[#fffefc] border-[#0f3e17]" : "bg-[#fffefc] border-[#efeeeb] hover:border-[#0f3e17]"
-              }`}
-            >
-              <div className="text-xs font-bold">{s.code}</div>
-              <div className={`text-[10px] mt-0.5 ${active ? "text-[#e1f4df]" : "text-[#222222]/60"}`}>
-                {s.assessorType === "TB" ? "Tự báo cáo" : s.assessorType === "NT" ? "Đo số" : "Quan sát"}
-              </div>
-              <span className={`inline-block mt-1 text-[10px] px-2 py-0.5 rounded-[6px] border font-semibold ${active ? "bg-[#fffefc]/15 text-[#fffefc] border-transparent" : badge.className}`}>
-                {badge.text}
-              </span>
-            </button>
-          );
-        })}
-        {scales.length === 0 && (
-          <p className="text-xs text-[#222222]/70">Chưa có thang nào cho bệnh lý/chuyên ngành này.</p>
-        )}
-      </div>
+      {scales.length === 0 && (
+        <p className="text-xs text-[#222222]/70">Chưa có thang nào cho bệnh lý/chuyên ngành này.</p>
+      )}
 
       {scaleDef && (
         <div className="space-y-4">
