@@ -52,8 +52,10 @@ export default function ReceptionistWorkspacePage() {
   useEffect(() => {
     const now = new Date();
     setTodayLabel(now.toLocaleDateString("vi-VN"));
-    // Ngày YYYY-MM-DD theo giờ Việt Nam để lọc lịch hẹn hôm nay.
-    setTodayDateStr(now.toLocaleDateString("en-CA", { timeZone: "Asia/Ho_Chi_Minh" }));
+    // Ngày YYYY-MM-DD theo giờ Việt Nam để lọc lịch hẹn.
+    const todayStr = now.toLocaleDateString("en-CA", { timeZone: "Asia/Ho_Chi_Minh" });
+    setTodayDateStr(todayStr);
+    setListDateStr((prev) => prev || todayStr);
   }, []);
   const isTodayTicket = (t: { assignedAt?: string }) =>
     !!todayLabel &&
@@ -73,12 +75,13 @@ export default function ReceptionistWorkspacePage() {
   const [foundAppointment, setFoundAppointment] = useState<any | null>(null);
   const [searchError, setSearchError] = useState("");
 
-  // Lịch hẹn đặt qua web hôm nay — lễ tân thấy ngay dưới ô tra cứu để bấm
-  // vào tra cứu/check-in, khỏi gõ mã tay.
+  // Lịch hẹn đặt qua web theo ngày chọn — lễ tân thấy ngay dưới ô tra cứu để
+  // bấm vào tra cứu/check-in, khỏi gõ mã tay. Mặc định là hôm nay.
   const [todayDateStr, setTodayDateStr] = useState("");
-  const [todayAppointments, setTodayAppointments] = useState<AppointmentDetail[]>([]);
-  const [todayAppointmentsLoading, setTodayAppointmentsLoading] = useState(false);
-  const [todayAppointmentsError, setTodayAppointmentsError] = useState("");
+  const [listDateStr, setListDateStr] = useState("");
+  const [listAppointments, setListAppointments] = useState<AppointmentDetail[]>([]);
+  const [listAppointmentsLoading, setListAppointmentsLoading] = useState(false);
+  const [listAppointmentsError, setListAppointmentsError] = useState("");
 
   // Bệnh nhân vừa gọi/gọi lại — hiện ngay trong khung "Đang phục vụ" mà không
   // chờ bản đồ hàng đợi đồng bộ lại (bản đồ có thể chậm, hoặc bệnh nhân được
@@ -222,29 +225,35 @@ export default function ReceptionistWorkspacePage() {
     }
   };
 
-  // Load lịch hẹn đặt qua web hôm nay — lỗi thì báo lỗi, không im lặng giữ
-  // dữ liệu cũ. Gọi lại sau mỗi lần check-in thành công để hàng đã cấp số
-  // hiện nhãn "Đã cấp số".
-  const fetchTodayAppointments = async () => {
-    if (!todayDateStr) return;
-    setTodayAppointmentsLoading(true);
+  // Load lịch hẹn đặt qua web theo ngày đang chọn — lỗi thì báo lỗi, không im
+  // lặng giữ dữ liệu cũ. Gọi lại sau mỗi lần check-in thành công để hàng đã
+  // cấp số hiện nhãn "Đã cấp số".
+  const fetchListAppointments = async (date: string) => {
+    if (!date) return;
+    setListAppointmentsLoading(true);
     try {
-      setTodayAppointmentsError("");
-      const data = await appointmentService.getAppointmentsByDate(todayDateStr);
-      setTodayAppointments(
+      setListAppointmentsError("");
+      const data = await appointmentService.getAppointmentsByDate(date);
+      setListAppointments(
         [...data].sort((a, b) => String(a.startTime).localeCompare(String(b.startTime))),
       );
     } catch (err: any) {
-      setTodayAppointments([]);
-      setTodayAppointmentsError(
+      setListAppointments([]);
+      setListAppointmentsError(
         err.response?.status === 403
           ? ROLE_ERROR_MESSAGE
           : err.response?.data?.message ||
-              "Không tải được danh sách lịch hẹn hôm nay. Vui lòng thử lại.",
+              "Không tải được danh sách lịch hẹn. Vui lòng thử lại.",
       );
     } finally {
-      setTodayAppointmentsLoading(false);
+      setListAppointmentsLoading(false);
     }
+  };
+
+  // YYYY-MM-DD -> DD/MM/YYYY để hiển thị (không qua Date để khỏi lệch múi giờ).
+  const formatDateStr = (s: string) => {
+    const parts = s.split("-");
+    return parts.length === 3 ? `${parts[2]}/${parts[1]}/${parts[0]}` : s;
   };
 
   // Mã vé đã được cấp số (đang trong hàng đợi các quầy) — hàng đó hiện nhãn
@@ -277,11 +286,11 @@ export default function ReceptionistWorkspacePage() {
     fetchRooms();
   }, []);
 
-  // Tải danh sách lịch hẹn web hôm nay khi mở tab hẹn trước.
+  // Tải danh sách lịch hẹn web theo ngày đang chọn khi mở tab hẹn trước.
   useEffect(() => {
-    if (activeTab === "APPOINTMENT") void fetchTodayAppointments();
+    if (activeTab === "APPOINTMENT") void fetchListAppointments(listDateStr);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeTab, todayDateStr]);
+  }, [activeTab, listDateStr]);
 
   // Load danh sách phòng thật — lỗi thì báo lỗi, không tự bịa phòng giả.
   const fetchRooms = async () => {
@@ -586,6 +595,7 @@ export default function ReceptionistWorkspacePage() {
         phone: apt.patientProfile?.phone ?? "",
         serviceName: service?.serviceName ?? "Khám PHCN",
         specialty: apt.specialtyName ?? "",
+        date: apt.date ?? "",
         timeSlot: `${String(apt.date ?? "").substring(0, 10)} (${apt.startTime} - ${apt.endTime})`,
         doctorId: apt.doctorId ?? "",
         doctorName: apt.doctorName ?? "",
@@ -653,8 +663,8 @@ export default function ReceptionistWorkspacePage() {
       setFoundAppointment(null);
       setSearchQuery("");
       await refreshDisplayedQueues();
-      // Cập nhật danh sách lịch hẹn hôm nay để hàng vừa check-in hiện "Đã cấp số".
-      void fetchTodayAppointments();
+      // Cập nhật danh sách lịch hẹn đang xem để hàng vừa check-in hiện "Đã cấp số".
+      void fetchListAppointments(listDateStr);
     } catch (err: any) {
       alert(
         "Đã xảy ra lỗi khi tạo vé: " +
@@ -789,10 +799,28 @@ export default function ReceptionistWorkspacePage() {
   const phcnRooms = useMemo(() => rooms.filter(isPhcnRoom), [rooms]);
 
   // Bệnh nhân đang phục vụ ở quầy của bạn (chỉ tính vé hôm nay).
-  // Khung hiển thị ưu tiên người này, nếu chưa có thì hiện người vừa gọi
-  // (lastCalledPatient) để số/tên/tuổi hiện ngay sau khi bấm Gọi/Gọi lại.
+  // Khung hiển thị ưu tiên người vừa gọi/gọi lại — kể cả gọi trúng quầy khác
+  // trong chế độ "Tất cả quầy" — để số/tên/tuổi đổi ngay sau khi bấm gọi.
+  // Luôn lấy bản ghi mới nhất từ bản đồ hàng đợi (số lần gọi mới nhất); nếu
+  // người vừa gọi đã rời hàng đợi (chuyển phòng/vắng) thì quay về người đang
+  // phục vụ ở quầy trực.
   const currentPatient = getServingPatient();
-  const displayedPatient = currentPatient ?? lastCalledPatient;
+  const displayedPatient = useMemo(() => {
+    const pick = lastCalledPatient ?? currentPatient;
+    if (!pick) return null;
+    const records = [...Object.values(allQueues), queueData].flatMap((snap) =>
+      snap ? [snap.current, snap.next, ...(snap.queue ?? []), ...(snap.ordered ?? [])] : [],
+    );
+    const fresh = records.find((p) => p?.ticketId === pick.ticketId);
+    if (fresh) return fresh;
+    if (lastCalledPatient) {
+      const stillAround = records.some(
+        (p) => p?.ticketId === lastCalledPatient.ticketId,
+      );
+      return stillAround ? lastCalledPatient : currentPatient;
+    }
+    return currentPatient;
+  }, [lastCalledPatient, currentPatient, allQueues, queueData]);
   // Nhóm hàng đợi hiển thị: "Tất cả" -> từng quầy; 1 quầy -> quầy đó.
   // Mỗi nhóm giữ bệnh nhân đang phục vụ (để gọi lại) + danh sách đợi hôm nay.
   const queueGroups = (queueFilter === "ALL"
@@ -916,6 +944,11 @@ export default function ReceptionistWorkspacePage() {
                   {displayedPatient.counterId !== activeCounterId && (
                     <div className="text-[11px] text-[#222222]/60 mt-1">
                       Đang phục vụ tại {displayedPatient.counterName}
+                    </div>
+                  )}
+                  {displayedPatient.callCount != null && displayedPatient.callCount > 0 && (
+                    <div className="text-[11px] text-[#222222]/60 mt-1">
+                      Đã gọi {displayedPatient.callCount} lần
                     </div>
                   )}
                 </div>
@@ -1276,6 +1309,15 @@ export default function ReceptionistWorkspacePage() {
                       </div>
                     )}
 
+                    {foundAppointment.date && todayDateStr && foundAppointment.date !== todayDateStr && (
+                      <div className="p-3 rounded-[14px] bg-amber-50 border border-amber-200 text-amber-800 text-xs">
+                        Lịch hẹn ngày {formatDateStr(foundAppointment.date)}{" "}
+                        {foundAppointment.date > todayDateStr
+                          ? "— chưa đến ngày hẹn, chỉ tra cứu để xem trước."
+                          : "— đã qua ngày hẹn, không check-in được nữa."}
+                      </div>
+                    )}
+
                     <div className="pt-2 flex justify-end gap-3">
                       <button
                         type="button"
@@ -1287,8 +1329,15 @@ export default function ReceptionistWorkspacePage() {
                       <button
                         type="button"
                         onClick={handleCheckinAppointment}
-                        disabled={actionLoading}
-                        className="px-6 py-2.5 rounded-[14px] bg-[#0f3e17] hover:bg-[#0c2f10] text-[#fffefc] text-xs font-semibold transition-colors flex items-center gap-2"
+                        disabled={
+                          actionLoading ||
+                          Boolean(
+                            foundAppointment.date &&
+                              todayDateStr &&
+                              foundAppointment.date !== todayDateStr,
+                          )
+                        }
+                        className="px-6 py-2.5 rounded-[14px] bg-[#0f3e17] hover:bg-[#0c2f10] text-[#fffefc] text-xs font-semibold transition-colors flex items-center gap-2 disabled:opacity-50"
                       >
                         <CheckCircle2 className="w-4 h-4" />
                         <span>Xác nhận Check-in & Cấp số khám</span>
@@ -1299,35 +1348,43 @@ export default function ReceptionistWorkspacePage() {
 
                 {/* Lịch hẹn đặt qua web hôm nay — bấm vào hàng để tra cứu */}
                 <div className="pt-1 border-t border-[#efeeeb]">
-                  <div className="flex items-center justify-between pt-4 pb-2">
+                  <div className="flex items-center justify-between pt-4 pb-2 gap-2 flex-wrap">
                     <h4 className="text-xs font-bold text-[#0f3e17]">
-                      Lịch hẹn đặt qua web hôm nay ({todayAppointments.length})
+                      Lịch hẹn đặt qua web ({listAppointments.length})
                     </h4>
-                    <button
-                      type="button"
-                      onClick={() => void fetchTodayAppointments()}
-                      disabled={todayAppointmentsLoading}
-                      className="text-[11px] font-semibold text-[#0f3e17] hover:underline disabled:opacity-50"
-                    >
-                      Làm mới
-                    </button>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="date"
+                        value={listDateStr}
+                        onChange={(e) => setListDateStr(e.target.value)}
+                        className="px-2 py-1 bg-[#fffefc] border border-[#efeeeb] rounded-[8px] text-xs text-[#222222] focus:outline-none focus:border-[#0f3e17]"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => void fetchListAppointments(listDateStr)}
+                        disabled={listAppointmentsLoading}
+                        className="text-[11px] font-semibold text-[#0f3e17] hover:underline disabled:opacity-50"
+                      >
+                        Làm mới
+                      </button>
+                    </div>
                   </div>
-                  {todayAppointmentsLoading && (
+                  {listAppointmentsLoading && (
                     <p className="text-xs text-[#222222]/60 py-2">Đang tải danh sách lịch hẹn...</p>
                   )}
-                  {todayAppointmentsError && (
+                  {listAppointmentsError && (
                     <div className="p-3 rounded-[14px] bg-rose-50 border border-rose-200 text-rose-800 text-xs flex items-center gap-2">
                       <AlertCircle className="w-4 h-4 text-rose-600 flex-shrink-0" />
-                      <span>{todayAppointmentsError}</span>
+                      <span>{listAppointmentsError}</span>
                     </div>
                   )}
-                  {!todayAppointmentsLoading && !todayAppointmentsError && todayAppointments.length === 0 && (
+                  {!listAppointmentsLoading && !listAppointmentsError && listAppointments.length === 0 && (
                     <p className="text-xs text-[#222222]/60 py-2">
-                      Chưa có lịch hẹn đặt qua web hôm nay.
+                      Chưa có lịch hẹn đặt qua web ngày {listDateStr ? formatDateStr(listDateStr) : "này"}.
                     </p>
                   )}
                   <div className="space-y-2">
-                    {todayAppointments.map((apt) => {
+                    {listAppointments.map((apt) => {
                       const code = apt.appointmentCode;
                       const alreadyCheckedIn = checkedInCodes.has(normalizeAppointmentCode(code));
                       const age = appointmentAge(apt);
