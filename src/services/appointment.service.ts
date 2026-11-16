@@ -276,6 +276,18 @@ export const appointmentService = {
   },
 
   /**
+   * Tất cả lịch hẹn trong 1 ngày (lễ tân xem danh sách đặt qua web để
+   * tra cứu/check-in ở Dashboard — backend chỉ cho ADMIN + RECEPTIONIST).
+   */
+  async getAppointmentsByDate(date: string): Promise<AppointmentDetail[]> {
+    const res = await apiClient.get(
+      `/appointment-booking/appointments?date=${encodeURIComponent(date)}`,
+    );
+    const data = res.data;
+    return Array.isArray(data?.appointments) ? data.appointments : [];
+  },
+
+  /**
    * Kỹ thuật viên đang làm việc (GET công khai — chỉ đọc).
    * Chỉ lấy id/tên/email/mã KTV; bản ghi auth trả về có kèm hash mật khẩu
    * nên không giữ lại nguyên bản ghi.

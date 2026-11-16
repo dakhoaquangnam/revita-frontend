@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import {
   Users,
   QrCode,
@@ -19,11 +19,20 @@ import { useAuth } from "@/hooks/use-auth";
 import {
   receptionistService,
   CounterItem,
+  QueuePatient,
   QueueSnapshot,
   RoomItem,
 } from "@/services/receptionist.service";
-import { appointmentService, normalizeAppointmentCode } from "@/services/appointment.service";
+import {
+  appointmentService,
+  normalizeAppointmentCode,
+  type AppointmentDetail,
+} from "@/services/appointment.service";
 import { useQueueEvents } from "@/hooks/use-queue-events";
+
+// Chỉ phòng PHCN — phòng khám hiện chỉ làm PHCN nên ô chọn buồng ở Dashboard
+// ẩn các phòng chuyên khoa khác (Bỏng, Nha, Mắt...).
+const isPhcnRoom = (r: RoomItem) => r.specialtyName === "Phục hồi chức năng";
 
 export default function ReceptionistWorkspacePage() {
   const { user } = useAuth();
@@ -41,7 +50,10 @@ export default function ReceptionistWorkspacePage() {
   // Component vì giá trị sẽ đóng cứng lúc prerender).
   const [todayLabel, setTodayLabel] = useState("");
   useEffect(() => {
-    setTodayLabel(new Date().toLocaleDateString("vi-VN"));
+    const now = new Date();
+    setTodayLabel(now.toLocaleDateString("vi-VN"));
+    // Ngày YYYY-MM-DD theo giờ Việt Nam để lọc lịch hẹn hôm nay.
+    setTodayDateStr(now.toLocaleDateString("en-CA", { timeZone: "Asia/Ho_Chi_Minh" }));
   }, []);
   const isTodayTicket = (t: { assignedAt?: string }) =>
     !!todayLabel &&
@@ -60,6 +72,18 @@ export default function ReceptionistWorkspacePage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [foundAppointment, setFoundAppointment] = useState<any | null>(null);
   const [searchError, setSearchError] = useState("");
+
+  // Lịch hẹn đặt qua web hôm nay — lễ tân thấy ngay dưới ô tra cứu để bấm
+  // vào tra cứu/check-in, khỏi gõ mã tay.
+  const [todayDateStr, setTodayDateStr] = useState("");
+  const [todayAppointments, setTodayAppointments] = useState<AppointmentDetail[]>([]);
+  const [todayAppointmentsLoading, setTodayAppointmentsLoading] = useState(false);
+  const [todayAppointmentsError, setTodayAppointmentsError] = useState("");
+
+  // Bệnh nhân vừa gọi/gọi lại — hiện ngay trong khung "Đang phục vụ" mà không
+  // chờ bản đồ hàng đợi đồng bộ lại (bản đồ có thể chậm, hoặc bệnh nhân được
+  // gọi ở quầy khác trong chế độ "Tất cả quầy").
+  const [lastCalledPatient, setLastCalledPatient] = useState<QueuePatient | null>(null);
 
   // Form bệnh nhân vãng lai
   const [walkInName, setWalkInName] = useState("");
@@ -198,10 +222,66 @@ export default function ReceptionistWorkspacePage() {
     }
   };
 
+  // Load lịch hẹn đặt qua web hôm nay — lỗi thì báo lỗi, không im lặng giữ
+  // dữ liệu cũ. Gọi lại sau mỗi lần check-in thành công để hàng đã cấp số
+  // hiện nhãn "Đã cấp số".
+  const fetchTodayAppointments = async () => {
+    if (!todayDateStr) return;
+    setTodayAppointmentsLoading(true);
+    try {
+      setTodayAppointmentsError("");
+      const data = await appointmentService.getAppointmentsByDate(todayDateStr);
+      setTodayAppointments(
+        [...data].sort((a, b) => String(a.startTime).localeCompare(String(b.startTime))),
+      );
+    } catch (err: any) {
+      setTodayAppointments([]);
+      setTodayAppointmentsError(
+        err.response?.status === 403
+          ? ROLE_ERROR_MESSAGE
+          : err.response?.data?.message ||
+              "Không tải được danh sách lịch hẹn hôm nay. Vui lòng thử lại.",
+      );
+    } finally {
+      setTodayAppointmentsLoading(false);
+    }
+  };
+
+  // Mã vé đã được cấp số (đang trong hàng đợi các quầy) — hàng đó hiện nhãn
+  // "Đã cấp số" thay vì cho bấm tra cứu lại (tránh cấp trùng số).
+  const checkedInCodes = useMemo(() => {
+    const codes = new Set<string>();
+    const collect = (snap: QueueSnapshot | null | undefined) => {
+      if (!snap) return;
+      [snap.current, snap.next, ...(snap.queue ?? []), ...(snap.ordered ?? [])].forEach(
+        (p) => {
+          if (p?.appointmentCode) codes.add(normalizeAppointmentCode(p.appointmentCode));
+        },
+      );
+    };
+    collect(queueData);
+    Object.values(allQueues).forEach(collect);
+    return codes;
+  }, [queueData, allQueues]);
+
+  // Tuổi của bệnh nhân trong lịch hẹn (backend đã tính sẵn; tự tính từ ngày
+  // sinh nếu thiếu).
+  const appointmentAge = (apt: AppointmentDetail) => {
+    if (typeof apt.patientProfile?.age === "number") return apt.patientProfile.age;
+    const dob = apt.patientProfile?.dateOfBirth ? new Date(apt.patientProfile.dateOfBirth) : null;
+    return dob ? new Date().getFullYear() - dob.getFullYear() : undefined;
+  };
+
   useEffect(() => {
     fetchCounters();
     fetchRooms();
   }, []);
+
+  // Tải danh sách lịch hẹn web hôm nay khi mở tab hẹn trước.
+  useEffect(() => {
+    if (activeTab === "APPOINTMENT") void fetchTodayAppointments();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeTab, todayDateStr]);
 
   // Load danh sách phòng thật — lỗi thì báo lỗi, không tự bịa phòng giả.
   const fetchRooms = async () => {
@@ -210,9 +290,12 @@ export default function ReceptionistWorkspacePage() {
       setRoomsError("");
       const data = await receptionistService.getRooms();
       setRooms(data);
-      if (data.length > 0) {
+      // Mặc định chọn phòng PHCN đầu tiên — trước đây lấy phòng đầu danh sách
+      // (Phòng Bỏng 1301) vì danh sách sắp theo mã phòng.
+      const phcn = data.filter(isPhcnRoom);
+      if (phcn.length > 0) {
         setSelectedDestRoom((prev) =>
-          prev && data.some((r) => r.id === prev) ? prev : data[0].id,
+          prev && phcn.some((r) => r.id === prev) ? prev : phcn[0].id,
         );
       }
     } catch (err: any) {
@@ -253,6 +336,39 @@ export default function ReceptionistWorkspacePage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [queueFilter, counters.length]);
 
+  // Bệnh nhân đang phục vụ ở quầy trực (tính từ bản đồ hàng đợi) — dùng chung
+  // cho khung hiển thị và các nút Phân buồng/Vắng, để nút bấm và khung hiện
+  // cùng một người.
+  const getServingPatient = (): QueuePatient | null => {
+    const snap = queueFilter === "ALL" ? allQueues[activeCounterId] ?? null : queueData;
+    return snap?.current && isTodayTicket(snap.current) ? snap.current : null;
+  };
+
+  // Bệnh nhân đợi lâu nhất trong ngày (để "Gọi tiếp theo" biết gọi ai, và
+  // để khung "Đang phục vụ" hiện ngay người đó sau khi gọi).
+  const findEarliestWaitingPatient = (): QueuePatient | null => {
+    let best: QueuePatient | null = null;
+    const snaps = queueFilter === "ALL" ? Object.values(allQueues) : [queueData];
+    for (const snap of snaps) {
+      for (const item of snap?.queue ?? []) {
+        if (!isTodayTicket(item)) continue;
+        if (!best || item.assignedAt < best.assignedAt) best = item;
+      }
+    }
+    return best;
+  };
+
+  // Tìm bệnh nhân đang đợi theo mã vé (để khung "Đang phục vụ" hiện ngay
+  // người vừa gọi từ danh sách chờ).
+  const findWaitingPatient = (ticketId: string): QueuePatient | null => {
+    const snaps = [...Object.values(allQueues), queueData];
+    for (const snap of snaps) {
+      const found = (snap?.queue ?? []).find((t) => t.ticketId === ticketId);
+      if (found) return found;
+    }
+    return null;
+  };
+
   // Quầy có bệnh nhân đợi lâu nhất trong ngày (để "Gọi tiếp theo" ở chế độ
   // "Tất cả quầy" biết gọi ở quầy nào).
   function findEarliestWaitingCounter(): string | null {
@@ -290,7 +406,13 @@ export default function ReceptionistWorkspacePage() {
     }
     setActionLoading(true);
     try {
+      // Người sắp được gọi (đã có đủ số/tên/tuổi) — lưu lại để khung "Đang
+      // phục vụ" hiện ngay sau khi gọi, không chờ bản đồ hàng đợi.
+      const candidate = findEarliestWaitingPatient();
       const res = await receptionistService.callNextPatient(targetCounterId);
+      if (res?.patient && candidate) {
+        setLastCalledPatient(candidate);
+      }
       await refreshDisplayedQueues();
       const patient = res?.patient;
       if (patient) {
@@ -320,6 +442,7 @@ export default function ReceptionistWorkspacePage() {
           );
         }
       } else {
+        setLastCalledPatient(null);
         alert(
           queueFilter === "ALL"
             ? "Hiện không còn bệnh nhân nào đang đợi ở các quầy."
@@ -350,9 +473,12 @@ export default function ReceptionistWorkspacePage() {
     }
     setActionLoading(true);
     try {
+      const candidate = findWaitingPatient(ticketId);
       const res = await receptionistService.callPatientByTicket(counterId, ticketId);
       if (res?.message && !res?.patient && !res?.ok) {
         alert(res.message);
+      } else if (candidate) {
+        setLastCalledPatient(candidate);
       }
       await refreshDisplayedQueues();
     } catch (err: any) {
@@ -372,9 +498,15 @@ export default function ReceptionistWorkspacePage() {
     if (!counterId) return;
     setActionLoading(true);
     try {
+      // Người đang phục vụ ở quầy này — giữ lại để khung hiện ngay sau khi
+      // gọi lại (bản đồ hàng đợi có thể chưa kịp đồng bộ số lần gọi).
+      const snap = queueFilter === "ALL" ? allQueues[counterId] : queueData;
+      const recalled = snap?.current && isTodayTicket(snap.current) ? snap.current : null;
       const res = await receptionistService.recallCurrentPatient(counterId);
       if (res?.message && !res?.patient) {
         alert(res.message);
+      } else if (recalled) {
+        setLastCalledPatient(recalled);
       }
       await refreshDisplayedQueues();
     } catch (err: any) {
@@ -388,7 +520,10 @@ export default function ReceptionistWorkspacePage() {
   };
 
   const handleSkip = async () => {
-    if (!activeCounterId) {
+    // Bỏ qua bệnh nhân đang phục vụ ở quầy của họ (có thể khác quầy trực
+    // khi gọi ở chế độ "Tất cả quầy").
+    const targetCounterId = displayedPatient?.counterId || activeCounterId;
+    if (!targetCounterId) {
       alert(
         "Chưa mở quầy nên chưa đánh dấu vắng được. " +
           (counterSessionError ||
@@ -398,7 +533,8 @@ export default function ReceptionistWorkspacePage() {
     }
     setActionLoading(true);
     try {
-      await receptionistService.skipCurrentPatient(activeCounterId);
+      await receptionistService.skipCurrentPatient(targetCounterId);
+      setLastCalledPatient(null);
       await refreshDisplayedQueues();
     } catch (err: any) {
       alert("Lỗi khi đánh dấu vắng: " + (err.message || ""));
@@ -419,6 +555,7 @@ export default function ReceptionistWorkspacePage() {
     setActionLoading(true);
     try {
       await receptionistService.rollbackPreviousPatient(activeCounterId);
+      setLastCalledPatient(null);
       await refreshDisplayedQueues();
     } catch (err: any) {
       alert("Lỗi khi gọi lại: " + (err.message || ""));
@@ -427,14 +564,14 @@ export default function ReceptionistWorkspacePage() {
     }
   };
 
-  // Tra cứu lịch hẹn theo mã thật trên backend.
+  // Tra cứu lịch hẹn theo mã thật trên backend — dùng chung cho form tra cứu
+  // và cho hàng trong danh sách lịch hẹn hôm nay (bấm vào là tra cứu luôn).
   // Không tìm thấy thì báo lỗi — không tự bịa bệnh nhân.
-  const handleSearchAppointment = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const lookupAppointment = async (code: string) => {
     setSearchError("");
     setFoundAppointment(null);
 
-    const q = searchQuery.trim();
+    const q = code.trim();
     if (!q) {
       setSearchError("Vui lòng nhập mã vé hẹn");
       return;
@@ -462,6 +599,11 @@ export default function ReceptionistWorkspacePage() {
               "Không tra cứu được lịch hẹn. Vui lòng thử lại.",
       );
     }
+  };
+
+  const handleSearchAppointment = (e: React.FormEvent) => {
+    e.preventDefault();
+    void lookupAppointment(searchQuery);
   };
 
   const handleCheckinAppointment = async () => {
@@ -511,6 +653,8 @@ export default function ReceptionistWorkspacePage() {
       setFoundAppointment(null);
       setSearchQuery("");
       await refreshDisplayedQueues();
+      // Cập nhật danh sách lịch hẹn hôm nay để hàng vừa check-in hiện "Đã cấp số".
+      void fetchTodayAppointments();
     } catch (err: any) {
       alert(
         "Đã xảy ra lỗi khi tạo vé: " +
@@ -590,12 +734,9 @@ export default function ReceptionistWorkspacePage() {
   // Bệnh nhân vãng lai (không có appointmentCode) chưa chuyển được vì vé
   // quầy không mang theo dịch vụ — báo rõ thay vì "thành công giả".
   const handleTransferToRoom = async () => {
-    // Bệnh nhân đang phục vụ ở quầy của bạn (đọc từ state, đúng cả khi xem
-    // "Tất cả quầy" vì khung phục vụ luôn gắn với quầy đang trực).
-    const servingSnap = queueFilter === "ALL" ? allQueues[activeCounterId] ?? null : queueData;
-    const current = servingSnap?.current && isTodayTicket(servingSnap.current)
-      ? servingSnap.current
-      : null;
+    // Bệnh nhân đang phục vụ — lấy đúng người khung "Đang phục vụ" đang hiện
+    // (kể cả người vừa gọi ở quầy khác trong chế độ "Tất cả quầy").
+    const current = getServingPatient() ?? lastCalledPatient;
     if (!current) {
       alert("Hiện không có bệnh nhân nào đang phục vụ tại quầy để phân buồng.");
       return;
@@ -632,6 +773,8 @@ export default function ReceptionistWorkspacePage() {
       setTimeout(() => {
         setTransferSuccessMsg("");
       }, 8000);
+      // Bệnh nhân đã vào phòng, không còn phục vụ ở quầy nữa.
+      setLastCalledPatient(null);
     } catch (err: any) {
       setTransferErrorMsg(
         "Không chuyển được vào phòng: " +
@@ -642,12 +785,14 @@ export default function ReceptionistWorkspacePage() {
     }
   };
 
+  // Phòng PHCN để chọn buồng (ẩn các phòng chuyên khoa khác).
+  const phcnRooms = useMemo(() => rooms.filter(isPhcnRoom), [rooms]);
+
   // Bệnh nhân đang phục vụ ở quầy của bạn (chỉ tính vé hôm nay).
-  const servingSnapshot = queueFilter === "ALL" ? allQueues[activeCounterId] ?? null : queueData;
-  const currentPatient =
-    servingSnapshot?.current && isTodayTicket(servingSnapshot.current)
-      ? servingSnapshot.current
-      : null;
+  // Khung hiển thị ưu tiên người này, nếu chưa có thì hiện người vừa gọi
+  // (lastCalledPatient) để số/tên/tuổi hiện ngay sau khi bấm Gọi/Gọi lại.
+  const currentPatient = getServingPatient();
+  const displayedPatient = currentPatient ?? lastCalledPatient;
   // Nhóm hàng đợi hiển thị: "Tất cả" -> từng quầy; 1 quầy -> quầy đó.
   // Mỗi nhóm giữ bệnh nhân đang phục vụ (để gọi lại) + danh sách đợi hôm nay.
   const queueGroups = (queueFilter === "ALL"
@@ -739,33 +884,40 @@ export default function ReceptionistWorkspacePage() {
                 Đang phục vụ tại quầy
               </span>
               <span className="text-xs text-[#222222]/60 font-medium">
-                {counters.find((c) => c.counterId === activeCounterId)?.counterName || "Quầy Tiếp Nhận"}
+                {displayedPatient && displayedPatient.counterId !== activeCounterId
+                  ? displayedPatient.counterName
+                  : counters.find((c) => c.counterId === activeCounterId)?.counterName || "Quầy Tiếp Nhận"}
               </span>
             </div>
 
-            {currentPatient ? (
+            {displayedPatient ? (
               <div className="space-y-4">
                 <div className="text-center py-5 px-3 rounded-[14px] bg-[#e1f4df]/40 border border-[#cfe7d3]">
                   <div className="text-xs text-[#0f3e17] font-semibold">Số thứ tự tiếp nhận</div>
                   <div className="text-4xl sm:text-5xl font-black text-[#0f3e17] tracking-wider my-1 font-mono">
-                    {currentPatient.queueNumber}
+                    {displayedPatient.queueNumber}
                   </div>
                   <div className="text-lg font-bold text-[#0f3e17] mt-1">
-                    {currentPatient.patientName}
+                    {displayedPatient.patientName}
                   </div>
                   <div className="text-xs text-[#222222]/70 mt-1">
-                    Tuổi: <strong className="text-[#0f3e17]">{currentPatient.patientAge || 58}</strong>
-                    {currentPatient.isDisabled && (
+                    Tuổi: <strong className="text-[#0f3e17]">{displayedPatient.patientAge ?? "—"}</strong>
+                    {displayedPatient.isDisabled && (
                       <span className="ml-2 px-2 py-0.5 rounded-[6px] bg-[#b1dbb8]/40 text-[#0f3e17] text-[10px] font-semibold">
                         Khuyết tật / Liệt
                       </span>
                     )}
-                    {currentPatient.isElderly && (
+                    {displayedPatient.isElderly && (
                       <span className="ml-2 px-2 py-0.5 rounded-[6px] bg-[#b6ced5]/30 text-[#0f3e17] text-[10px] font-semibold">
                         Người cao tuổi
                       </span>
                     )}
                   </div>
+                  {displayedPatient.counterId !== activeCounterId && (
+                    <div className="text-[11px] text-[#222222]/60 mt-1">
+                      Đang phục vụ tại {displayedPatient.counterName}
+                    </div>
+                  )}
                 </div>
 
                 {/* Phân buồng khám PHCN cho bệnh nhân này */}
@@ -790,16 +942,16 @@ export default function ReceptionistWorkspacePage() {
                       <select
                         value={selectedDestRoom}
                         onChange={(e) => setSelectedDestRoom(e.target.value)}
-                        disabled={roomsLoading || rooms.length === 0}
-                        className="flex-1 bg-[#fffefc] border border-[#efeeeb] rounded-[14px] px-3 py-2 text-xs text-[#222222] focus:outline-none focus:border-[#0f3e17] disabled:opacity-50"
+                        disabled={roomsLoading || phcnRooms.length === 0}
+                        className="flex-1 min-w-0 bg-[#fffefc] border border-[#efeeeb] rounded-[14px] px-3 py-2 text-xs text-[#222222] focus:outline-none focus:border-[#0f3e17] disabled:opacity-50"
                       >
                         {roomsLoading && (
                           <option value="">Đang tải danh sách phòng...</option>
                         )}
-                        {!roomsLoading && rooms.length === 0 && (
-                          <option value="">Không có phòng nào</option>
+                        {!roomsLoading && phcnRooms.length === 0 && (
+                          <option value="">Không có phòng PHCN nào</option>
                         )}
-                        {rooms.map((r) => {
+                        {phcnRooms.map((r) => {
                           const onDuty = r.booths
                             .map((b) => b.doctorName)
                             .find(Boolean);
@@ -814,8 +966,8 @@ export default function ReceptionistWorkspacePage() {
                       <button
                         type="button"
                         onClick={handleTransferToRoom}
-                        disabled={transferLoading || roomsLoading || rooms.length === 0}
-                        className="px-4 py-2 rounded-[14px] bg-[#0f3e17] hover:bg-[#0c2f10] text-[#fffefc] text-xs font-semibold transition-colors disabled:opacity-50"
+                        disabled={transferLoading || roomsLoading || phcnRooms.length === 0}
+                        className="px-4 py-2 rounded-[14px] bg-[#0f3e17] hover:bg-[#0c2f10] text-[#fffefc] text-xs font-semibold transition-colors disabled:opacity-50 shrink-0 whitespace-nowrap"
                       >
                         {transferLoading ? "Đang chuyển..." : "Phân buồng"}
                       </button>
@@ -857,7 +1009,7 @@ export default function ReceptionistWorkspacePage() {
               <button
                 type="button"
                 onClick={handleSkip}
-                disabled={actionLoading || !currentPatient}
+                disabled={actionLoading || !displayedPatient}
                 className="py-3 px-3 rounded-[14px] bg-[#fffefc] border border-[#efeeeb] hover:bg-[#efeeeb]/40 text-[#222222] text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors disabled:opacity-40"
                 title="Bỏ qua ca vắng mặt"
               >
@@ -1010,7 +1162,7 @@ export default function ReceptionistWorkspacePage() {
                 }`}
               >
                 <QrCode className="w-4 h-4" />
-                <span>1. Tiếp đón Bệnh nhân có Hẹn trước (Check-in QR)</span>
+                <span>1. Bệnh nhân hẹn trước (Check-in QR)</span>
               </button>
 
               <button
@@ -1023,7 +1175,7 @@ export default function ReceptionistWorkspacePage() {
                 }`}
               >
                 <UserPlus className="w-4 h-4" />
-                <span>2. Cấp số Bệnh nhân Vãng lai</span>
+                <span>2. Bệnh nhân vãng lai</span>
               </button>
             </div>
 
@@ -1144,6 +1296,89 @@ export default function ReceptionistWorkspacePage() {
                     </div>
                   </div>
                 )}
+
+                {/* Lịch hẹn đặt qua web hôm nay — bấm vào hàng để tra cứu */}
+                <div className="pt-1 border-t border-[#efeeeb]">
+                  <div className="flex items-center justify-between pt-4 pb-2">
+                    <h4 className="text-xs font-bold text-[#0f3e17]">
+                      Lịch hẹn đặt qua web hôm nay ({todayAppointments.length})
+                    </h4>
+                    <button
+                      type="button"
+                      onClick={() => void fetchTodayAppointments()}
+                      disabled={todayAppointmentsLoading}
+                      className="text-[11px] font-semibold text-[#0f3e17] hover:underline disabled:opacity-50"
+                    >
+                      Làm mới
+                    </button>
+                  </div>
+                  {todayAppointmentsLoading && (
+                    <p className="text-xs text-[#222222]/60 py-2">Đang tải danh sách lịch hẹn...</p>
+                  )}
+                  {todayAppointmentsError && (
+                    <div className="p-3 rounded-[14px] bg-rose-50 border border-rose-200 text-rose-800 text-xs flex items-center gap-2">
+                      <AlertCircle className="w-4 h-4 text-rose-600 flex-shrink-0" />
+                      <span>{todayAppointmentsError}</span>
+                    </div>
+                  )}
+                  {!todayAppointmentsLoading && !todayAppointmentsError && todayAppointments.length === 0 && (
+                    <p className="text-xs text-[#222222]/60 py-2">
+                      Chưa có lịch hẹn đặt qua web hôm nay.
+                    </p>
+                  )}
+                  <div className="space-y-2">
+                    {todayAppointments.map((apt) => {
+                      const code = apt.appointmentCode;
+                      const alreadyCheckedIn = checkedInCodes.has(normalizeAppointmentCode(code));
+                      const age = appointmentAge(apt);
+                      const serviceName = apt.services?.[0]?.serviceName ?? "";
+                      return (
+                        <button
+                          key={apt.appointmentId}
+                          type="button"
+                          disabled={alreadyCheckedIn}
+                          onClick={() => {
+                            setSearchQuery(code);
+                            void lookupAppointment(code);
+                          }}
+                          className="w-full text-left p-3 rounded-[14px] bg-[#fffefc] border border-[#efeeeb] hover:border-[#0f3e17] transition-colors disabled:opacity-70 disabled:hover:border-[#efeeeb]"
+                        >
+                          <div className="flex items-center justify-between gap-2">
+                            <div className="min-w-0">
+                              <div className="text-xs font-bold text-[#0f3e17] truncate">
+                                {apt.patientProfile?.name ?? "—"}
+                                {age != null && (
+                                  <span className="font-semibold text-[#222222]/60"> • {age} tuổi</span>
+                                )}
+                              </div>
+                              <div className="text-[11px] text-[#222222]/70 mt-0.5">
+                                <span className="font-mono font-semibold">{code}</span>
+                                {apt.patientProfile?.phone && (
+                                  <span> • {apt.patientProfile.phone}</span>
+                                )}
+                              </div>
+                              <div className="text-[11px] text-[#222222]/60 mt-0.5">
+                                {serviceName}
+                                {serviceName && " • "}
+                                {String(apt.date ?? "").substring(0, 10)} ({apt.startTime} - {apt.endTime})
+                                {apt.doctorName && ` • BS. ${apt.doctorName}`}
+                              </div>
+                            </div>
+                            {alreadyCheckedIn ? (
+                              <span className="text-[10px] px-2 py-0.5 rounded-[6px] bg-[#e1f4df] text-[#0f3e17] font-semibold border border-[#cfe7d3] flex-shrink-0">
+                                Đã cấp số
+                              </span>
+                            ) : (
+                              <span className="text-[11px] font-semibold text-[#0f3e17] flex-shrink-0">
+                                Tra cứu →
+                              </span>
+                            )}
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
               </div>
             )}
 
