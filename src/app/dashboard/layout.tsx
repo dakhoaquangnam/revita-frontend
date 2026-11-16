@@ -71,7 +71,7 @@ export default function DashboardLayout({
               className="absolute inset-0 bg-[#0f3e17]/60 backdrop-blur-sm"
               onClick={() => setMobileNavOpen(false)}
             />
-            <div className="absolute left-0 top-0 h-full shadow-xl">
+            <div className="absolute left-0 top-0 h-full">
               <DashboardSidebar
                 onNavigate={() => setMobileNavOpen(false)}
                 className="flex w-64 h-full bg-[#fffefc] border-r border-[#efeeeb] text-[#222222] flex-col justify-between select-none"
