@@ -76,6 +76,13 @@ export default function DatLichPage() {
     [specialties, selectedSpecialtyId],
   );
 
+  // TẠM THỜI: chỉ còn 1 chuyên khoa (PHCN) thì chọn sẵn để bệnh nhân khỏi bấm thêm.
+  useEffect(() => {
+    if (specialties?.length === 1 && !selectedSpecialtyId) {
+      setSelectedSpecialtyId(specialties[0].id);
+    }
+  }, [specialties, selectedSpecialtyId]);
+
   // Bác sĩ có lịch làm việc trong ngày theo chuyên khoa
   const {
     data: doctorsData,

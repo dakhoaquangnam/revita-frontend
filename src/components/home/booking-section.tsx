@@ -62,6 +62,13 @@ export function BookingSection() {
     setFormData((prev) => ({ ...prev, date: todayLocal() }));
   }, []);
 
+  // TẠM THỜI: chỉ còn 1 chuyên khoa (PHCN) thì chọn sẵn để bệnh nhân khỏi bấm thêm.
+  useEffect(() => {
+    if (specialties?.length === 1 && !formData.specialtyId) {
+      setFormData((prev) => ({ ...prev, specialtyId: specialties[0].id }));
+    }
+  }, [specialties, formData.specialtyId]);
+
   // Bác sĩ có lịch làm việc trong ngày theo chuyên khoa đã chọn.
   const { data: doctorsData, isLoading: doctorsLoading } = useQuery({
     queryKey: ["home-available-doctors", formData.specialtyId, formData.date],
