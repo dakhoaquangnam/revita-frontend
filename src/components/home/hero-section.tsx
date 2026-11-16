@@ -18,7 +18,7 @@ export function HeroSection() {
               </div>
 
               {/* 2. Headline: 2 lines max */}
-              <h1 className="font-display-serif-medium text-5xl sm:text-6xl lg:text-[64px] text-[#0c2f10] tracking-[-0.01em] leading-[1.12]">
+              <h1 className="font-display-serif-medium text-4xl sm:text-5xl lg:text-[54px] text-[#0c2f10] tracking-[-0.01em] leading-[1.12]">
                 Phục hồi vận động, <br className="hidden sm:inline" />
                 <span>tìm lại cuộc sống chủ động</span>
               </h1>
