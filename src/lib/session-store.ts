@@ -73,7 +73,9 @@ export function readSession(): StoredSession | null {
   return null;
 }
 
-/** Ghi phiên mới: xóa cả hai kho rồi ghi vào đúng kho theo lựa chọn ghi nhớ. */
+/** Ghi phiên mới: ghi vào kho đích TRƯỚC rồi mới xóa kho còn lại. Trước đây
+ *  xóa cả hai kho trước rồi mới ghi — nếu ghi thất bại (bộ nhớ trình duyệt
+ *  bị chặn/đầy) thì phiên cũ mất trắng, tải lại trang là bị đăng xuất. */
 export function saveSession(
   accessToken: string,
   refreshToken: string,
@@ -81,11 +83,15 @@ export function saveSession(
   remembered: boolean,
 ): void {
   if (typeof window === "undefined") return;
-  clearSession();
   const target = remembered ? window.localStorage : window.sessionStorage;
+  const other = remembered ? window.sessionStorage : window.localStorage;
   safeSet(target, TOKEN_KEY, accessToken);
   if (refreshToken) safeSet(target, REFRESH_KEY, refreshToken);
   if (user != null) safeSet(target, USER_KEY, JSON.stringify(user));
+  // Chỉ xóa kho còn lại sau khi đã ghi xong (tránh trùng phiên hai kho).
+  safeRemove(other, TOKEN_KEY);
+  safeRemove(other, REFRESH_KEY);
+  safeRemove(other, USER_KEY);
 }
 
 /** Cập nhật user đã lưu (giữ nguyên kho và token). */
@@ -146,9 +152,20 @@ export function refreshAccessToken(): Promise<string | null> {
       // Giữ nguyên lựa chọn ghi nhớ của phiên cũ (refresh token xoay vòng).
       saveSession(accessToken, refreshToken || session.refreshToken, session.user, session.remembered);
       return accessToken;
-    } catch {
-      // Refresh token hết hạn/không hợp lệ -> phiên chết thật, xóa để về login.
-      clearSession();
+    } catch (err) {
+      // Chỉ xóa phiên khi backend khẳng định refresh token không hợp lệ
+      // hoặc hết hạn (400/401). Lỗi mạng/timeout/lỗi máy chủ thì GIỮ phiên
+      // cũ: access token có thể vẫn còn hạn, lần gọi sau sẽ thử làm mới
+      // lại — trước đây lỗi nào cũng xóa phiên nên một cú chập chờn mạng
+      // lúc tải lại trang là văng người dùng ra trang đăng nhập.
+      if (
+        axios.isAxiosError(err) &&
+        err.response &&
+        err.response.status >= 400 &&
+        err.response.status < 500
+      ) {
+        clearSession();
+      }
       return null;
     } finally {
       refreshPromise = null;

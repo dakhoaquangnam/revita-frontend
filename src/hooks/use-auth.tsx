@@ -36,7 +36,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (session?.accessToken) {
         const ok = await ensureFreshToken();
         if (!ok) {
-          setUser(null);
+          // Chỉ coi là hết phiên khi kho phiên đã trống (refresh token bị
+          // backend từ chối nên đã xóa). Lỗi mạng nhất thời thì giữ nguyên
+          // user đã lưu — trước đây lỗi nào cũng setUser(null) nên tải lại
+          // trang đúng lúc mạng chập chờn là bị văng ra đăng nhập.
+          if (!readSession()?.accessToken) {
+            setUser(null);
+          }
         } else if (!savedUser) {
           // Có token còn hạn nhưng mất thông tin user (vd xóa tay): lấy lại.
           try {

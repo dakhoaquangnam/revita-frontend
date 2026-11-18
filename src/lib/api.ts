@@ -55,10 +55,15 @@ apiClient.interceptors.response.use(
         original.headers.Authorization = `Bearer ${fresh}`;
         return apiClient(original);
       }
-      clearSession();
-      const path = window.location.pathname;
-      if (path.startsWith("/dashboard") && path !== "/dashboard/login") {
-        window.location.replace("/dashboard/login");
+      // Làm mới thất bại. refreshAccessToken chỉ xóa phiên khi backend từ
+      // chối refresh token (4xx); lỗi mạng thì phiên cũ vẫn còn — không xóa
+      // và không đá về login, để lần gọi sau thử làm mới lại.
+      if (!readSession()?.accessToken) {
+        clearSession();
+        const path = window.location.pathname;
+        if (path.startsWith("/dashboard") && path !== "/dashboard/login") {
+          window.location.replace("/dashboard/login");
+        }
       }
     }
     return Promise.reject(error);
