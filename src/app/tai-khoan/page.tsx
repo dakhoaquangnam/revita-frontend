@@ -341,8 +341,10 @@ export default function TaiKhoanPage() {
   // chỉ dùng biên lai đã lưu trên máy làm nguồn phụ.
   const handleSearchCode = async (e: React.FormEvent) => {
     e.preventDefault();
-    const q = searchCode.trim();
-    if (!q) return;
+    const raw = searchCode.trim();
+    if (!raw) return;
+    // Chỉ nhập 8 số thì tự thêm tiền tố "A" (mã hẹn dạng A + 8 số).
+    const q = /^[0-9]{8}$/.test(raw) ? `A${raw}` : raw;
     try {
       const apt = await appointmentService.getAppointmentByCode(q);
       const service = apt.services?.[0];
@@ -632,7 +634,7 @@ export default function TaiKhoanPage() {
                   </div>
 
                   <p className="text-xs text-[#cfe7d3] leading-relaxed">
-                    Bạn vừa đặt lịch hẹn tại trang web? Nhập mã phiếu hẹn (ví dụ: <code>APT-...</code>) hoặc số điện thoại để lấy mã QR vào phòng khám.
+                    Bạn vừa đặt lịch hẹn tại trang web? Nhập mã phiếu hẹn (ví dụ: <code>A26111801</code>) hoặc số điện thoại để lấy mã QR vào phòng khám.
                   </p>
 
                   <form onSubmit={handleSearchCode} className="space-y-3">
@@ -641,7 +643,7 @@ export default function TaiKhoanPage() {
                       required
                       value={searchCode}
                       onChange={(e) => setSearchCode(e.target.value)}
-                      placeholder="Nhập mã vé APT-... hoặc SĐT"
+                      placeholder="Nhập mã hẹn A... hoặc SĐT"
                       className="w-full px-4 py-2.5 text-sm bg-[#fffefc]/10 border border-[#fffefc]/20 rounded-[14px] text-[#fffefc] placeholder-[#cfe7d3]/60 focus:outline-none focus:border-[#b1dbb8]"
                     />
                     <button

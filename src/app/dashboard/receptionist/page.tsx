@@ -1396,7 +1396,7 @@ export default function ReceptionistWorkspacePage() {
                         type="text"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        placeholder="Nhập mã vé APT-..."
+                        placeholder="Nhập mã hẹn A..."
                         className="w-full pl-10 pr-3.5 py-2.5 bg-[#fffefc] border border-[#efeeeb] rounded-[14px] text-xs text-[#222222] placeholder-[#222222]/40 focus:outline-none focus:border-[#0f3e17]"
                       />
                     </div>
@@ -1411,10 +1411,10 @@ export default function ReceptionistWorkspacePage() {
                     <span>Gợi ý test nhanh:</span>
                     <button
                       type="button"
-                      onClick={() => setSearchQuery("APT-1794743712935")}
+                      onClick={() => setSearchQuery("APT-1794981029503")}
                       className="underline hover:text-[#0f3e17]"
                     >
-                      APT-1794743712935
+                      APT-1794981029503
                     </button>
                     <span>•</span>
                     <button

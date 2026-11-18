@@ -122,15 +122,15 @@ export default function KioskPage() {
     if (key === "CLEAR") {
       setAppointmentCodeInput("");
     } else if (key === "BACK") {
-      // Xóa từng ký tự; đang chỉ còn tiền tố "APT-" thì xóa hẳn.
-      setAppointmentCodeInput((prev) => (prev === "APT-" ? "" : prev.slice(0, -1)));
-    } else if (key === "APT") {
-      // Chạm vào APT thì tự điền tiền tố "APT-" để bệnh nhân chỉ cần nhập thêm số.
-      setAppointmentCodeInput((prev) => (prev.startsWith("APT-") ? prev : "APT-"));
+      // Xóa từng ký tự; đang chỉ còn tiền tố "A" thì xóa hẳn.
+      setAppointmentCodeInput((prev) => (prev === "A" ? "" : prev.slice(0, -1)));
+    } else if (key === "A") {
+      // Chạm vào A thì tự điền tiền tố "A" để bệnh nhân chỉ cần nhập thêm 8 số.
+      setAppointmentCodeInput((prev) => (prev.startsWith("A") ? prev : "A"));
     } else {
-      // Chỉ nhập số: sau "APT-" tối đa 14 số (APT- + ngày YYMMDD + 8 số giờ), SĐT tối đa 11 số.
+      // Chỉ nhập số: sau "A" tối đa 8 số (mã hẹn dạng A + 8 số), SĐT tối đa 11 số.
       setAppointmentCodeInput((prev) => {
-        const maxLen = prev.startsWith("APT-") ? 18 : 11;
+        const maxLen = prev.startsWith("A") ? 9 : 11;
         if (prev.length >= maxLen) return prev;
         return prev + key;
       });
@@ -143,7 +143,7 @@ export default function KioskPage() {
     setIsSubmitting(true);
     setErrorMsg("");
     try {
-      // Chỉ nhập số (không có tiền tố APT-) = số điện thoại -> lấy số theo SĐT.
+      // Chỉ nhập số (không có tiền tố A) = số điện thoại -> lấy số theo SĐT.
       if (/^[0-9]{9,11}$/.test(raw)) {
         const res = await receptionistService.takeNumber({
           patientPhone: raw,
@@ -166,7 +166,8 @@ export default function KioskPage() {
         return;
       }
       // Tra cứu lịch hẹn thật trước để lấy đúng tên/SĐT/tuổi/ưu tiên của bệnh nhân.
-      const code = raw.toUpperCase();
+      // Bệnh nhân chỉ nhập 8 số (không bấm phím A) thì tự thêm tiền tố "A".
+      const code = /^[0-9]{8}$/.test(raw) ? `A${raw}` : raw.toUpperCase();
       const apt = await appointmentService.getAppointmentByCode(code);
       const profile: PatientProfileSummary = apt.patientProfile ?? {
         id: "",
@@ -502,13 +503,13 @@ export default function KioskPage() {
 
               {/* On-Screen Touch Keypad */}
               <div className="grid grid-cols-3 gap-3 max-w-md mx-auto">
-                {["1", "2", "3", "4", "5", "6", "7", "8", "9", "APT", "0", "BACK"].map((key) => (
+                {["1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "0", "BACK"].map((key) => (
                   <button
                     key={key}
                     type="button"
                     onClick={() => handleKeypadPress(key)}
                     className={`h-16 rounded-[14px] text-xl font-semibold flex items-center justify-center transition-colors ${
-                      key === "APT"
+                      key === "A"
                         ? "bg-[#e1f4df] border border-[#efeeeb] text-[#0f3e17] font-semibold"
                         : key === "BACK"
                         ? "bg-rose-50 border border-rose-200 text-rose-800 text-sm font-semibold"
