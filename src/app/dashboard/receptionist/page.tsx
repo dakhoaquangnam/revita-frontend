@@ -755,6 +755,9 @@ export default function ReceptionistWorkspacePage() {
 
       setWalkInName("");
       setWalkInPhone("");
+      setWalkInBirthYear("1965");
+      setWalkInAllergies("");
+      setWalkInService("Kham-Luong-Gia");
       setWalkInIsDisabled(false);
       setWalkInIsElderly(false);
       setWalkInIsPregnant(false);
@@ -872,6 +875,37 @@ export default function ReceptionistWorkspacePage() {
   });
   const waitingQueue = queueGroups.flatMap((g) => g.waiting);
   const calledToday = queueGroups.flatMap((g) => g.history);
+
+  // Bệnh nhân vãng lai hôm nay (vé không gắn lịch hẹn) — hiện dưới form nhập
+  // như Tab 1 hiện "Lịch hẹn đặt qua web", để lễ tân thấy/kiểm tra lại người
+  // vừa cấp số mà không phải dò trong danh sách chờ chung (lỗi 18/11: Tab 2
+  // nhập xong không hiện gì bên dưới). Vé có thể nằm trong nhiều snapshot
+  // (quầy đang xem + tất cả quầy) nên gộp theo ticketId, giữ trạng thái
+  // tiến xa nhất (Đang đợi -> Đang phục vụ -> Đã gọi).
+  const walkInsToday = useMemo(() => {
+    const order = { WAITING: 0, SERVING: 1, CALLED: 2 } as const;
+    type Bucket = keyof typeof order;
+    const byId = new Map<string, QueuePatient & { bucket: Bucket }>();
+    const collect = (snap: QueueSnapshot | null | undefined) => {
+      if (!snap) return;
+      const put = (t: QueuePatient | null | undefined, bucket: Bucket) => {
+        if (!t || t.appointmentCode || !t.ticketId || !isTodayTicket(t)) return;
+        const prev = byId.get(t.ticketId);
+        if (!prev || order[bucket] > order[prev.bucket]) {
+          byId.set(t.ticketId, { ...t, bucket });
+        }
+      };
+      put(snap.current, "SERVING");
+      (snap.queue ?? []).forEach((t) => put(t, "WAITING"));
+      (snap.history ?? []).forEach((t) => put(t, "CALLED"));
+    };
+    collect(queueData);
+    Object.values(allQueues).forEach(collect);
+    return [...byId.values()].sort((a, b) =>
+      String(a.assignedAt).localeCompare(String(b.assignedAt)),
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [queueData, allQueues, todayLabel]);
 
   return (
     <div className="space-y-6 text-[#222222]">
@@ -1521,6 +1555,7 @@ export default function ReceptionistWorkspacePage() {
 
             {/* Tab 2: Tiếp đón Vãng lai */}
             {activeTab === "WALK_IN" && (
+              <>
               <form onSubmit={handleWalkInSubmit} className="space-y-4">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
@@ -1654,6 +1689,88 @@ export default function ReceptionistWorkspacePage() {
                   </button>
                 </div>
               </form>
+
+              {/* Bệnh nhân vãng lai hôm nay — hiện dưới form nhập như Tab 1
+                  hiện "Lịch hẹn đặt qua web" (lỗi 18/11: Tab 2 nhập xong
+                  không hiện gì bên dưới). */}
+              <div className="mt-6 pt-5 border-t border-[#efeeeb]">
+                <div className="flex items-center justify-between mb-3">
+                  <span className="eyebrow text-[#0f3e17]">
+                    Bệnh nhân vãng lai hôm nay ({walkInsToday.length})
+                  </span>
+                  <span className="text-[11px] text-[#222222]/60">
+                    {todayLabel}
+                  </span>
+                </div>
+                {walkInsToday.length === 0 ? (
+                  <p className="text-xs text-[#222222]/60">
+                    Chưa có bệnh nhân vãng lai nào hôm nay. Nhập thông tin
+                    phía trên rồi bấm &ldquo;Cấp số thứ tự khám vãng lai&rdquo;
+                    để thêm.
+                  </p>
+                ) : (
+                  <div className="space-y-2">
+                    {walkInsToday.map((item) => (
+                      <div
+                        key={item.ticketId}
+                        className="flex items-center justify-between gap-3 px-3.5 py-2.5 rounded-[14px] bg-[#fffefc] border border-[#efeeeb]"
+                      >
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs font-semibold text-[#222222] truncate">
+                              {item.patientName}
+                            </span>
+                            <span className="text-[11px] text-[#222222]/60 flex-shrink-0">
+                              {item.patientAge} tuổi
+                            </span>
+                          </div>
+                          <div className="text-[11px] text-[#222222]/60">
+                            {item.queueNumber} • {item.counterCode}
+                            {item.bucket === "CALLED" && item.callCount > 0
+                              ? ` • Đã gọi ${item.callCount} lần`
+                              : ""}
+                          </div>
+                        </div>
+                        {item.bucket === "WAITING" ? (
+                          <button
+                            type="button"
+                            onClick={() => void handleCallPatient(item.counterId, item.ticketId, item.queueNumber)}
+                            disabled={actionLoading}
+                            className="px-3 py-1.5 rounded-[14px] bg-[#0f3e17] hover:bg-[#0c2f10] text-[#fffefc] text-[11px] font-semibold flex items-center gap-1 transition-colors disabled:opacity-50 flex-shrink-0"
+                            title={`Gọi ${item.patientName} (${item.queueNumber})`}
+                          >
+                            <Volume2 className="w-3.5 h-3.5" />
+                            <span>Gọi</span>
+                          </button>
+                        ) : item.bucket === "SERVING" ? (
+                          <button
+                            type="button"
+                            onClick={() => void handleRecallCurrent(item.counterId, item.queueNumber)}
+                            disabled={actionLoading}
+                            className="px-3 py-1.5 rounded-[14px] bg-[#b1dbb8] hover:bg-[#cfe7d3] text-[#0f3e17] text-[11px] font-semibold flex items-center gap-1 transition-colors disabled:opacity-50 flex-shrink-0"
+                            title={`Gọi lại ${item.patientName} (${item.queueNumber})`}
+                          >
+                            <Volume2 className="w-3.5 h-3.5" />
+                            <span>Gọi lại</span>
+                          </button>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => void handleRecallHistoryPatient(item.counterId, item.ticketId, item.queueNumber)}
+                            disabled={actionLoading}
+                            className="px-3 py-1.5 rounded-[14px] bg-[#b1dbb8] hover:bg-[#cfe7d3] text-[#0f3e17] text-[11px] font-semibold flex items-center gap-1 transition-colors disabled:opacity-50 flex-shrink-0"
+                            title={`Gọi lại ${item.patientName} (${item.queueNumber})`}
+                          >
+                            <Volume2 className="w-3.5 h-3.5" />
+                            <span>Gọi lại</span>
+                          </button>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </>
             )}
           </div>
         </div>
