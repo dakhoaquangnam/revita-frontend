@@ -1057,7 +1057,7 @@ export default function ReceptionistWorkspacePage() {
                         Đã phân buồng — mã phiếu{" "}
                         {transferredTickets[displayedPatient.ticketId] ??
                           displayedPatient.roomPrescriptionCode}
-                        . Không cần gọi nữa.
+                        .
                       </span>
                     </div>
                   ) : roomsError ? (
@@ -1258,14 +1258,17 @@ export default function ReceptionistWorkspacePage() {
                             </div>
                           </div>
                           <div className="flex items-center gap-2 flex-shrink-0">
-                            {item.status === "PREPARING" ? (
-                              <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#e1f4df] text-[#0f3e17] font-semibold">
-                                Đang chuẩn bị
-                              </span>
-                            ) : transferredTickets[item.ticketId] || item.roomAssigned ? (
+                            {/* Vé đã phân buồng (kể cả vé còn nằm hàng chờ như
+                                Trí CTR001-003): hiện nhãn thay cho nút Gọi /
+                                Gọi lại, khỏi gọi trùng người đã vào buồng. */}
+                            {transferredTickets[item.ticketId] || item.roomAssigned ? (
                               <span className="px-3 py-1.5 rounded-[14px] bg-[#e1f4df] text-[#0f3e17] text-[11px] font-semibold flex items-center gap-1 flex-shrink-0">
                                 <Check className="w-3.5 h-3.5" />
                                 <span>Đã phân buồng</span>
+                              </span>
+                            ) : item.status === "PREPARING" ? (
+                              <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#e1f4df] text-[#0f3e17] font-semibold">
+                                Đang chuẩn bị
                               </span>
                             ) : (
                               <button
@@ -1316,16 +1319,23 @@ export default function ReceptionistWorkspacePage() {
                                   </div>
                                 </div>
                               </div>
-                              <button
-                                type="button"
-                                onClick={() => void handleRecallHistoryPatient(group.counter.counterId, item.ticketId, item.queueNumber)}
-                                disabled={actionLoading}
-                                className="px-3 py-1.5 rounded-[14px] bg-[#b1dbb8] hover:bg-[#cfe7d3] text-[#0f3e17] text-[11px] font-semibold flex items-center gap-1 transition-colors disabled:opacity-50 flex-shrink-0"
-                                title={`Gọi lại ${item.patientName} (${item.queueNumber})`}
-                              >
-                                <Volume2 className="w-3.5 h-3.5" />
-                                <span>Gọi lại</span>
-                              </button>
+                              {transferredTickets[item.ticketId] || item.roomAssigned ? (
+                                <span className="px-3 py-1.5 rounded-[14px] bg-[#e1f4df] text-[#0f3e17] text-[11px] font-semibold flex items-center gap-1 flex-shrink-0">
+                                  <Check className="w-3.5 h-3.5" />
+                                  <span>Đã phân buồng</span>
+                                </span>
+                              ) : (
+                                <button
+                                  type="button"
+                                  onClick={() => void handleRecallHistoryPatient(group.counter.counterId, item.ticketId, item.queueNumber)}
+                                  disabled={actionLoading}
+                                  className="px-3 py-1.5 rounded-[14px] bg-[#b1dbb8] hover:bg-[#cfe7d3] text-[#0f3e17] text-[11px] font-semibold flex items-center gap-1 transition-colors disabled:opacity-50 flex-shrink-0"
+                                  title={`Gọi lại ${item.patientName} (${item.queueNumber})`}
+                                >
+                                  <Volume2 className="w-3.5 h-3.5" />
+                                  <span>Gọi lại</span>
+                                </button>
+                              )}
                             </div>
                           ))}
                         </div>
@@ -1775,7 +1785,17 @@ export default function ReceptionistWorkspacePage() {
                               : ""}
                           </div>
                         </div>
+                        {/* Vé đã phân buồng mà vẫn nằm hàng chờ (như Trí ở
+                            danh sách chính): hiện nhãn thay cho nút Gọi.
+                            Các nhánh Gọi lại giữ nguyên — đó là lối thoát
+                            khi bệnh nhân cần quay lại quầy. */}
                         {item.bucket === "WAITING" ? (
+                          transferredTickets[item.ticketId] || item.roomAssigned ? (
+                            <span className="px-3 py-1.5 rounded-[14px] bg-[#e1f4df] text-[#0f3e17] text-[11px] font-semibold flex items-center gap-1 flex-shrink-0">
+                              <Check className="w-3.5 h-3.5" />
+                              <span>Đã phân buồng</span>
+                            </span>
+                          ) : (
                           <button
                             type="button"
                             onClick={() => void handleCallPatient(item.counterId, item.ticketId, item.queueNumber)}
@@ -1786,6 +1806,7 @@ export default function ReceptionistWorkspacePage() {
                             <Volume2 className="w-3.5 h-3.5" />
                             <span>Gọi</span>
                           </button>
+                          )
                         ) : item.bucket === "SERVING" ? (
                           <button
                             type="button"
