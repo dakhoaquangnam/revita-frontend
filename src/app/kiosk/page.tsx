@@ -378,7 +378,7 @@ export default function KioskPage() {
 
             {/* 3 Main Kiosk Touch Cards */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {/* Card 1: Đã đặt lịch trước */}
+              {/* Card 1: Có vé hẹn — Đã đặt lịch */}
               <button
                 type="button"
                 onClick={() => {
@@ -392,10 +392,10 @@ export default function KioskPage() {
                 </div>
                 <div className="space-y-2">
                   <span className="eyebrow block text-[#0f3e17]/80">
-                    Bước 1
+                    Có vé hẹn
                   </span>
                   <h3 className="font-display-serif-medium text-3xl tracking-tight text-[#0c2f10]">
-                    ĐÃ ĐẶT LỊCH TRƯỚC
+                    ĐÃ ĐẶT LỊCH
                   </h3>
                   <p className="text-xs text-[#222222]/80 leading-relaxed">
                     Đã đăng ký qua Website hoặc có Mã vé hẹn. Quét QR hoặc bấm SĐT.
