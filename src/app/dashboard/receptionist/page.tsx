@@ -1262,6 +1262,11 @@ export default function ReceptionistWorkspacePage() {
                               <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#e1f4df] text-[#0f3e17] font-semibold">
                                 Đang chuẩn bị
                               </span>
+                            ) : transferredTickets[item.ticketId] || item.roomAssigned ? (
+                              <span className="px-3 py-1.5 rounded-[14px] bg-[#e1f4df] text-[#0f3e17] text-[11px] font-semibold flex items-center gap-1 flex-shrink-0">
+                                <Check className="w-3.5 h-3.5" />
+                                <span>Đã phân buồng</span>
+                              </span>
                             ) : (
                               <button
                                 type="button"
