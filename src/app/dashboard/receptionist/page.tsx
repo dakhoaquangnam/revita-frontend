@@ -780,9 +780,15 @@ export default function ReceptionistWorkspacePage() {
   // (ticketId + counterId) — backend tự tạo hồ sơ + phiếu Khám PHCN từ
   // thông tin trên vé rồi phân buồng như lịch hẹn.
   const handleTransferToRoom = async () => {
-    // Bệnh nhân đang phục vụ — lấy đúng người khung "Đang phục vụ" đang hiện
-    // (kể cả người vừa gọi ở quầy khác trong chế độ "Tất cả quầy").
-    const current = getServingPatient() ?? lastCalledPatient;
+    // Bệnh nhân đang phục vụ — PHẢI lấy đúng người khung "Đang phục vụ" đang
+    // hiện (displayedPatient: người vừa gọi trước, rồi mới tới người đang
+    // phục vụ ở quầy trực). Trước đây lấy getServingPatient() (người đang
+    // phục vụ ở quầy trực của lễ tân) TRƯỚC rồi mới tới người vừa gọi, nên
+    // gọi ai ở quầy khác xong bấm Phân buồng thì hệ thống vẫn chuyển người
+    // ở quầy trực (Trí ở CTR001) thay vì người vừa gọi — "chỉ phân buồng
+    // được Hoàng Minh Trí, người khác không phân buồng được", mỗi lần bấm
+    // lại tạo thêm một hồ sơ + phiếu mới cho Trí.
+    const current = displayedPatient;
     if (!current) {
       alert("Hiện không có bệnh nhân nào đang phục vụ tại quầy để phân buồng.");
       return;
