@@ -15,6 +15,7 @@ import {
   Check,
   X,
   UserPlus,
+  Trash2,
 } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { useSocket } from "@/hooks/use-socket";
@@ -62,17 +63,19 @@ const THERAPY_STATUS_LABEL: Record<string, string> = {
 };
 
 const THERAPY_STATUS_STYLE: Record<string, string> = {
-  WAITING: "bg-amber-100 text-amber-800",
-  PREPARING: "bg-[#b6ced5] text-[#0f3e17]",
+  // Xanh lá + trắng theo DESIGN.md: Đang chờ = Keylime Wash + Forest Ink
+  // (không dùng hổ phách — hổ phách chỉ giữ cho lỗi/cảnh báo).
+  WAITING: "bg-[#e1f4df] text-[#0f3e17]",
+  PREPARING: "bg-[#cfe7d3] text-[#0f3e17]",
   SERVING: "bg-[#e1f4df] text-[#0f3e17]",
   WAITING_RESULT: "bg-[#cfe7d3] text-[#0f3e17]",
-  RETURNING: "bg-[#b6ced5] text-[#0f3e17]",
+  RETURNING: "bg-[#cfe7d3] text-[#0f3e17]",
   COMPLETED: "bg-[#efeeeb] text-[#222222]",
   SKIPPED: "bg-[#efeeeb] text-[#222222]/70",
   CANCELLED: "bg-red-100 text-red-700",
   NOT_STARTED: "bg-[#efeeeb] text-[#222222]",
   PENDING: "bg-[#efeeeb] text-[#222222]",
-  RESCHEDULED: "bg-amber-100 text-amber-800",
+  RESCHEDULED: "bg-[#e1f4df] text-[#0f3e17]",
 };
 
 function fmtTime(value: string | null | undefined): string {
@@ -715,6 +718,38 @@ export default function RoomWorkspacePage() {
     });
   };
 
+  // Xóa dịch vụ khi bệnh nhân từ chối: chuyển sang CANCELLED — backend
+  // loại CANCELLED khỏi hàng đợi phòng nên dòng biến mất ngay sau khi xóa.
+  // Chỉ xóa dịch vụ chưa bắt đầu (WAITING/RETURNING/PREPARING); dịch vụ
+  // đang phục vụ hoặc chờ ghi kết quả thì dùng "Bỏ qua"/"Hoàn thành".
+  const handleDeleteTherapy = (item: TherapyQueueItem) => {
+    if (
+      !window.confirm(
+        `Xóa dịch vụ ${item.serviceName} của ${item.patientName} (${item.prescriptionCode})? Bệnh nhân từ chối dịch vụ nên xóa khỏi hàng đợi.`,
+      )
+    )
+      return;
+    void runAction(`delete-${item.id}`, async () => {
+      await roomService.updateStatus(item.id, "CANCELLED", "Bệnh nhân từ chối dịch vụ");
+      return `Đã xóa ${item.serviceName} của ${item.patientName}.`;
+    });
+  };
+
+  // Xóa lịch khám khi bệnh nhân từ chối: hủy lịch hẹn (PATCH .../cancel).
+  // Chỉ bác sĩ phụ trách lịch đó mới hủy được (backend kiểm tra).
+  const handleDeleteExam = (item: ExamQueueItem) => {
+    if (
+      !window.confirm(
+        `Xóa lịch khám ${item.appointmentCode} của ${item.patientName}? Bệnh nhân từ chối khám nên hủy lịch hẹn.`,
+      )
+    )
+      return;
+    void runAction(`delete-exam-${item.appointmentCode}`, async () => {
+      await roomService.cancelAppointment(item.id);
+      return `Đã hủy lịch khám ${item.appointmentCode} của ${item.patientName}.`;
+    });
+  };
+
   const handleCallExam = (item: ExamQueueItem) =>
     runAction(`exam-${item.appointmentCode}`, async () => {
       await roomService.callAppointment(selectedRoomId, item.appointmentCode);
@@ -907,7 +942,7 @@ export default function RoomWorkspacePage() {
           type="button"
           onClick={() => selectedRoomId && fetchQueue(selectedRoomId)}
           disabled={!selectedRoomId || queueLoading}
-          className="inline-flex items-center gap-1 rounded-[14px] border border-[#efeeeb] px-3 py-2 text-sm font-medium text-[#222222] hover:bg-[#efeeeb] disabled:opacity-50"
+          className="inline-flex items-center gap-1 rounded-[14px] border border-[#b1dbb8] px-3 py-2 text-sm font-medium text-[#0f3e17] hover:bg-[#e1f4df] disabled:opacity-50"
         >
           <RefreshCw className="h-4 w-4" /> Tải lại
         </button>
@@ -984,14 +1019,17 @@ export default function RoomWorkspacePage() {
         <p className="text-sm text-[#222222]/60">Đang tải hàng đợi phòng...</p>
       ) : queue ? (
         <div className="space-y-6">
-          {/* Khối Chờ khám */}
-          <section className="rounded-[14px] border border-[#efeeeb] bg-[#fffefc] p-7">
-            <h2 className="flex items-center gap-2 font-display-serif text-lg text-[#0f3e17]">
-              <Stethoscope className="h-5 w-5 text-[#0f3e17]" /> Chờ khám
-              <span className="text-sm font-normal text-[#222222]/60">
-                ({queue.examQueue.length} lịch hẹn hôm nay)
-              </span>
-            </h2>
+          {/* Khối Chờ khám — dải tiêu đề xanh lá (Keylime Wash) + thân trắng */}
+          <section className="overflow-hidden rounded-[14px] border border-[#efeeeb] bg-[#fffefc]">
+            <div className="rounded-t-[14px] bg-[#e1f4df] px-7 py-3">
+              <h2 className="flex items-center gap-2 font-display-serif text-lg text-[#0f3e17]">
+                <Stethoscope className="h-5 w-5 text-[#0f3e17]" /> Chờ khám
+                <span className="text-sm font-normal text-[#0f3e17]/70">
+                  ({queue.examQueue.length} lịch hẹn hôm nay)
+                </span>
+              </h2>
+            </div>
+            <div className="p-7 pt-3">
             {servingExam && (
               <div className="mt-3 rounded-[14px] bg-[#e1f4df] p-3">
                 <p className="eyebrow text-[#0f3e17]">Đang khám</p>
@@ -1024,7 +1062,7 @@ export default function RoomWorkspacePage() {
                       </p>
                     </div>
                     <span className="flex items-center gap-2">
-                      <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-800">
+                      <span className="rounded-full bg-[#e1f4df] px-2 py-0.5 text-xs font-medium text-[#0f3e17]">
                         {e.status === "CONFIRMED" ? "Đã xác nhận" : e.status}
                       </span>
                       {canAct && e.status === "CONFIRMED" && (
@@ -1038,21 +1076,36 @@ export default function RoomWorkspacePage() {
                           {busyId === `exam-${e.appointmentCode}` ? "Đang gọi..." : "Mời vào"}
                         </button>
                       )}
+                      {role === "DOCTOR" && (!myDoctorId || e.doctorId === myDoctorId) && (
+                        <button
+                          type="button"
+                          disabled={busyId !== ""}
+                          onClick={() => handleDeleteExam(e)}
+                          className="inline-flex items-center gap-1 rounded-[14px] border border-red-300 px-3 py-1.5 text-sm font-medium text-red-700 hover:bg-red-50 disabled:opacity-50"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                          {busyId === `delete-exam-${e.appointmentCode}` ? "Đang xóa..." : "Xóa"}
+                        </button>
+                      )}
                     </span>
                   </li>
                 ))}
               </ul>
             )}
+            </div>
           </section>
 
-          {/* Khối Chờ trị liệu */}
-          <section className="rounded-[14px] border border-[#efeeeb] bg-[#fffefc] p-7">
-            <h2 className="flex items-center gap-2 font-display-serif text-lg text-[#0f3e17]">
-              <Clock className="h-5 w-5 text-[#0f3e17]" /> Chờ trị liệu
-              <span className="text-sm font-normal text-[#222222]/60">
-                ({queue.therapyQueue.length} dịch vụ)
-              </span>
-            </h2>
+          {/* Khối Chờ trị liệu — dải tiêu đề xanh lá (Keylime Wash) + thân trắng */}
+          <section className="overflow-hidden rounded-[14px] border border-[#efeeeb] bg-[#fffefc]">
+            <div className="rounded-t-[14px] bg-[#e1f4df] px-7 py-3">
+              <h2 className="flex items-center gap-2 font-display-serif text-lg text-[#0f3e17]">
+                <Clock className="h-5 w-5 text-[#0f3e17]" /> Chờ trị liệu
+                <span className="text-sm font-normal text-[#0f3e17]/70">
+                  ({queue.therapyQueue.length} dịch vụ)
+                </span>
+              </h2>
+            </div>
+            <div className="p-7 pt-3">
             {servingTherapy && (
               <div className="mt-3 rounded-[14px] bg-[#e1f4df] p-3">
                 <p className="eyebrow text-[#0f3e17]">Đang phục vụ</p>
@@ -1106,11 +1159,23 @@ export default function RoomWorkspacePage() {
                         <button
                           type="button"
                           onClick={() => void togglePatientDetail(t)}
-                          className="rounded-[14px] border border-[#efeeeb] px-2 py-1.5 text-xs font-medium text-[#222222] hover:bg-[#efeeeb]"
+                          className="rounded-[14px] border border-[#b1dbb8] px-2 py-1.5 text-xs font-medium text-[#0f3e17] hover:bg-[#e1f4df]"
                         >
                           {expandedPatientId === t.patientProfileId ? "Ẩn lịch sử buổi" : "Buổi đã làm"}
                         </button>
                         {therapyButtons(t)}
+                        {(t.status === "WAITING" || t.status === "RETURNING" || t.status === "PREPARING") &&
+                          canActOn(t) && (
+                            <button
+                              type="button"
+                              disabled={busyId !== ""}
+                              onClick={() => handleDeleteTherapy(t)}
+                              className="inline-flex items-center gap-1 rounded-[14px] border border-red-300 px-2 py-1.5 text-xs font-medium text-red-700 hover:bg-red-50 disabled:opacity-50"
+                            >
+                              <Trash2 className="h-3.5 w-3.5" />
+                              {busyId === `delete-${t.id}` ? "Đang xóa..." : "Xóa"}
+                            </button>
+                          )}
                       </span>
                     </div>
                     {expandedPatientId === t.patientProfileId && (
@@ -1133,6 +1198,7 @@ export default function RoomWorkspacePage() {
                 ))}
               </ul>
             )}
+            </div>
           </section>
 
           {/* GĐ5 — banner nhắc đánh giá lại (hiện sau khi kết thúc 1 buổi

@@ -34,6 +34,7 @@ export interface TherapyQueueItem {
 }
 
 export interface ExamQueueItem {
+  id: string; // id DB của lịch hẹn (dùng để hủy lịch khi bệnh nhân từ chối khám)
   appointmentCode: string;
   patientProfileId: string;
   patientName: string;
@@ -128,6 +129,14 @@ export const roomService = {
       .put("/prescriptions/prescription-service/skip", {
         prescriptionServiceId,
       })
+      .then((r) => r.data);
+  },
+
+  // Hủy 1 lịch khám (PATCH /appointment-booking/appointments/:id/cancel).
+  // Chỉ bác sĩ phụ trách lịch đó (hoặc ADMIN/LỄ TÂN) mới hủy được.
+  cancelAppointment(appointmentId: string) {
+    return apiClient
+      .patch(`/appointment-booking/appointments/${appointmentId}/cancel`)
       .then((r) => r.data);
   },
 };
