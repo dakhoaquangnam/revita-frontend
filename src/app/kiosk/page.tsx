@@ -128,9 +128,9 @@ export default function KioskPage() {
       // Chạm vào APT thì tự điền tiền tố "APT-" để bệnh nhân chỉ cần nhập thêm số.
       setAppointmentCodeInput((prev) => (prev.startsWith("APT-") ? prev : "APT-"));
     } else {
-      // Chỉ nhập số: sau "APT-" tối đa 13 số (APT- + timestamp), SĐT tối đa 11 số.
+      // Chỉ nhập số: sau "APT-" tối đa 14 số (APT- + ngày YYMMDD + 8 số giờ), SĐT tối đa 11 số.
       setAppointmentCodeInput((prev) => {
-        const maxLen = prev.startsWith("APT-") ? 17 : 11;
+        const maxLen = prev.startsWith("APT-") ? 18 : 11;
         if (prev.length >= maxLen) return prev;
         return prev + key;
       });
