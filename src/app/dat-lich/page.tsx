@@ -7,6 +7,7 @@ import { Navbar } from "@/components/layout/navbar";
 import { Footer } from "@/components/layout/footer";
 import { useSpecialties } from "@/hooks/use-public-data";
 import { appointmentService, SERVICE_TECHNICIAN_MAP } from "@/services/appointment.service";
+import { toVietnamSlotRange } from "@/lib/vietnam-time";
 import {
   Calendar as CalendarIcon,
   Clock,
@@ -30,7 +31,9 @@ function todayLocal(): string {
 }
 
 function slotLabel(start: string, end: string): string {
-  return `${start} - ${end}`;
+  // Slot backend trả theo giờ UTC — hiện theo giờ Việt Nam (UTC+7).
+  // Giá trị gốc vẫn giữ nguyên khi gửi lên backend lúc đặt lịch.
+  return toVietnamSlotRange(start, end);
 }
 
 export default function DatLichPage() {

@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { useSpecialties } from "@/hooks/use-public-data";
 import { appointmentService, SERVICE_TECHNICIAN_MAP } from "@/services/appointment.service";
+import { toVietnamTime } from "@/lib/vietnam-time";
 
 // Ngày hôm nay theo giờ địa phương (gán trong useEffect để không đọc
 // new Date() lúc prerender — Next.js 16 chặn giá trị thời gian không ổn định).
@@ -507,7 +508,7 @@ export function BookingSection() {
                         <option value="">-- Chọn khung giờ còn trống --</option>
                         {slots.map((s) => (
                           <option key={`${s.startTime} - ${s.endTime}`} value={`${s.startTime} - ${s.endTime}`}>
-                            {s.startTime} - {s.endTime}
+                            {toVietnamTime(s.startTime)} - {toVietnamTime(s.endTime)}
                           </option>
                         ))}
                       </select>
