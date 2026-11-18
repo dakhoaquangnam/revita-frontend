@@ -89,6 +89,12 @@ export default function ReceptionistWorkspacePage() {
   // gọi ở quầy khác trong chế độ "Tất cả quầy").
   const [lastCalledPatient, setLastCalledPatient] = useState<QueuePatient | null>(null);
 
+  // Vé đã phân buồng trong phiên này (ticketId -> mã phiếu): nút "Gọi lại"
+  // của bệnh nhân đó đổi thành nhãn "Đã phân buồng", và khung Phân buồng
+  // cũng khóa lại — bấm trùng trước đây mỗi lần lại tạo thêm 1 hồ sơ + phiếu
+  // (Trí đã có 4 hồ sơ vì lỗi này).
+  const [transferredTickets, setTransferredTickets] = useState<Record<string, string>>({});
+
   // Form bệnh nhân vãng lai
   const [walkInName, setWalkInName] = useState("");
   const [walkInPhone, setWalkInPhone] = useState("");
@@ -833,6 +839,9 @@ export default function ReceptionistWorkspacePage() {
       }, 8000);
       // Bệnh nhân đã vào phòng, không còn phục vụ ở quầy nữa.
       setLastCalledPatient(null);
+      // Ghi nhớ vé này đã phân buồng: nút "Gọi lại" của bệnh nhân đó đổi
+      // thành nhãn "Đã phân buồng", khung Phân buồng cũng khóa lại.
+      setTransferredTickets((prev) => ({ ...prev, [current.ticketId]: res.prescriptionCode }));
     } catch (err: any) {
       setTransferErrorMsg(
         "Không chuyển được vào phòng: " +
@@ -1041,7 +1050,15 @@ export default function ReceptionistWorkspacePage() {
                   <label className="block text-xs font-semibold text-[#0f3e17]">
                     Chỉ định Buồng khám / Phòng Trị liệu PHCN:
                   </label>
-                  {roomsError ? (
+                  {transferredTickets[displayedPatient.ticketId] ? (
+                    <div className="p-2.5 rounded-[14px] bg-[#e1f4df] text-[#0f3e17] text-xs flex items-center gap-1.5">
+                      <Check className="w-4 h-4 text-[#0f3e17]" />
+                      <span>
+                        Đã phân buồng — mã phiếu {transferredTickets[displayedPatient.ticketId]}. Không
+                        cần gọi nữa.
+                      </span>
+                    </div>
+                  ) : roomsError ? (
                     <div className="p-2.5 rounded-[14px] bg-[#fdecea] border border-[#f5c6cb] text-[#721c24] text-xs flex items-center gap-1.5">
                       <AlertCircle className="w-4 h-4 shrink-0" />
                       <span>{roomsError}</span>
@@ -1199,16 +1216,23 @@ export default function ReceptionistWorkspacePage() {
                               </div>
                             </div>
                           </div>
-                          <button
-                            type="button"
-                            onClick={() => void handleRecallCurrent(group.counter.counterId, cur.queueNumber)}
-                            disabled={actionLoading}
-                            className="px-3 py-1.5 rounded-[14px] bg-[#b1dbb8] hover:bg-[#cfe7d3] text-[#0f3e17] text-[11px] font-semibold flex items-center gap-1 transition-colors disabled:opacity-50 flex-shrink-0"
-                            title={`Gọi lại ${cur.patientName} (${cur.queueNumber})`}
-                          >
-                            <Volume2 className="w-3.5 h-3.5" />
-                            <span>Gọi lại</span>
-                          </button>
+                          {transferredTickets[cur.ticketId] ? (
+                            <span className="px-3 py-1.5 rounded-[14px] bg-[#e1f4df] text-[#0f3e17] text-[11px] font-semibold flex items-center gap-1 flex-shrink-0">
+                              <Check className="w-3.5 h-3.5" />
+                              <span>Đã phân buồng</span>
+                            </span>
+                          ) : (
+                            <button
+                              type="button"
+                              onClick={() => void handleRecallCurrent(group.counter.counterId, cur.queueNumber)}
+                              disabled={actionLoading}
+                              className="px-3 py-1.5 rounded-[14px] bg-[#b1dbb8] hover:bg-[#cfe7d3] text-[#0f3e17] text-[11px] font-semibold flex items-center gap-1 transition-colors disabled:opacity-50 flex-shrink-0"
+                              title={`Gọi lại ${cur.patientName} (${cur.queueNumber})`}
+                            >
+                              <Volume2 className="w-3.5 h-3.5" />
+                              <span>Gọi lại</span>
+                            </button>
+                          )}
                         </div>
                       )}
                       {group.waiting.map((item, idx) => (
