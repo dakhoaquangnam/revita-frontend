@@ -34,6 +34,10 @@ export interface QueuePatient {
   isPregnant?: boolean;
   isVip?: boolean;
   appointmentCode?: string;
+  // Vé đã phân buồng (dấu ghi ở backend theo ticketId, còn hiệu lực cả khi
+  // tải lại trang): Dashboard hiện "Đã phân buồng" thay cho nút "Gọi lại".
+  roomAssigned?: boolean;
+  roomPrescriptionCode?: string;
 }
 
 export interface QueueSnapshot {

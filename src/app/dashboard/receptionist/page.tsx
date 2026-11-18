@@ -1050,12 +1050,14 @@ export default function ReceptionistWorkspacePage() {
                   <label className="block text-xs font-semibold text-[#0f3e17]">
                     Chỉ định Buồng khám / Phòng Trị liệu PHCN:
                   </label>
-                  {transferredTickets[displayedPatient.ticketId] ? (
+                  {transferredTickets[displayedPatient.ticketId] || displayedPatient.roomAssigned ? (
                     <div className="p-2.5 rounded-[14px] bg-[#e1f4df] text-[#0f3e17] text-xs flex items-center gap-1.5">
                       <Check className="w-4 h-4 text-[#0f3e17]" />
                       <span>
-                        Đã phân buồng — mã phiếu {transferredTickets[displayedPatient.ticketId]}. Không
-                        cần gọi nữa.
+                        Đã phân buồng — mã phiếu{" "}
+                        {transferredTickets[displayedPatient.ticketId] ??
+                          displayedPatient.roomPrescriptionCode}
+                        . Không cần gọi nữa.
                       </span>
                     </div>
                   ) : roomsError ? (
@@ -1216,7 +1218,7 @@ export default function ReceptionistWorkspacePage() {
                               </div>
                             </div>
                           </div>
-                          {transferredTickets[cur.ticketId] ? (
+                          {transferredTickets[cur.ticketId] || cur.roomAssigned ? (
                             <span className="px-3 py-1.5 rounded-[14px] bg-[#e1f4df] text-[#0f3e17] text-[11px] font-semibold flex items-center gap-1 flex-shrink-0">
                               <Check className="w-3.5 h-3.5" />
                               <span>Đã phân buồng</span>
