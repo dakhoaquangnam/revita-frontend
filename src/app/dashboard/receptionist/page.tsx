@@ -775,9 +775,10 @@ export default function ReceptionistWorkspacePage() {
   };
 
   // GĐ2 §4.4.2 — Chuyển bệnh nhân đang phục vụ ở quầy vào phòng thật qua
-  // POST /routing/transfer. Backend tự lấy phiếu chỉ định từ lịch hẹn.
-  // Bệnh nhân vãng lai (không có appointmentCode) chưa chuyển được vì vé
-  // quầy không mang theo dịch vụ — báo rõ thay vì "thành công giả".
+  // POST /routing/transfer. Backend tự lấy phiếu chỉ định từ lịch hẹn;
+  // bệnh nhân vãng lai (không có appointmentCode) thì chuyển bằng vé
+  // (ticketId + counterId) — backend tự tạo hồ sơ + phiếu Khám PHCN từ
+  // thông tin trên vé rồi phân buồng như lịch hẹn.
   const handleTransferToRoom = async () => {
     // Bệnh nhân đang phục vụ — lấy đúng người khung "Đang phục vụ" đang hiện
     // (kể cả người vừa gọi ở quầy khác trong chế độ "Tất cả quầy").
@@ -790,30 +791,36 @@ export default function ReceptionistWorkspacePage() {
       alert("Chưa chọn phòng. Tải lại danh sách phòng rồi chọn một phòng.");
       return;
     }
-    if (!current.appointmentCode) {
-      setTransferErrorMsg(
-        `Bệnh nhân ${current.patientName} (${current.queueNumber}) là vãng lai, chưa có lịch hẹn nên chưa biết chuyển vào phòng nào với dịch vụ gì. Tạo lịch hẹn cho bệnh nhân rồi gọi lại, hoặc để bác sĩ chỉ định dịch vụ trước.`,
-      );
-      setTransferSuccessMsg("");
-      return;
-    }
+    const isWalkIn = !current.appointmentCode;
     setTransferLoading(true);
     setTransferErrorMsg("");
     setTransferSuccessMsg("");
     try {
-      const res = await receptionistService.transferToRoom({
-        appointmentCode: normalizeAppointmentCode(current.appointmentCode),
-        roomId: selectedDestRoom,
-      });
+      const res = await receptionistService.transferToRoom(
+        isWalkIn
+          ? {
+              roomId: selectedDestRoom,
+              ticketId: current.ticketId,
+              counterId: current.counterId,
+            }
+          : {
+              appointmentCode: normalizeAppointmentCode(current.appointmentCode!),
+              roomId: selectedDestRoom,
+            },
+      );
       const staff = res.doctorName
         ? `BS. ${res.doctorName}`
         : res.technicianName
           ? `KTV. ${res.technicianName}`
           : "chưa có nhân viên trực";
+      const walkInNote =
+        isWalkIn && res.services?.[0]?.serviceName
+          ? ` — dịch vụ ${res.services[0].serviceName}`
+          : "";
       setTransferSuccessMsg(
         `Đã chuyển ${res.patientName} (${current.queueNumber}) vào ${res.roomName}` +
           (res.boothCode ? ` — ${res.boothCode}` : "") +
-          ` (${staff}). Mã phiếu: ${res.prescriptionCode}.`,
+          ` (${staff})${walkInNote}. Mã phiếu: ${res.prescriptionCode}.`,
       );
       setTimeout(() => {
         setTransferSuccessMsg("");

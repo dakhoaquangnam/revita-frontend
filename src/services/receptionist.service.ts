@@ -187,10 +187,14 @@ export const receptionistService = {
   /** Chuyển bệnh nhân đang phục vụ ở quầy vào phòng (GĐ2). Backend tự lấy
    *  phiếu chỉ định từ lịch hẹn khi chỉ gửi appointmentCode. */
   async transferToRoom(payload: {
-    appointmentCode: string;
+    appointmentCode?: string;
     roomId: string;
     patientProfileId?: string;
     serviceIds?: string[];
+    // Vãng lai: chuyển bằng vé (không có lịch hẹn) — backend tự tạo hồ sơ
+    // + phiếu Khám PHCN từ thông tin trên vé rồi phân buồng.
+    ticketId?: string;
+    counterId?: string;
   }): Promise<TransferResult> {
     const res = await apiClient.post<TransferResult>("/routing/transfer", payload);
     return res.data;
