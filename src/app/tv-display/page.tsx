@@ -88,10 +88,11 @@ export default function TvDisplayPage() {
     return () => clearInterval(t);
   }, []);
 
-  // TV 18/11 — 3 thẻ "Đang phục vụ": mỗi quầy 1 thẻ, chỉ hiện tên bệnh nhân
-  // to sau chữ "Đang phục vụ", không hiện số CTR hay tên quầy trong thẻ.
-  // Mỗi thẻ tự xoay vòng danh sách quầy mình (người đang phục vụ rồi tới
-  // người đang đợi) mỗi 5 giây.
+  // TV 18/11 — 3 thẻ: mỗi quầy 1 thẻ, tên bệnh nhân to, mỗi thẻ tự xoay
+  // vòng danh sách quầy mình (người đang phục vụ rồi tới người đang đợi)
+  // mỗi 5 giây. Nhãn trên thẻ theo trạng thái thật của người đang hiện
+  // (anh duyệt chiều 18/11): "Đang phục vụ" hoặc "Đang đợi — xin chờ gọi
+  // tên"; dưới tên có dòng quầy nhỏ để biết đi quầy nào.
   const [rotationIndex, setRotationIndex] = useState(0);
   useEffect(() => {
     const t = setInterval(() => setRotationIndex((i) => i + 1), 5000);
@@ -410,9 +411,10 @@ export default function TvDisplayPage() {
           </div>
         </div>
 
-        {/* ===================== RIGHT: 3 THẺ ĐANG PHỤC VỤ (5 COLS) — TV 18/11:
-            mỗi quầy 1 thẻ, chỉ "Đang phục vụ" + tên bệnh nhân to, tự xoay
-            vòng danh sách quầy mỗi 5 giây, không hiện số CTR/tên quầy. ===================== */}
+        {/* ===================== RIGHT: 3 THẺ THEO QUẦY (5 COLS) — TV 18/11:
+            mỗi quầy 1 thẻ, tên bệnh nhân to, tự xoay vòng danh sách quầy
+            mỗi 5 giây; nhãn theo trạng thái thật + dòng quầy nhỏ (anh duyệt
+            chiều 18/11). ===================== */}
         <div className="lg:col-span-5 flex flex-col justify-between space-y-4">
           <div className="bg-[#cfe7d3] rounded-[14px] p-6 h-full flex flex-col justify-between">
             <div>
@@ -447,16 +449,26 @@ export default function TvDisplayPage() {
                   push(snap?.current ?? null);
                   (snap?.queue ?? []).forEach(push);
                   const shown = pool.length > 0 ? pool[rotationIndex % pool.length] : null;
+                  // Nhãn theo trạng thái thật của người đang hiện (anh duyệt
+                  // chiều 18/11): chỉ người đang được phục vụ mới ghi
+                  // "Đang phục vụ"; người đang đợi ghi "Đang đợi — xin chờ
+                  // gọi tên" để khỏi tưởng đã được gọi mà lên quầy sớm.
+                  const isServing = shown?.status === "SERVING";
                   return (
                     <div
                       key={c.counterId}
                       className="p-6 rounded-[14px] bg-[#fffefc] min-h-[150px] flex flex-col justify-center"
                     >
-                      <div className="eyebrow text-[#0f3e17]/80">
-                        Đang phục vụ
-                      </div>
+                      {shown && (
+                        <div className="eyebrow text-[#0f3e17]/80">
+                          {isServing ? "Đang phục vụ" : "Đang đợi — xin chờ gọi tên"}
+                        </div>
+                      )}
                       <div className="font-display-serif text-5xl lg:text-6xl leading-[1.1] tracking-[-0.01em] text-[#0f3e17] uppercase mt-2">
                         {shown?.patientName ?? "Quầy đang trống"}
+                      </div>
+                      <div className="text-sm font-semibold text-[#0f3e17]/70 mt-3">
+                        {c.counterName || `Quầy ${c.counterCode}`}
                       </div>
                     </div>
                   );
