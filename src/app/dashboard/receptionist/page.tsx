@@ -29,6 +29,7 @@ import {
   type AppointmentDetail,
 } from "@/services/appointment.service";
 import { useQueueEvents } from "@/hooks/use-queue-events";
+import { toVietnamTime } from "@/lib/vietnam-time";
 
 // Chỉ phòng PHCN — phòng khám hiện chỉ làm PHCN nên ô chọn buồng ở Dashboard
 // ẩn các phòng chuyên khoa khác (Bỏng, Nha, Mắt...).
@@ -258,11 +259,14 @@ export default function ReceptionistWorkspacePage() {
 
   // Mã vé đã được cấp số (đang trong hàng đợi các quầy) — hàng đó hiện nhãn
   // "Đã cấp số" thay vì cho bấm tra cứu lại (tránh cấp trùng số).
+  // Tính cả history (đã gọi hôm nay): gọi người tiếp theo là người trước rời
+  // khỏi hàng đợi vào history — không tính thì hàng đó mất nhãn "Đã cấp số"
+  // và lễ tân tưởng chưa check-in rồi cấp trùng số (lỗi 18/11).
   const checkedInCodes = useMemo(() => {
     const codes = new Set<string>();
     const collect = (snap: QueueSnapshot | null | undefined) => {
       if (!snap) return;
-      [snap.current, snap.next, ...(snap.queue ?? []), ...(snap.ordered ?? [])].forEach(
+      [snap.current, snap.next, ...(snap.queue ?? []), ...(snap.ordered ?? []), ...(snap.history ?? [])].forEach(
         (p) => {
           if (p?.appointmentCode) codes.add(normalizeAppointmentCode(p.appointmentCode));
         },
@@ -596,7 +600,7 @@ export default function ReceptionistWorkspacePage() {
         serviceName: service?.serviceName ?? "Khám PHCN",
         specialty: apt.specialtyName ?? "",
         date: apt.date ?? "",
-        timeSlot: `${String(apt.date ?? "").substring(0, 10)} (${apt.startTime} - ${apt.endTime})`,
+        timeSlot: `${String(apt.date ?? "").substring(0, 10)} (${toVietnamTime(apt.startTime)} - ${toVietnamTime(apt.endTime)})`,
         doctorId: apt.doctorId ?? "",
         doctorName: apt.doctorName ?? "",
         profile: apt.patientProfile ?? null,
@@ -833,9 +837,13 @@ export default function ReceptionistWorkspacePage() {
       current:
         snap?.current && isTodayTicket(snap.current) ? snap.current : null,
       waiting: (snap?.queue ?? []).filter((t) => isTodayTicket(t)),
+      // Bệnh nhân đã gọi hôm nay (đã rời hàng đợi vào history) — hiện lại để
+      // không biến mất khỏi màn hình khi gọi người tiếp theo.
+      history: (snap?.history ?? []).filter((t) => isTodayTicket(t)),
     };
   });
   const waitingQueue = queueGroups.flatMap((g) => g.waiting);
+  const calledToday = queueGroups.flatMap((g) => g.history);
 
   return (
     <div className="space-y-6 text-[#222222]">
@@ -1076,7 +1084,7 @@ export default function ReceptionistWorkspacePage() {
               </span>
             </div>
 
-            {waitingQueue.length === 0 && !queueGroups.some((g) => g.current) ? (
+            {waitingQueue.length === 0 && calledToday.length === 0 && !queueGroups.some((g) => g.current) ? (
               <div className="p-4 rounded-[14px] bg-[#e1f4df]/20 text-center text-xs text-[#222222]/60">
                 Hôm nay hiện không còn bệnh nhân nào trong hàng đợi
                 {queueFilter === "ALL" ? " các quầy." : " quầy này."}
@@ -1172,6 +1180,43 @@ export default function ReceptionistWorkspacePage() {
                           </div>
                         </div>
                       ))}
+                      {/* Đã gọi hôm nay: gọi người tiếp theo là người trước rời
+                          khỏi hàng đợi vào history — hiện lại ở đây để lễ tân
+                          vẫn thấy họ, khỏi tưởng mất (lỗi 18/11: Kiên biến mất
+                          khi gọi Đức). Chỉ xem, không gọi lại từ đây (muốn gọi
+                          lại thì bấm "Gọi lại bệnh nhân vừa khám" ở trên). */}
+                      {group.history.length > 0 && (
+                        <div className="pt-1">
+                          <div className="text-[11px] font-semibold text-[#222222]/50 px-1 pb-1">
+                            Đã gọi hôm nay ({group.history.length})
+                          </div>
+                          {group.history.map((item) => (
+                            <div
+                              key={item.ticketId || item.queueNumber}
+                              className="p-3 rounded-[14px] bg-[#e1f4df]/40 border border-[#efeeeb] flex items-center justify-between text-xs"
+                            >
+                              <div className="flex items-center gap-3">
+                                <span className="w-6 text-center font-semibold text-[#0f3e17]/60">
+                                  <Check className="w-4 h-4 mx-auto" />
+                                </span>
+                                <div>
+                                  <div className="font-semibold text-[#0f3e17] flex items-center gap-2">
+                                    <span className="font-semibold text-[#0f3e17]">{item.queueNumber}</span>
+                                    <span>•</span>
+                                    <span>{item.patientName}</span>
+                                  </div>
+                                  <div className="text-[11px] text-[#222222]/60">
+                                    Đã gọi {item.callCount > 0 ? `${item.callCount} lần` : "1 lần"}
+                                  </div>
+                                </div>
+                              </div>
+                              <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#e1f4df] text-[#0f3e17] font-semibold flex-shrink-0">
+                                Đã gọi
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   );
                 })}
@@ -1417,7 +1462,7 @@ export default function ReceptionistWorkspacePage() {
                               <div className="text-[11px] text-[#222222]/60 mt-0.5">
                                 {serviceName}
                                 {serviceName && " • "}
-                                {String(apt.date ?? "").substring(0, 10)} ({apt.startTime} - {apt.endTime})
+                                {String(apt.date ?? "").substring(0, 10)} ({toVietnamTime(apt.startTime)} - {toVietnamTime(apt.endTime)})
                                 {apt.doctorName && ` • BS. ${apt.doctorName}`}
                               </div>
                             </div>

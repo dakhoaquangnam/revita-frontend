@@ -42,6 +42,9 @@ export interface QueueSnapshot {
   next?: QueuePatient | null;
   queue: QueuePatient[];
   ordered?: QueuePatient[];
+  // Bệnh nhân đã gọi hôm nay (đã rời hàng đợi vào history) — để Dashboard
+  // vẫn thấy họ sau khi gọi người tiếp theo, thay vì biến mất hẳn.
+  history?: QueuePatient[];
 }
 
 export interface TakeNumberPayload {
