@@ -1236,7 +1236,7 @@ export default function ReceptionistWorkspacePage() {
                                 title={`Gọi ${item.patientName} (${item.queueNumber}) vào quầy`}
                               >
                                 <Volume2 className="w-3.5 h-3.5" />
-                                <span>{item.callCount > 0 ? "Đã gọi • Gọi lại" : "Gọi"}</span>
+                                <span>{item.callCount > 0 ? "Gọi lại" : "Gọi"}</span>
                               </button>
                             )}
                           </div>
@@ -1245,8 +1245,8 @@ export default function ReceptionistWorkspacePage() {
                       {/* Đã gọi hôm nay: gọi người tiếp theo là người trước rời
                           khỏi hàng đợi vào history — hiện lại ở đây để lễ tân
                           vẫn thấy họ, khỏi tưởng mất (lỗi 18/11: Kiên biến mất
-                          khi gọi Đức). Chỉ xem, không gọi lại từ đây (muốn gọi
-                          lại thì bấm "Gọi lại bệnh nhân vừa khám" ở trên). */}
+                          khi gọi Đức). Hàng nền trắng như hàng chờ (khác hàng
+                          đang phục vụ nền xanh), nút "Gọi lại" gọi lại vé đó. */}
                       {group.history.length > 0 && (
                         <div className="pt-1">
                           <div className="text-[11px] font-semibold text-[#222222]/50 px-1 pb-1">
@@ -1255,7 +1255,7 @@ export default function ReceptionistWorkspacePage() {
                           {group.history.map((item) => (
                             <div
                               key={item.ticketId || item.queueNumber}
-                              className="p-3 rounded-[14px] bg-[#e1f4df]/40 border border-[#efeeeb] flex items-center justify-between text-xs"
+                              className="p-3 rounded-[14px] bg-[#fffefc] border border-[#efeeeb] flex items-center justify-between text-xs"
                             >
                               <div className="flex items-center gap-3">
                                 <span className="w-6 text-center font-semibold text-[#0f3e17]/60">
