@@ -88,6 +88,16 @@ export default function TvDisplayPage() {
     return () => clearInterval(t);
   }, []);
 
+  // TV 18/11 — 3 thẻ "Đang phục vụ": mỗi quầy 1 thẻ, chỉ hiện tên bệnh nhân
+  // to sau chữ "Đang phục vụ", không hiện số CTR hay tên quầy trong thẻ.
+  // Mỗi thẻ tự xoay vòng danh sách quầy mình (người đang phục vụ rồi tới
+  // người đang đợi) mỗi 5 giây.
+  const [rotationIndex, setRotationIndex] = useState(0);
+  useEffect(() => {
+    const t = setInterval(() => setRotationIndex((i) => i + 1), 5000);
+    return () => clearInterval(t);
+  }, []);
+
   // Cập nhật đồng hồ số
   useEffect(() => {
     const updateTime = () => {
@@ -400,7 +410,9 @@ export default function TvDisplayPage() {
           </div>
         </div>
 
-        {/* ===================== RIGHT OVERVIEW: BẢNG TỔNG HỢP CÁC BUỒNG (5 COLS) ===================== */}
+        {/* ===================== RIGHT: 3 THẺ ĐANG PHỤC VỤ (5 COLS) — TV 18/11:
+            mỗi quầy 1 thẻ, chỉ "Đang phục vụ" + tên bệnh nhân to, tự xoay
+            vòng danh sách quầy mỗi 5 giây, không hiện số CTR/tên quầy. ===================== */}
         <div className="lg:col-span-5 flex flex-col justify-between space-y-4">
           <div className="bg-[#cfe7d3] rounded-[14px] p-6 h-full flex flex-col justify-between">
             <div>
@@ -408,14 +420,14 @@ export default function TvDisplayPage() {
                 <div className="flex items-center gap-2">
                   <Tv className="w-5 h-5 text-[#0f3e17]" />
                   <h3 className="text-sm font-semibold text-[#0f3e17] uppercase tracking-wider">
-                    Hàng đợi các quầy tiếp nhận
+                    Đang phục vụ tại các quầy
                   </h3>
                 </div>
-                <span className="text-xs text-[#222222]/60">Hôm nay • tự cập nhật 15 giây</span>
+                <span className="text-xs text-[#222222]/60">Tên tự đổi mỗi 5 giây</span>
               </div>
 
-              {/* Hàng đợi thật từng quầy (đồng bộ từ lễ tân/kiosk) */}
-              <div className="space-y-3 mt-4">
+              {/* 3 thẻ đang phục vụ — mỗi quầy 1 thẻ, xoay vòng danh sách quầy */}
+              <div className="space-y-4 mt-4">
                 {counters.length === 0 && (
                   <div className="p-4 rounded-[14px] bg-[#fffefc] text-center text-xs text-[#222222]/60">
                     Đang tải hàng đợi các quầy...
@@ -423,54 +435,29 @@ export default function TvDisplayPage() {
                 )}
                 {counters.map((c) => {
                   const snap = counterQueues[c.counterId];
-                  const current =
-                    snap?.current && isTodayTicket(snap.current) ? snap.current : null;
-                  const waiting = (snap?.queue ?? [])
-                    .filter((t) => isTodayTicket(t))
-                    .slice(0, 5);
+                  // Danh sách xoay vòng của quầy: người đang phục vụ (vừa gọi)
+                  // trước, rồi tới người đang đợi theo thứ tự hàng đợi.
+                  const pool: QueuePatient[] = [];
+                  const seen = new Set<string>();
+                  const push = (t: QueuePatient | null | undefined) => {
+                    if (!t || !isTodayTicket(t) || !t.ticketId || seen.has(t.ticketId)) return;
+                    seen.add(t.ticketId);
+                    pool.push(t);
+                  };
+                  push(snap?.current ?? null);
+                  (snap?.queue ?? []).forEach(push);
+                  const shown = pool.length > 0 ? pool[rotationIndex % pool.length] : null;
                   return (
                     <div
                       key={c.counterId}
-                      className="p-3.5 rounded-[14px] bg-[#fffefc]"
+                      className="p-6 rounded-[14px] bg-[#fffefc] min-h-[150px] flex flex-col justify-center"
                     >
-                      <div className="flex items-center justify-between">
-                        <div className="font-semibold text-[#0f3e17] text-xs sm:text-sm">
-                          {c.counterCode} - {c.counterName}
-                        </div>
-                        <span className="text-[11px] text-[#222222]/60">
-                          {waiting.length} đang đợi
-                        </span>
+                      <div className="eyebrow text-[#0f3e17]/80">
+                        Đang phục vụ
                       </div>
-
-                      <div className="flex items-center justify-between mt-2">
-                        <div className="text-xs text-[#222222]/60 font-medium">Đang phục vụ:</div>
-                        <div className="text-right">
-                          <div className="font-display-serif text-3xl leading-none text-[#0f3e17]">
-                            {current?.queueNumber ?? "—"}
-                          </div>
-                          <div className="text-[10px] text-[#222222]/60 truncate max-w-[180px] mt-1">
-                            {current?.patientName ?? "Quầy đang trống"}
-                          </div>
-                        </div>
+                      <div className="font-display-serif text-5xl lg:text-6xl leading-[1.1] tracking-[-0.01em] text-[#0f3e17] uppercase mt-2">
+                        {shown?.patientName ?? "Quầy đang trống"}
                       </div>
-
-                      {waiting.length > 0 && (
-                        <div className="mt-2 pt-2 border-t border-[#efeeeb] space-y-1">
-                          {waiting.map((t, i) => (
-                            <div
-                              key={t.ticketId || i}
-                              className="flex items-center justify-between text-[11px]"
-                            >
-                              <span className="font-semibold text-[#0f3e17]">
-                                {t.queueNumber}
-                              </span>
-                              <span className="text-[#222222]/70 truncate max-w-[180px]">
-                                {t.patientName}
-                              </span>
-                            </div>
-                          ))}
-                        </div>
-                      )}
                     </div>
                   );
                 })}
