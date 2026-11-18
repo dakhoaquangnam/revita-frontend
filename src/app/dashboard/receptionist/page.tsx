@@ -532,6 +532,34 @@ export default function ReceptionistWorkspacePage() {
     }
   };
 
+  // Gọi lại một bệnh nhân trong mục "Đã gọi hôm nay" (vé đã rời hàng đợi
+  // vào history). Người đang phục vụ ở quầy đó (nếu có) được đưa lại vào
+  // hàng đợi chứ không bị coi là đã khám xong.
+  const handleRecallHistoryPatient = async (
+    counterId: string,
+    ticketId: string,
+    queueNumber: string,
+  ) => {
+    if (!counterId || !ticketId) return;
+    setActionLoading(true);
+    try {
+      const res = await receptionistService.recallHistoryPatient(counterId, ticketId);
+      if (res?.ok === false) {
+        alert(res?.message || "Không gọi lại được bệnh nhân này.");
+      } else if (res?.patient) {
+        setLastCalledPatient(res.patient);
+      }
+      await refreshDisplayedQueues();
+    } catch (err: any) {
+      alert(
+        `Lỗi khi gọi lại số ${queueNumber}: ` +
+          (err.response?.data?.message || err.message || "Vui lòng kiểm tra lại"),
+      );
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
   const handleSkip = async () => {
     // Bỏ qua bệnh nhân đang phục vụ ở quầy của họ (có thể khác quầy trực
     // khi gọi ở chế độ "Tất cả quầy").
@@ -1210,9 +1238,16 @@ export default function ReceptionistWorkspacePage() {
                                   </div>
                                 </div>
                               </div>
-                              <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#e1f4df] text-[#0f3e17] font-semibold flex-shrink-0">
-                                Đã gọi
-                              </span>
+                              <button
+                                type="button"
+                                onClick={() => void handleRecallHistoryPatient(group.counter.counterId, item.ticketId, item.queueNumber)}
+                                disabled={actionLoading}
+                                className="px-3 py-1.5 rounded-[14px] bg-[#b1dbb8] hover:bg-[#cfe7d3] text-[#0f3e17] text-[11px] font-semibold flex items-center gap-1 transition-colors disabled:opacity-50 flex-shrink-0"
+                                title={`Gọi lại ${item.patientName} (${item.queueNumber})`}
+                              >
+                                <Volume2 className="w-3.5 h-3.5" />
+                                <span>Gọi lại</span>
+                              </button>
                             </div>
                           ))}
                         </div>

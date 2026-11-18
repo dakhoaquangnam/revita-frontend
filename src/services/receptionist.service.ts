@@ -169,6 +169,15 @@ export const receptionistService = {
     return res.data;
   },
 
+  /** Gọi lại một bệnh nhân trong mục "Đã gọi hôm nay" (vé đã rời hàng đợi
+   *  vào history). Người đang phục vụ (nếu có) được đưa lại vào hàng đợi. */
+  async recallHistoryPatient(counterId: string, ticketId: string) {
+    const res = await apiClient.post(
+      `/counter-assignment/recall-history/${counterId}/${ticketId}`,
+    );
+    return res.data;
+  },
+
   /** Danh sách phòng khám/trị liệu thật (kèm buồng + bác sĩ đang trực). */
   async getRooms(): Promise<RoomItem[]> {
     const res = await apiClient.get<RoomItem[]>("/routing/rooms");
