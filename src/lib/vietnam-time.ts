@@ -19,3 +19,15 @@ export function toVietnamTime(hhmm: string): string {
 export function toVietnamSlotRange(start: string, end: string): string {
   return `${toVietnamTime(start)} - ${toVietnamTime(end)}`;
 }
+
+/**
+ * Chuỗi ISO UTC ("2026-11-19T00:30:00.000Z") -> "HH:MM" giờ Việt Nam.
+ * Dùng cho dòng mô tả ca trên thẻ bác sĩ (workSessionStart/End backend
+ * trả dạng ISO). Hàm thuần túy theo đầu vào nên an toàn lúc render.
+ */
+export function toVietnamTimeFromISO(iso: string): string {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return iso;
+  const total = (d.getUTCHours() * 60 + d.getUTCMinutes() + 7 * 60) % (24 * 60);
+  return `${String(Math.floor(total / 60)).padStart(2, "0")}:${String(total % 60).padStart(2, "0")}`;
+}

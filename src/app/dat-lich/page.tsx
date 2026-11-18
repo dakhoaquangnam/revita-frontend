@@ -7,7 +7,7 @@ import { Navbar } from "@/components/layout/navbar";
 import { Footer } from "@/components/layout/footer";
 import { useSpecialties } from "@/hooks/use-public-data";
 import { appointmentService, SERVICE_TECHNICIAN_MAP } from "@/services/appointment.service";
-import { toVietnamSlotRange } from "@/lib/vietnam-time";
+import { toVietnamSlotRange, toVietnamTimeFromISO } from "@/lib/vietnam-time";
 import {
   Calendar as CalendarIcon,
   Clock,
@@ -424,7 +424,7 @@ export default function DatLichPage() {
                       >
                         <p className="text-sm font-semibold truncate">BS. {d.doctorName}</p>
                         <p className="text-xs text-[#222222]/70">
-                          {d.roomName ?? d.boothName ?? ""} • Ca {d.workSessionStart} - {d.workSessionEnd}
+                          {d.roomName ?? d.boothName ?? ""} • Ca {toVietnamTimeFromISO(d.workSessionStart)} - {toVietnamTimeFromISO(d.workSessionEnd)}
                         </p>
                         <span className="inline-block mt-2 text-[11px] font-semibold text-[#0f3e17] bg-[#b1dbb8]/40 px-2 py-0.5 rounded-full">
                           Đánh giá {d.rating} / 5.0
