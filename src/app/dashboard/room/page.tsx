@@ -8,7 +8,6 @@ import {
   DoorOpen,
   Play,
   SkipForward,
-  Stethoscope,
   ClipboardList,
   RefreshCw,
   PhoneCall,
@@ -27,7 +26,6 @@ import {
   roomService,
   RoomQueue,
   TherapyQueueItem,
-  ExamQueueItem,
   TherapyStatus,
   getApiErrorMessage,
 } from "@/services/room.service";
@@ -735,27 +733,6 @@ export default function RoomWorkspacePage() {
     });
   };
 
-  // Xóa lịch khám khi bệnh nhân từ chối: hủy lịch hẹn (PATCH .../cancel).
-  // Chỉ bác sĩ phụ trách lịch đó mới hủy được (backend kiểm tra).
-  const handleDeleteExam = (item: ExamQueueItem) => {
-    if (
-      !window.confirm(
-        `Xóa lịch khám ${item.appointmentCode} của ${item.patientName}? Bệnh nhân từ chối khám nên hủy lịch hẹn.`,
-      )
-    )
-      return;
-    void runAction(`delete-exam-${item.appointmentCode}`, async () => {
-      await roomService.cancelAppointment(item.id);
-      return `Đã hủy lịch khám ${item.appointmentCode} của ${item.patientName}.`;
-    });
-  };
-
-  const handleCallExam = (item: ExamQueueItem) =>
-    runAction(`exam-${item.appointmentCode}`, async () => {
-      await roomService.callAppointment(selectedRoomId, item.appointmentCode);
-      return `Đã gọi ${item.patientName} vào khám.`;
-    });
-
   // Ghi kết quả: backend chỉ nhận results khi dịch vụ ở WAITING_RESULT,
   // nên gọi status WAITING_RESULT trước rồi mới gửi results (→ COMPLETED).
   const handleSubmitResults = async () => {
@@ -797,8 +774,6 @@ export default function RoomWorkspacePage() {
 
   const servingTherapy = queue?.therapyQueue.find((t) => t.status === "SERVING") ?? null;
   const waitingTherapy = (queue?.therapyQueue ?? []).filter((t) => t.status !== "SERVING");
-  const servingExam = queue?.examQueue.find((e) => e.status === "SERVING") ?? null;
-  const waitingExam = (queue?.examQueue ?? []).filter((e) => e.status !== "SERVING");
 
   const therapyButtons = (item: TherapyQueueItem) => {
     if (!canActOn(item)) return null;
@@ -967,8 +942,8 @@ export default function RoomWorkspacePage() {
         </div>
       )}
 
-      <div className="rounded-[14px] border border-[#efeeeb] bg-[#fffefc] p-7">
-        <label className="mb-1 block text-sm font-medium text-[#222222]" htmlFor="room-select">
+      <div className="rounded-[14px] border border-[#efeeeb] bg-[#e1f4df] p-7">
+        <label className="mb-1 block text-sm font-medium text-[#0f3e17]" htmlFor="room-select">
           Phòng
         </label>
         {roomsLoading ? (
@@ -990,7 +965,7 @@ export default function RoomWorkspacePage() {
               id="room-select"
               value={selectedRoomId}
               onChange={(e) => setSelectedRoomId(e.target.value)}
-              className="min-w-64 rounded-[14px] border border-[#efeeeb] px-3 py-2 text-sm"
+              className="min-w-64 rounded-[14px] border border-[#efeeeb] bg-[#fffefc] px-3 py-2 text-sm"
             >
               {visibleRooms.map((r) => (
                 <option key={r.id} value={r.id}>
@@ -1019,83 +994,7 @@ export default function RoomWorkspacePage() {
         <p className="text-sm text-[#222222]/60">Đang tải hàng đợi phòng...</p>
       ) : queue ? (
         <div className="space-y-6">
-          {/* Khối Chờ khám — dải tiêu đề xanh lá (Keylime Wash) + thân trắng */}
-          <section className="overflow-hidden rounded-[14px] border border-[#efeeeb] bg-[#fffefc]">
-            <div className="rounded-t-[14px] bg-[#e1f4df] px-7 py-3">
-              <h2 className="flex items-center gap-2 font-display-serif text-lg text-[#0f3e17]">
-                <Stethoscope className="h-5 w-5 text-[#0f3e17]" /> Chờ khám
-                <span className="text-sm font-normal text-[#0f3e17]/70">
-                  ({queue.examQueue.length} lịch hẹn hôm nay)
-                </span>
-              </h2>
-            </div>
-            <div className="p-7 pt-3">
-            {servingExam && (
-              <div className="mt-3 rounded-[14px] bg-[#e1f4df] p-3">
-                <p className="eyebrow text-[#0f3e17]">Đang khám</p>
-                <p className="mt-1 font-display-serif text-[#0f3e17]">
-                  {servingExam.patientName}
-                  {servingExam.serviceName ? ` — ${servingExam.serviceName}` : ""}
-                </p>
-                <p className="text-sm text-[#222222]/70">
-                  {servingExam.appointmentCode}
-                  {servingExam.doctorName ? ` · BS. ${servingExam.doctorName}` : ""}
-                  {servingExam.startTime ? ` · ${fmtTime(servingExam.startTime)}–${fmtTime(servingExam.endTime)}` : ""}
-                </p>
-              </div>
-            )}
-            {waitingExam.length === 0 && !servingExam ? (
-              <p className="mt-3 text-sm text-[#222222]/60">Không có lịch khám nào đang chờ ở phòng này.</p>
-            ) : (
-              <ul className="mt-3 divide-y divide-[#efeeeb]">
-                {waitingExam.map((e) => (
-                  <li key={e.appointmentCode} className="flex flex-wrap items-center justify-between gap-2 py-2">
-                    <div>
-                      <p className="font-display-serif text-[#0f3e17]">
-                        {e.patientName}
-                        {e.serviceName ? ` — ${e.serviceName}` : ""}
-                      </p>
-                      <p className="text-sm text-[#222222]/70">
-                        {e.appointmentCode}
-                        {e.doctorName ? ` · BS. ${e.doctorName}` : ""}
-                        {e.startTime ? ` · ${fmtTime(e.startTime)}–${fmtTime(e.endTime)}` : ""}
-                      </p>
-                    </div>
-                    <span className="flex items-center gap-2">
-                      <span className="rounded-full bg-[#e1f4df] px-2 py-0.5 text-xs font-medium text-[#0f3e17]">
-                        {e.status === "CONFIRMED" ? "Đã xác nhận" : e.status}
-                      </span>
-                      {canAct && e.status === "CONFIRMED" && (
-                        <button
-                          type="button"
-                          disabled={busyId !== ""}
-                          onClick={() => handleCallExam(e)}
-                          className="inline-flex items-center gap-1 rounded-[14px] bg-[#0f3e17] px-3 py-1.5 text-sm font-medium text-[#fffefc] hover:bg-[#0c2f10] disabled:opacity-50"
-                        >
-                          <PhoneCall className="h-4 w-4" />
-                          {busyId === `exam-${e.appointmentCode}` ? "Đang gọi..." : "Mời vào"}
-                        </button>
-                      )}
-                      {role === "DOCTOR" && (!myDoctorId || e.doctorId === myDoctorId) && (
-                        <button
-                          type="button"
-                          disabled={busyId !== ""}
-                          onClick={() => handleDeleteExam(e)}
-                          className="inline-flex items-center gap-1 rounded-[14px] border border-red-300 px-3 py-1.5 text-sm font-medium text-red-700 hover:bg-red-50 disabled:opacity-50"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                          {busyId === `delete-exam-${e.appointmentCode}` ? "Đang xóa..." : "Xóa"}
-                        </button>
-                      )}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            )}
-            </div>
-          </section>
-
-          {/* Khối Chờ trị liệu — dải tiêu đề xanh lá (Keylime Wash) + thân trắng */}
+                    {/* Khối Chờ trị liệu — dải tiêu đề xanh lá (Keylime Wash) + thân trắng */}
           <section className="overflow-hidden rounded-[14px] border border-[#efeeeb] bg-[#fffefc]">
             <div className="rounded-t-[14px] bg-[#e1f4df] px-7 py-3">
               <h2 className="flex items-center gap-2 font-display-serif text-lg text-[#0f3e17]">
