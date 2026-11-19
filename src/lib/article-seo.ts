@@ -1,17 +1,33 @@
 // SEO cho bài viết: lọc HTML, trích FAQ, sinh JSON-LD. Chạy phía server.
-import DOMPurify from "isomorphic-dompurify";
+import sanitizeHtml from "sanitize-html";
 import { SITE_URL } from "@/lib/site";
 import type { PostItem } from "@/services/post.service";
 
-/** Lọc HTML bài viết: bỏ <script>/<style>/thuộc tính nguy hiểm, giữ lại
- *  tiêu đề, đoạn, danh sách, bảng, link, ảnh và class (để hộp cảnh báo,
- *  bảng của bài viết giữ được kiểu). */
+/** Lọc HTML bài viết: bỏ <script>/<style>/iframe/form, thuộc tính sự kiện,
+ *  javascript: và style inline; giữ lại tiêu đề, đoạn, danh sách, bảng,
+ *  link, ảnh và class (để hộp cảnh báo, bảng của bài viết giữ được kiểu).
+ *  Dùng sanitize-html (parser htmlparser2, không cần jsdom — jsdom vỡ khi
+ *  Turbopack bundle nên isomorphic-dompurify không build được trên VPS). */
 export function sanitizeArticleHtml(html: string): string {
-  return DOMPurify.sanitize(html, {
-    ADD_ATTR: ["target", "rel"],
-    // Không cho ảnh/link chạy JS; DOMPurify mặc định đã chặn javascript:.
-    FORBID_TAGS: ["script", "style", "iframe", "object", "embed", "form"],
-    FORBID_ATTR: ["onerror", "onload", "onclick", "style"],
+  return sanitizeHtml(html, {
+    allowedTags: [
+      "h2", "h3", "h4", "p", "ul", "ol", "li", "a", "strong", "em", "br",
+      "table", "thead", "tbody", "tr", "th", "td",
+      "figure", "figcaption", "img", "blockquote", "hr", "div", "span",
+    ],
+    allowedAttributes: {
+      "*": ["class"],
+      a: ["href", "target", "rel"],
+      img: ["src", "alt", "width", "height", "loading"],
+    },
+    allowedSchemes: ["http", "https", "mailto"],
+    allowedSchemesByTag: { img: ["http", "https"] },
+    transformTags: {
+      a: (tagName, attribs) => ({
+        tagName,
+        attribs: { ...attribs, rel: "noopener noreferrer" },
+      }),
+    },
   });
 }
 
