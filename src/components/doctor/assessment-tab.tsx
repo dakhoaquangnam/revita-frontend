@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   assessmentService,
   CONDITION_OPTIONS,
@@ -72,6 +72,11 @@ export default function AssessmentTab({
 
   const [goals, setGoals] = useState<GoalWithProgress[]>([]);
   const [goalScaleCode, setGoalScaleCode] = useState("");
+  // Định nghĩa ĐẦY ĐỦ của thang đang gắn mục tiêu (lấy qua getScale):
+  // GET /assessments/scales chỉ trả bản tóm tắt, KHÔNG có `items` — dùng
+  // items của nó ở ô "Trên 1 mục của thang" làm sập trang (FIM/Barthel).
+  const [goalFullDef, setGoalFullDef] = useState<ScaleDef | null>(null);
+  const goalScaleReqRef = useRef(0);
   const [goalItemKey, setGoalItemKey] = useState("");
   const [goalBaseline, setGoalBaseline] = useState("");
   const [goalTarget, setGoalTarget] = useState("");
@@ -300,12 +305,20 @@ export default function AssessmentTab({
     setGoalBaseline("");
     setGoalTarget("");
     setGoalTitle("");
+    setGoalFullDef(null);
     if (!code) return;
+    const req = ++goalScaleReqRef.current;
     try {
-      const res = await assessmentService.getPatientAssessments(patientProfileId, {
-        scaleCode: code,
-        limit: 1,
-      });
+      const [def, res] = await Promise.all([
+        assessmentService.getScale(code),
+        assessmentService.getPatientAssessments(patientProfileId, {
+          scaleCode: code,
+          limit: 1,
+        }),
+      ]);
+      // Người dùng đổi thang khác trong lúc chờ thì bỏ kết quả cũ.
+      if (goalScaleReqRef.current !== req) return;
+      setGoalFullDef(def);
       const latest = res.data[0];
       if (latest) {
         const v = latest.totalScore ?? latest.value;
@@ -346,6 +359,7 @@ export default function AssessmentTab({
         notes: undefined,
       });
       setGoalScaleCode("");
+      setGoalFullDef(null);
       setGoalItemKey("");
       setGoalBaseline("");
       setGoalTarget("");
@@ -492,7 +506,7 @@ export default function AssessmentTab({
                 ))}
               </div>
               {missingItems.length > 0 && (
-                <p className="text-xs text-amber-800">
+                <p className="text-xs text-[#0f3e17]">
                   Còn {missingItems.length} mục chưa chấm: {missingItems.map((i) => i.labelVi).join(", ")} — phải chấm đủ mới lưu được.
                 </p>
               )}
@@ -807,7 +821,7 @@ export default function AssessmentTab({
                 className="mt-1 w-full bg-[#fffefc] border border-[#efeeeb] rounded-[14px] px-2 py-2 font-semibold text-[#0f3e17] focus:outline-none focus:border-[#0f3e17]"
               >
                 <option value="">— Cả thang —</option>
-                {goalScaleDef.items.map((i) => (
+                {(goalFullDef?.items ?? []).map((i) => (
                   <option key={i.key} value={i.key}>{i.labelVi}</option>
                 ))}
               </select>
