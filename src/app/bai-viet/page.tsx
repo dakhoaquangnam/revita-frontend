@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Navbar } from "@/components/layout/navbar";
 import { Footer } from "@/components/layout/footer";
 import { postService, PostItem, PostCategory } from "@/services/post.service";
+import { displayAuthorName } from "@/lib/site";
 import { FileText, Calendar, User, Heart, Search } from "lucide-react";
 
 function formatDate(iso: string): string {
@@ -211,7 +212,7 @@ function PostCard({ post, featured }: { post: PostItem; featured?: boolean }) {
       <div className="flex items-center gap-4 text-[11px] text-[#222222]/60 mt-3">
         <span className="flex items-center gap-1">
           <User className="w-3 h-3 text-[#0f3e17]" />
-          {post.author?.name ?? "Phòng khám Bác sĩ Thanh Sang"}
+          {displayAuthorName(post.author?.name)}
         </span>
         <span className="flex items-center gap-1">
           <Heart className="w-3 h-3 text-[#0f3e17]" />

@@ -4,7 +4,7 @@ import Link from "next/link";
 import { Navbar } from "@/components/layout/navbar";
 import { Footer } from "@/components/layout/footer";
 import { getPostBySlug } from "@/lib/revita-server";
-import { SITE_URL } from "@/lib/site";
+import { SITE_URL, displayAuthorName } from "@/lib/site";
 import {
   sanitizeArticleHtml,
   articleExcerpt,
@@ -68,7 +68,7 @@ export async function generateMetadata({
       locale: "vi_VN",
       publishedTime: post.createdAt,
       modifiedTime: post.updatedAt ?? post.createdAt,
-      authors: [post.author?.name ?? "Bác sĩ Thanh Sang"],
+      authors: [displayAuthorName(post.author?.name)],
       images: post.coverImage
         ? [{ url: post.coverImage, alt: post.title }]
         : undefined,
@@ -192,7 +192,7 @@ async function ArticleContent({
               <div className="flex flex-wrap items-center gap-4 text-xs text-[#222222]/60 mt-3 pb-5 border-b border-[#efeeeb]">
                 <span className="flex items-center gap-1.5">
                   <User className="w-4 h-4 text-[#0f3e17]" />
-                  {post.author?.name ?? "Phòng khám Bác sĩ Thanh Sang"}
+                  {displayAuthorName(post.author?.name)}
                 </span>
                 <span className="flex items-center gap-1.5">
                   <Calendar className="w-4 h-4 text-[#0f3e17]" />

@@ -1,6 +1,6 @@
 // SEO cho bài viết: lọc HTML, trích FAQ, sinh JSON-LD. Chạy phía server.
 import sanitizeHtml from "sanitize-html";
-import { SITE_URL } from "@/lib/site";
+import { SITE_URL, displayAuthorName } from "@/lib/site";
 import type { PostItem } from "@/services/post.service";
 
 /** Lọc HTML bài viết: bỏ <script>/<style>/iframe/form, thuộc tính sự kiện,
@@ -89,7 +89,7 @@ export function buildArticleJsonLd(args: {
 }): Record<string, unknown> {
   const { post, slug, description, faq } = args;
   const url = `${SITE_URL}/bai-viet/${slug}`;
-  const authorName = post.author?.name ?? "Bác sĩ Thanh Sang";
+  const authorName = displayAuthorName(post.author?.name);
   const graph: Record<string, unknown>[] = [
     {
       "@type": "MedicalWebPage",
