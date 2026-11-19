@@ -1,12 +1,25 @@
-"use client";
-
-import React, { useState, useEffect, Suspense } from "react";
+import type { Metadata } from "next";
+import { Suspense } from "react";
 import Link from "next/link";
-import { useParams } from "next/navigation";
 import { Navbar } from "@/components/layout/navbar";
 import { Footer } from "@/components/layout/footer";
-import { postService, PostItem } from "@/services/post.service";
-import { Calendar, User, Heart, MessageSquare, ArrowLeft, ArrowRight } from "lucide-react";
+import { getPostBySlug } from "@/lib/revita-server";
+import { SITE_URL } from "@/lib/site";
+import {
+  sanitizeArticleHtml,
+  articleExcerpt,
+  extractFaq,
+  buildArticleJsonLd,
+} from "@/lib/article-seo";
+import type { PostItem } from "@/services/post.service";
+import {
+  Calendar,
+  User,
+  Heart,
+  MessageSquare,
+  ArrowLeft,
+  ArrowRight,
+} from "lucide-react";
 
 function formatDate(iso: string): string {
   try {
@@ -16,56 +29,64 @@ function formatDate(iso: string): string {
   }
 }
 
-export default function BaiVietDetailPage() {
-  return (
-    <Suspense
-      fallback={
-        <div className="min-h-screen flex flex-col bg-[#fffefc] text-[#222222]">
-          <Navbar />
-          <main className="flex-1 py-12 md:py-16">
-            <p className="text-center text-sm text-[#222222]/70">
-              Đang tải bài viết...
-            </p>
-          </main>
-          <Footer />
-        </div>
-      }
-    >
-      <BaiVietDetailContent />
-    </Suspense>
-  );
+/* SEO từng bài (19/11/2026): trước đây trang là Client Component, mọi bài
+ * dùng chung metadata của toàn trang và nội dung fetch ở trình duyệt nên
+ * Google không thấy bài trong HTML trả về. Nay là Server Component: bài
+ * có sẵn trong HTML, metadata + JSON-LD riêng từng bài. */
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  const { slug } = await params;
+  let post: PostItem | null = null;
+  try {
+    post = await getPostBySlug(slug);
+  } catch {
+    post = null;
+  }
+  if (!post) {
+    return {
+      title: "Bài viết không tồn tại | Bác sĩ Thanh Sang",
+      description:
+        "Bài viết này có thể đã bị gỡ hoặc đang ở trạng thái bản nháp.",
+    };
+  }
+  const description =
+    post.summary?.trim() || articleExcerpt(post.content ?? "", 160);
+  const url = `${SITE_URL}/bai-viet/${slug}`;
+  return {
+    metadataBase: new URL(SITE_URL),
+    title: `${post.title} | Bác sĩ Thanh Sang`,
+    description,
+    alternates: { canonical: url },
+    openGraph: {
+      title: post.title,
+      description,
+      url,
+      type: "article",
+      locale: "vi_VN",
+      publishedTime: post.createdAt,
+      modifiedTime: post.updatedAt ?? post.createdAt,
+      authors: [post.author?.name ?? "Bác sĩ Thanh Sang"],
+      images: post.coverImage
+        ? [{ url: post.coverImage, alt: post.title }]
+        : undefined,
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: post.title,
+      description,
+      images: post.coverImage ? [post.coverImage] : undefined,
+    },
+  };
 }
 
-function BaiVietDetailContent() {
-  const params = useParams();
-  const slug = String(params.slug ?? "");
-  const [post, setPost] = useState<PostItem | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [notFound, setNotFound] = useState(false);
-  const [loadError, setLoadError] = useState("");
-
-  useEffect(() => {
-    if (!slug) return;
-    const load = async () => {
-      setIsLoading(true);
-      setNotFound(false);
-      setLoadError("");
-      try {
-        const data = await postService.getPostBySlug(slug);
-        setPost(data);
-      } catch (err: any) {
-        if (err?.response?.status === 404) {
-          setNotFound(true);
-        } else {
-          setLoadError("Không tải được bài viết. Kiểm tra kết nối máy chủ rồi thử lại.");
-        }
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    load();
-  }, [slug]);
-
+export default function BaiVietDetailPage({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
   return (
     <div className="min-h-screen flex flex-col bg-[#fffefc] text-[#222222]">
       <Navbar />
@@ -80,31 +101,74 @@ function BaiVietDetailContent() {
             <span>Tất cả bài viết</span>
           </Link>
 
-          {isLoading ? (
-            <p className="text-center text-sm text-[#222222]/70 py-12">
-              Đang tải bài viết...
-            </p>
-          ) : notFound ? (
-            <div className="p-12 text-center bg-[#fffefc] border border-[#efeeeb] rounded-[14px] space-y-3">
-              <h1 className="text-lg font-semibold text-[#0f3e17]">
-                Bài viết không tồn tại hoặc chưa được xuất bản
-              </h1>
-              <p className="text-sm text-[#222222]/70">
-                Bài viết này có thể đã bị gỡ hoặc đang ở trạng thái bản nháp.
+          {/* Next 16 Cache Components: nội dung bài (fetch không cache) phải
+              nằm sau <Suspense> để khung trang tĩnh vẫn prerender được;
+              bài viết stream vào sau, vẫn đầy đủ trong HTML trả về. */}
+          <Suspense
+            fallback={
+              <p className="text-center text-sm text-[#222222]/70 py-12">
+                Đang tải bài viết...
               </p>
-              <Link
-                href="/bai-viet"
-                className="inline-block px-5 py-2.5 bg-[#0f3e17] text-[#fffefc] rounded-[14px] text-xs font-semibold"
-              >
-                Xem các bài viết khác
-              </Link>
-            </div>
-          ) : loadError ? (
-            <div className="p-6 rounded-[14px] bg-rose-50 border border-rose-200 text-rose-800 text-sm text-center">
-              {loadError}
-            </div>
-          ) : post ? (
-            <article>
+            }
+          >
+            <ArticleContent params={params} />
+          </Suspense>
+        </div>
+      </main>
+
+      <Footer />
+    </div>
+  );
+}
+
+async function ArticleContent({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
+  const { slug } = await params;
+  let post: PostItem | null = null;
+  let loadError = "";
+  try {
+    post = await getPostBySlug(slug);
+  } catch {
+    loadError = "Không tải được bài viết. Kiểm tra kết nối máy chủ rồi thử lại.";
+  }
+
+  const html = post?.content ? sanitizeArticleHtml(post.content) : "";
+  const faq = html ? extractFaq(html) : [];
+  const description =
+    post?.summary?.trim() || articleExcerpt(post?.content ?? "", 160);
+  const jsonLd = post
+    ? buildArticleJsonLd({ post, slug, description, faq })
+    : null;
+
+  if (!post) {
+    return loadError ? (
+      <div className="p-6 rounded-[14px] bg-rose-50 border border-rose-200 text-rose-800 text-sm text-center">
+        {loadError}
+      </div>
+    ) : (
+      <div className="p-12 text-center bg-[#fffefc] border border-[#efeeeb] rounded-[14px] space-y-3">
+        <h1 className="text-lg font-semibold text-[#0f3e17]">
+          Bài viết không tồn tại hoặc chưa được xuất bản
+        </h1>
+        <p className="text-sm text-[#222222]/70">
+          Bài viết này có thể đã bị gỡ hoặc đang ở trạng thái bản nháp.
+        </p>
+        <Link
+          href="/bai-viet"
+          className="inline-block px-5 py-2.5 bg-[#0f3e17] text-[#fffefc] rounded-[14px] text-xs font-semibold"
+        >
+          Xem các bài viết khác
+        </Link>
+      </div>
+    );
+  }
+
+  return (
+    <>
+      <article>
               <div className="flex flex-wrap items-center gap-2 mb-3">
                 {(post.categories ?? []).map((cat) => (
                   <span
@@ -159,10 +223,11 @@ function BaiVietDetailContent() {
                 </p>
               )}
 
-              {post.content ? (
-                <div className="text-[15px] leading-[1.9] text-[#222222]/90 whitespace-pre-line">
-                  {post.content}
-                </div>
+              {html ? (
+                <div
+                  className="post-content"
+                  dangerouslySetInnerHTML={{ __html: html }}
+                />
               ) : (
                 <p className="text-sm text-[#222222]/60 my-6">
                   Bài viết chưa có nội dung chi tiết.
@@ -199,11 +264,15 @@ function BaiVietDetailContent() {
                 </Link>
               </div>
             </article>
-          ) : null}
-        </div>
-      </main>
 
-      <Footer />
-    </div>
+      {/* Dữ liệu có cấu trúc: JSON-LD phải nằm trong head/trang (qua code),
+          không dán vào ô nội dung — dán vào nội dung sẽ hiện thành chữ. */}
+      {jsonLd && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
+      )}
+    </>
   );
 }

@@ -190,3 +190,104 @@ body {
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
+
+/* Nội dung bài viết đã định dạng (19/11/2026): trang /bai-viet/[slug] hiển
+ * thị HTML đã lọc qua .post-content. Theo DESIGN.md: serif nét 500 cho
+ * tiêu đề, sans Be Vietnam Pro cho thân bài, bo 14px, hairline #efeeeb,
+ * giữ đỏ/hổ phách cho cảnh báo. Các class .alert/.table là dạng Blogger
+ * cũ — giữ kiểu dự phòng để bài dán từ Blogger vẫn hiển thị được. */
+.post-content {
+  font-size: 15px;
+  line-height: 1.9;
+  color: rgba(34, 34, 34, 0.9);
+  overflow-wrap: break-word;
+}
+.post-content h2 {
+  font-family: var(--font-display-serif), "Cormorant Garamond", Georgia, serif;
+  font-weight: 500;
+  color: #0f3e17;
+  font-size: 1.5rem;
+  line-height: 1.35;
+  margin: 2rem 0 0.75rem;
+}
+.post-content h3 {
+  font-weight: 600;
+  color: #0f3e17;
+  font-size: 1.125rem;
+  line-height: 1.5;
+  margin: 1.5rem 0 0.5rem;
+}
+.post-content p { margin: 0 0 1rem; }
+.post-content ul, .post-content ol { margin: 0 0 1rem; padding-left: 1.25rem; }
+.post-content li { margin-bottom: 0.5rem; }
+.post-content li::marker { color: #0f3e17; }
+.post-content a {
+  color: #0f3e17;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.post-content a:hover { color: #0c2f10; }
+.post-content strong { font-weight: 600; color: #222222; }
+.post-content figure { margin: 1.5rem 0; }
+.post-content img {
+  width: 100%;
+  height: auto;
+  border-radius: 14px;
+}
+.post-content blockquote {
+  border-left: 4px solid #b1dbb8;
+  padding-left: 1rem;
+  margin: 1.25rem 0;
+  color: rgba(34, 34, 34, 0.7);
+  font-style: italic;
+}
+.post-content hr {
+  border: none;
+  border-top: 1px solid #efeeeb;
+  margin: 2rem 0;
+}
+.post-content table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+  line-height: 1.6;
+  margin: 1.25rem 0;
+}
+.post-content th {
+  background: #e1f4df;
+  color: #0f3e17;
+  font-weight: 600;
+  text-align: left;
+  padding: 10px 12px;
+  border: 1px solid #efeeeb;
+}
+.post-content td {
+  padding: 10px 12px;
+  border: 1px solid #efeeeb;
+  vertical-align: top;
+}
+.post-content tr:nth-child(even) td { background: #f6f9f4; }
+.post-content .post-table { overflow-x: auto; margin: 1.25rem 0; }
+.post-content .post-table table { margin: 0; }
+.post-content .post-alert,
+.post-content .alert.outline {
+  background: #e1f4df;
+  border: 1px solid #efeeeb;
+  border-left: 4px solid #0f3e17;
+  border-radius: 14px;
+  padding: 1rem 1.25rem;
+  margin: 1.25rem 0;
+}
+.post-content .post-alert p,
+.post-content .alert.outline p { margin: 0 0 0.5rem; }
+.post-content .post-alert p:last-child,
+.post-content .alert.outline p:last-child { margin-bottom: 0; }
+.post-content .post-alert-warning,
+.post-content .alert.warning.outline {
+  background: #fffbeb;
+  border-left-color: #d97706;
+}
+.post-content .post-alert-warning ul,
+.post-content .alert.warning.outline ul { margin-bottom: 0; }
+.post-content .table { overflow-x: auto; }

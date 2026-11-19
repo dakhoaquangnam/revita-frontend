@@ -72,6 +72,7 @@ export default function PostsManagementPage() {
     title: "",
     categoryId: "",
     summary: "",
+    tags: "",
     content: "",
     coverImage: "",
     isPinned: false,
@@ -126,6 +127,7 @@ export default function PostsManagementPage() {
       title: "",
       categoryId: categories[0]?.id ?? "",
       summary: "",
+      tags: "",
       content: "",
       coverImage: "",
       isPinned: false,
@@ -142,6 +144,7 @@ export default function PostsManagementPage() {
       title: post.title,
       categoryId: post.categories?.[0]?.id ?? "",
       summary: post.summary ?? "",
+      tags: (post.tags ?? []).join(", "),
       content: post.content ?? "",
       coverImage: post.coverImage ?? "",
       isPinned: post.isPinned ?? false,
@@ -150,15 +153,22 @@ export default function PostsManagementPage() {
     setIsModalOpen(true);
   };
 
-  const buildPayload = (): AdminPostPayload => ({
-    title: formData.title.trim(),
-    summary: formData.summary.trim() || undefined,
-    content: formData.content.trim() || undefined,
-    coverImage: formData.coverImage.trim() || undefined,
-    status: formData.status,
-    isPinned: formData.isPinned,
-    categoryIds: formData.categoryId ? [formData.categoryId] : undefined,
-  });
+  const buildPayload = (): AdminPostPayload => {
+    const tags = formData.tags
+      .split(",")
+      .map((t) => t.trim())
+      .filter(Boolean);
+    return {
+      title: formData.title.trim(),
+      summary: formData.summary.trim() || undefined,
+      content: formData.content.trim() || undefined,
+      coverImage: formData.coverImage.trim() || undefined,
+      status: formData.status,
+      isPinned: formData.isPinned,
+      tags: tags.length > 0 ? tags : undefined,
+      categoryIds: formData.categoryId ? [formData.categoryId] : undefined,
+    };
+  };
 
   const handleSavePost = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -660,6 +670,20 @@ export default function PostsManagementPage() {
                 />
               </div>
 
+              {/* Thẻ tag (phân cách bằng dấu phẩy — hiển thị #tag ở bài viết) */}
+              <div>
+                <label className="block text-xs font-semibold text-[#0f3e17] mb-1">
+                  Thẻ tag (phân cách bằng dấu phẩy)
+                </label>
+                <input
+                  type="text"
+                  value={formData.tags}
+                  onChange={(e) => setFormData({ ...formData, tags: e.target.value })}
+                  placeholder="Ví dụ: ADL, IADL, Lão khoa"
+                  className="w-full px-3.5 py-2 text-xs bg-[#fffefc] border border-[#efeeeb] rounded-[14px] focus:outline-none focus:border-[#0f3e17]"
+                />
+              </div>
+
               {/* Nội dung chi tiết */}
               <div>
                 <label className="block text-xs font-semibold text-[#0f3e17] mb-1">
@@ -669,7 +693,7 @@ export default function PostsManagementPage() {
                   rows={6}
                   value={formData.content}
                   onChange={(e) => setFormData({ ...formData, content: e.target.value })}
-                  placeholder="Nội dung phác đồ điều trị, kỹ thuật tập, lời dặn của bác sĩ..."
+                  placeholder="Dán nội dung HTML đã chuyển đổi (tiêu đề, bảng, hộp cảnh báo...). Không dán khối JSON-LD vào đây — dữ liệu có cấu trúc do trang tự sinh."
                   className="w-full px-3.5 py-2.5 text-xs bg-[#fffefc] border border-[#efeeeb] rounded-[14px] focus:outline-none focus:border-[#0f3e17]"
                 />
               </div>

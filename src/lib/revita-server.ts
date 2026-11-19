@@ -157,3 +157,41 @@ export async function bookAppointmentAsService(input: {
     body: JSON.stringify(input),
   });
 }
+
+/* ---------------- Bài viết công khai (SEO) ----------------
+   Trang /bai-viet/[slug] là Server Component: lấy bài phía server để
+   nội dung có sẵn trong HTML trả về (Google lập chỉ mục được), thay vì
+   fetch ở trình duyệt như trước. cache() để generateMetadata + trang
+   dùng chung 1 lần gọi trong cùng một lần render. */
+import { cache } from "react";
+import type { PostItem } from "@/services/post.service";
+
+export const getPostBySlug = cache(
+  async (slug: string): Promise<PostItem | null> => {
+    try {
+      const data = await revitaFetch<{ post?: PostItem } | PostItem>(
+        `/posts/${encodeURIComponent(slug)}`,
+      );
+      if (data && typeof data === "object" && "post" in data && data.post) {
+        return data.post;
+      }
+      return data as PostItem;
+    } catch (err) {
+      if (err instanceof RevitaError && err.status === 404) return null;
+      throw err;
+    }
+  },
+);
+
+/** Danh sách bài đã xuất bản (cho sitemap). */
+export async function getPublishedPosts(limit = 100): Promise<PostItem[]> {
+  try {
+    const data = await revitaFetch<{ items?: PostItem[] } | PostItem[]>(
+      `/posts?limit=${limit}`,
+    );
+    if (Array.isArray(data)) return data;
+    return data.items ?? [];
+  } catch {
+    return [];
+  }
+}
