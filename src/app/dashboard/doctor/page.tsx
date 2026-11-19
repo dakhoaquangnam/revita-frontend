@@ -963,7 +963,7 @@ export default function DoctorWorkspacePage() {
                         ? "bg-[#0f3e17] text-[#fffefc]"
                         : item.status === "COMPLETED"
                         ? "bg-[#e1f4df] text-[#0f3e17]"
-                        : "bg-[#efeeeb] text-[#222222]/60"
+                        : "bg-white text-[#222222]/60 border border-[#efeeeb]"
                     }`}
                   >
                     {item.status === "SERVING" ? "Đang khám" : item.status === "COMPLETED" ? "Đã khám" : "Chờ"}
