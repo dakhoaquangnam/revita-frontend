@@ -154,6 +154,17 @@ export const doctorService = {
   },
 
   /**
+   * Bệnh án của 1 bệnh nhân (để trang bác sĩ hiện "Đã lưu hôm nay" sau khi
+   * làm mới trang — tránh tưởng chưa lưu rồi bấm lưu trùng).
+   */
+  async listMedicalRecordsByPatient(patientProfileId: string) {
+    const res = await apiClient.get(
+      `/medical-records/patient-profile/${patientProfileId}`,
+    );
+    return res.data;
+  },
+
+  /**
    * Tạo phiếu chỉ định dịch vụ trị liệu (POST /prescriptions).
    * Mỗi mục cần serviceId thật của backend; trạng thái ban đầu NOT_STARTED.
    */

@@ -64,6 +64,15 @@ export default function AssessmentTab({
   const [assessmentError, setAssessmentError] = useState("");
   const [savedAssessment, setSavedAssessment] = useState<AssessmentRecord | null>(null);
 
+  // Nháp lượng giá bền qua F5 (19/11): chấm dở mà làm mới trang thì điểm
+  // đã chấm không mất (trước đây mất hết như lỗi của Mai Thị Đến).
+  // assessmentDraftReadyRef = "patientProfileId:scaleCode" đã nạp xong —
+  // effect ghi nháp phải chờ cờ này, nếu không nó sẽ ghi đè nháp tốt bằng
+  // form trống trong lúc định nghĩa thang chưa tải về.
+  const assessmentDraftReadyRef = useRef("");
+  const assessmentDraftKey = (pid: string, scaleCode: string) =>
+    `assessment-draft:v1:${pid}:${scaleCode}`;
+
   const [history, setHistory] = useState<AssessmentRecord[]>([]);
   const [trend, setTrend] = useState<TrendPoint[]>([]);
   const [historyLoading, setHistoryLoading] = useState(false);
@@ -113,6 +122,7 @@ export default function AssessmentTab({
       return;
     }
     let cancelled = false;
+    assessmentDraftReadyRef.current = "";
     setHistoryLoading(true);
     setSelectedHistoryId(null);
     setSavedAssessment(null);
@@ -126,6 +136,37 @@ export default function AssessmentTab({
         setSingleValue(null);
         setMeasures([]);
         setNewMeasureKey(def.items[0]?.key ?? "");
+        // Nạp nháp đã chấm dở cho thang này (nếu có) — chỉ lấy mục thuộc
+        // định nghĩa thang hiện tại để backend không nhận itemKey lạ.
+        try {
+          const raw = localStorage.getItem(
+            assessmentDraftKey(patientProfileId, selectedScaleCode),
+          );
+          if (raw) {
+            const d = JSON.parse(raw);
+            if (d && typeof d === "object") {
+              if (d.itemValues && typeof d.itemValues === "object") {
+                const validKeys = new Set(def.items.map((i) => i.key));
+                const restored: Record<string, number | null> = {};
+                for (const [k, v] of Object.entries(d.itemValues)) {
+                  if (
+                    validKeys.has(k) &&
+                    (typeof v === "number" || v === null)
+                  ) {
+                    restored[k] = v as number | null;
+                  }
+                }
+                setItemValues((prev) => ({ ...prev, ...restored }));
+              }
+              if (typeof d.singleValue === "number" || d.singleValue === null) {
+                setSingleValue(d.singleValue);
+              }
+              if (Array.isArray(d.measures)) setMeasures(d.measures);
+              if (typeof d.note === "string") setAssessmentNote(d.note);
+            }
+          }
+        } catch {}
+        assessmentDraftReadyRef.current = `${patientProfileId}:${selectedScaleCode}`;
       })
       .catch((err) => {
         if (!cancelled) setAssessmentError(getApiErrorMessage(err, "Không tải được định nghĩa thang."));
@@ -151,6 +192,37 @@ export default function AssessmentTab({
       cancelled = true;
     };
   }, [selectedScaleCode, patientProfileId]);
+
+  // Lưu nháp lượng giá mỗi khi chấm (localStorage — chỉ ở máy bác sĩ).
+  // Chỉ ghi khi đã nạp xong nháp cũ cho thang này (cờ ở trên), nếu không
+  // form trống lúc tải định nghĩa sẽ ghi đè mất nháp tốt.
+  useEffect(() => {
+    if (!selectedScaleCode) return;
+    if (
+      assessmentDraftReadyRef.current !==
+      `${patientProfileId}:${selectedScaleCode}`
+    ) {
+      return;
+    }
+    try {
+      localStorage.setItem(
+        assessmentDraftKey(patientProfileId, selectedScaleCode),
+        JSON.stringify({
+          itemValues,
+          singleValue,
+          measures,
+          note: assessmentNote,
+        }),
+      );
+    } catch {}
+  }, [
+    patientProfileId,
+    selectedScaleCode,
+    itemValues,
+    singleValue,
+    measures,
+    assessmentNote,
+  ]);
 
   // Mục tiêu của bệnh nhân (tải 1 lần theo bệnh nhân).
   useEffect(() => {
@@ -244,6 +316,13 @@ export default function AssessmentTab({
       setSavedAssessment(saved);
       onAssessmentCreated(saved.id);
       setAssessmentNote("");
+      // Đã lưu thì xóa nháp (lần đánh giá đã vào lịch sử; form giữ nguyên
+      // giá trị trên màn hình cho tới khi đổi thang/bệnh nhân).
+      try {
+        localStorage.removeItem(
+          assessmentDraftKey(patientProfileId, scaleDef.code),
+        );
+      } catch {}
       refreshHistoryAndGoals();
     } catch (err: any) {
       setAssessmentError(getApiErrorMessage(err, "Không lưu được lần đánh giá."));

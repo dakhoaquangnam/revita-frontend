@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import {
   Stethoscope,
   Users,
@@ -11,6 +11,7 @@ import {
   Printer,
   Save,
   CheckCircle2,
+  RefreshCw,
 } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { ttsService } from "@/services/tts.service";
@@ -51,6 +52,12 @@ interface DoctorQueueItem {
   id: string;
   patientProfileId: string;
   appointmentCode: string;
+  // Id lịch hẹn thật (UUID) — dùng khi lưu bệnh án/đơn (backend tra cứu
+  // theo code/id; KHÔNG được đưa id phiếu vào đây). Vãng lai không có
+  // lịch hẹn nên để trống.
+  appointmentId?: string;
+  // Bệnh nhân vãng lai (không lịch hẹn) vào hàng đợi qua phiếu khám.
+  isWalkIn?: boolean;
   queueNumber: string;
   name: string;
   birthYear: number;
@@ -80,8 +87,22 @@ export default function DoctorWorkspacePage() {
   const [queue, setQueue] = useState<DoctorQueueItem[]>([]);
   const [queueLoading, setQueueLoading] = useState(true);
   const [queueError, setQueueError] = useState("");
+  const [queueRefreshing, setQueueRefreshing] = useState(false);
   const [activePatientIndex, setActivePatientIndex] = useState(0);
   const currentPatient = queue[activePatientIndex] || queue[0];
+  // Ref soi gương queue + vị trí đang khám — loadQueue chạy trong
+  // setInterval nên không được đọc state cũ trong closure.
+  const queueRef = useRef<DoctorQueueItem[]>([]);
+  const activeIdxRef = useRef(0);
+  useEffect(() => {
+    queueRef.current = queue;
+  }, [queue]);
+  useEffect(() => {
+    activeIdxRef.current = activePatientIndex;
+  }, [activePatientIndex]);
+  // Id dịch vụ Khám PHCN (REHAB_EXAM) — tra 1 lần từ danh sách dịch vụ
+  // của bác sĩ, dùng để nhận diện phiếu khám vãng lai trong hàng đợi phòng.
+  const examServiceIdRef = useRef<string>("");
   // Id bác sĩ đang đăng nhập — lấy từ lịch hẹn đầu trong hàng đợi.
   const [doctorId, setDoctorId] = useState("");
   // Id template bệnh án PHCN — backend bắt buộc templateId khi tạo bệnh án.
@@ -103,62 +124,7 @@ export default function DoctorWorkspacePage() {
     loadTemplate();
   }, []);
 
-  useEffect(() => {
-    const loadQueue = async () => {
-      setQueueLoading(true);
-      setQueueError("");
-      try {
-        const appointments = await appointmentService.getDoctorAppointments();
-        const today = new Date().toISOString().substring(0, 10);
-        const items: DoctorQueueItem[] = appointments
-          .filter((apt) => String(apt.date ?? "").substring(0, 10) === today)
-          .map((apt) => {
-            const profile: PatientProfileSummary = apt.patientProfile ?? {
-              id: "",
-              profileCode: "",
-              name: "",
-            };
-            const dob = profile.dateOfBirth
-              ? new Date(profile.dateOfBirth)
-              : null;
-            return {
-              id: apt.appointmentId,
-              patientProfileId: profile.id ?? "",
-              appointmentCode: apt.appointmentCode,
-              queueNumber: apt.appointmentCode,
-              name: profile.name ?? "",
-              birthYear: dob ? dob.getFullYear() : 0,
-              gender: profile.gender ?? "",
-              phone: profile.phone ?? "",
-              reason: apt.services?.[0]?.serviceName ?? "Khám PHCN",
-              // Backend chưa có trường triệu chứng trên lịch hẹn;
-              // bác sĩ ghi nhận triệu chứng lúc khám, không tự bịa.
-              symptoms: "",
-              metalImplant: false,
-              pacemaker: false,
-              allergies: profile.allergies ?? "",
-              status:
-                apt.status === "COMPLETED"
-                  ? "COMPLETED"
-                  : apt.status === "SERVING"
-                    ? "SERVING"
-                    : "WAITING",
-            };
-          });
-        setQueue(items);
-        // Tất cả lịch hẹn trong hàng đợi đều của bác sĩ đang đăng nhập.
-        setDoctorId(appointments[0]?.doctorId ?? "");
-      } catch (err: any) {
-        setQueueError(
-          err.response?.data?.message ||
-            "Không tải được hàng đợi buồng khám. Vui lòng thử lại.",
-        );
-      } finally {
-        setQueueLoading(false);
-      }
-    };
-    loadQueue();
-  }, []);
+
   const [isCallingAudio, setIsCallingAudio] = useState(false);
   const [callToast, setCallToast] = useState("");
   // GĐ2 §4.4.3 — phòng trực của bác sĩ (giải quyết từ GET /routing/rooms:
@@ -191,6 +157,178 @@ export default function DoctorWorkspacePage() {
       cancelled = true;
     };
   }, [user?.doctor?.id]);
+
+  // Hàng đợi buồng khám — lịch hẹn hôm nay + bệnh nhân vãng lai đã được
+  // mời vào phòng khám (phiếu Khám PHCN, chưa có lịch hẹn). Trước đây chỉ
+  // lấy lịch hẹn nên bệnh nhân vãng lai như Nguyễn Thanh Bình không bao
+  // giờ hiện ở đây dù đã bấm "Mời vào" ở màn hình phòng.
+  const loadQueue = useCallback(
+    async (silent = false) => {
+      if (!silent) {
+        setQueueLoading(true);
+        setQueueError("");
+      } else {
+        setQueueRefreshing(true);
+      }
+      try {
+        const appointments = await appointmentService.getDoctorAppointments();
+        const today = new Date().toISOString().substring(0, 10);
+        const myDoctorId =
+          user?.doctor?.id ?? appointments[0]?.doctorId ?? "";
+        const items: DoctorQueueItem[] = appointments
+          .filter((apt) => String(apt.date ?? "").substring(0, 10) === today)
+          .map((apt) => {
+            const profile: PatientProfileSummary = apt.patientProfile ?? {
+              id: "",
+              profileCode: "",
+              name: "",
+            };
+            const dob = profile.dateOfBirth
+              ? new Date(profile.dateOfBirth)
+              : null;
+            return {
+              id: apt.appointmentId,
+              patientProfileId: profile.id ?? "",
+              appointmentId: apt.appointmentId,
+              appointmentCode: apt.appointmentCode,
+              queueNumber: apt.appointmentCode,
+              name: profile.name ?? "",
+              birthYear: dob ? dob.getFullYear() : 0,
+              gender: profile.gender ?? "",
+              phone: profile.phone ?? "",
+              reason: apt.services?.[0]?.serviceName ?? "Khám PHCN",
+              // Backend chưa có trường triệu chứng trên lịch hẹn;
+              // bác sĩ ghi nhận triệu chứng lúc khám, không tự bịa.
+              symptoms: "",
+              metalImplant: false,
+              pacemaker: false,
+              allergies: profile.allergies ?? "",
+              status:
+                apt.status === "COMPLETED"
+                  ? "COMPLETED"
+                  : apt.status === "SERVING"
+                    ? "SERVING"
+                    : "WAITING",
+            };
+          });
+        if (myDoctorId) setDoctorId(myDoctorId);
+
+        // Gộp bệnh nhân vãng lai: phiếu dịch vụ Khám PHCN trong phòng trực,
+        // do chính bác sĩ này phụ trách, chưa có lịch hẹn, chưa trùng với
+        // lịch hẹn đã có trong hàng đợi.
+        if (myRoomId && myDoctorId) {
+          try {
+            if (!examServiceIdRef.current) {
+              const services = await appointmentService.getServicesByDoctor(
+                myDoctorId,
+                today,
+              );
+              const exam =
+                services.find((s) => s.serviceCode === "REHAB_EXAM") ??
+                services.find(
+                  (s) => s.serviceName === "Khám phục hồi chức năng",
+                );
+              if (exam) examServiceIdRef.current = exam.serviceId;
+            }
+            const examServiceId = examServiceIdRef.current;
+            if (examServiceId) {
+              const roomQueue = await roomService.getRoomQueue(myRoomId);
+              const inQueue = new Set(items.map((i) => i.patientProfileId));
+              const walkins = roomQueue.therapyQueue.filter(
+                (t) =>
+                  t.serviceId === examServiceId &&
+                  !inQueue.has(t.patientProfileId) &&
+                  (!t.doctorId || t.doctorId === myDoctorId) &&
+                  [
+                    "WAITING",
+                    "PREPARING",
+                    "RETURNING",
+                    "SERVING",
+                    "WAITING_RESULT",
+                    "NOT_STARTED",
+                    "PENDING",
+                  ].includes(t.status),
+              );
+              const profiles = await Promise.all(
+                walkins.map((t) =>
+                  apiClient
+                    .get(`/patient-profiles/${t.patientProfileId}`)
+                    .then((r) => r.data)
+                    .catch(() => null),
+                ),
+              );
+              walkins.forEach((t, i) => {
+                const p: any = profiles[i] ?? {};
+                const dob = p.dateOfBirth ? new Date(p.dateOfBirth) : null;
+                items.push({
+                  id: `walkin:${t.id}`,
+                  patientProfileId: t.patientProfileId,
+                  appointmentCode: "",
+                  isWalkIn: true,
+                  queueNumber: t.prescriptionCode,
+                  name: t.patientName,
+                  birthYear: dob ? dob.getFullYear() : 0,
+                  gender: p.gender ?? "",
+                  phone: p.phone ?? "",
+                  reason: t.serviceName,
+                  symptoms: "",
+                  metalImplant: false,
+                  pacemaker: false,
+                  allergies: p.allergies ?? "",
+                  status:
+                    t.status === "SERVING"
+                      ? "SERVING"
+                      : t.status === "COMPLETED"
+                        ? "COMPLETED"
+                        : "WAITING",
+                });
+              });
+            }
+          } catch {
+            // Không gộp được vãng lai thì hàng đợi lịch hẹn vẫn hiện —
+            // không chặn khám vì 1 lỗi phụ.
+          }
+        }
+
+        // Giữ nguyên bệnh nhân đang khám khi làm mới (poll/nút Tải lại):
+        // tìm lại theo id, mất thì kẹp về cuối danh sách.
+        const prevId = queueRef.current[activeIdxRef.current]?.id;
+        const newIdx = prevId ? items.findIndex((x) => x.id === prevId) : -1;
+        setQueue(items);
+        if (items.length === 0) {
+          setActivePatientIndex(0);
+        } else if (newIdx >= 0) {
+          if (newIdx !== activeIdxRef.current) setActivePatientIndex(newIdx);
+        } else {
+          setActivePatientIndex(
+            Math.min(activeIdxRef.current, items.length - 1),
+          );
+        }
+      } catch (err: any) {
+        if (!silent) {
+          setQueueError(
+            err.response?.data?.message ||
+              "Không tải được hàng đợi buồng khám. Vui lòng thử lại.",
+          );
+        }
+      } finally {
+        if (!silent) setQueueLoading(false);
+        else setQueueRefreshing(false);
+      }
+    },
+    [myRoomId, user?.doctor?.id],
+  );
+
+  // Tải hàng đợi khi vào trang + khi xác định được phòng trực, rồi tự làm
+  // mới mỗi 30 giây để bệnh nhân mới (đặt web, lễ tân, vãng lai được mời
+  // vào) tự hiện mà không cần F5.
+  useEffect(() => {
+    void loadQueue(queueRef.current.length === 0 ? false : true);
+    const t = setInterval(() => {
+      void loadQueue(true);
+    }, 30000);
+    return () => clearInterval(t);
+  }, [loadQueue]);
 
   // Dịch vụ bác sĩ được chỉ định trong ca hôm nay (lấy theo ca làm việc).
   const [doctorServices, setDoctorServices] = useState<DoctorServiceItem[]>([]);
@@ -273,6 +411,222 @@ export default function DoctorWorkspacePage() {
     setServiceNote("");
     setCreatedPrescriptionCode("");
   };
+
+  // --- Nháp workspace bền qua F5 (19/11) ---
+  // Chẩn đoán/ghi chú/đơn thuốc/đơn bài tập/dịch vụ chỉ định + id các lần
+  // lượng giá trong phiên trước đây chỉ nằm trong state: làm mới trang là
+  // mất hết, bấm lưu sau đó tạo bệnh án trống (chẩn đoán rỗng, không gắn
+  // lượng giá) — đúng lỗi anh gặp với Mai Thị Đến. Nay lưu nháp theo từng
+  // bệnh nhân vào localStorage, đổi bệnh nhân thì nạp nháp của người đó.
+  const workspaceDraftKey = (patientProfileId: string) =>
+    `doctor-workspace-draft:v1:${patientProfileId}`;
+  const emptyWorkspaceDraft = () => ({
+    diagnosis: "",
+    doctorNotes: "",
+    drugRows: [] as DrugRow[],
+    exerciseRows: [] as ExerciseRow[],
+    selectedServiceIds: [] as string[],
+    serviceNote: "",
+    sessionAssessmentIds: [] as string[],
+  });
+  type WorkspaceDraft = ReturnType<typeof emptyWorkspaceDraft>;
+  const draftJSON = useMemo(
+    () =>
+      JSON.stringify({
+        diagnosis,
+        doctorNotes,
+        drugRows,
+        exerciseRows,
+        selectedServiceIds,
+        serviceNote,
+        sessionAssessmentIds,
+      }),
+    [
+      diagnosis,
+      doctorNotes,
+      drugRows,
+      exerciseRows,
+      selectedServiceIds,
+      serviceNote,
+      sessionAssessmentIds,
+    ],
+  );
+  const draftJSONRef = useRef("");
+  useEffect(() => {
+    draftJSONRef.current = draftJSON;
+  }, [draftJSON]);
+  // Chặn lưu trùng bệnh án: sau khi lưu thành công, nút Lưu tắt cho tới
+  // khi nội dung thay đổi (19/11: 1 buổi khám của Mai Thị Đến bị lưu
+  // thành 3 bệnh án COMPLETED trong 6 phút vì bấm lưu lặp lại).
+  const [isSavingSession, setIsSavingSession] = useState(false);
+  const [sessionSaveSnapshot, setSessionSaveSnapshot] = useState<string | null>(null);
+  // Cờ bỏ qua 1 lần ghi nháp ngay sau khi nạp nháp (tránh ghi đè nháp của
+  // bệnh nhân mới bằng dữ liệu cũ của bệnh nhân trước trong cùng 1 commit).
+  const skipDraftSaveRef = useRef(false);
+  // Cờ bỏ qua 1 lần ghi nháp ngay sau khi lưu thành công (lưu xong đã xóa
+  // nháp; setSessionAssessmentIds([]) sau đó sẽ kích hoạt effect ghi nháp
+  // 1 lần — phải chặn để nháp đã lưu không sống lại).
+  const draftClearedRef = useRef(false);
+  const [savedToday, setSavedToday] = useState<null | {
+    records: {
+      id: string;
+      appointmentId: string;
+      createdAt: string;
+      diagnosis: string;
+      mpCodes: string[];
+      expCodes: string[];
+    }[];
+  }>(null);
+
+  // "Đã lưu hôm nay" cho bệnh nhân đang khám — để bác sĩ thấy bệnh án/đơn
+  // đã lưu sau khi F5, thay vì tưởng chưa lưu rồi bấm lưu trùng.
+  const loadSavedToday = useCallback(
+    async (patientProfileId: string, appointmentId?: string) => {
+      try {
+        const today = new Date().toISOString().substring(0, 10);
+        const res: any =
+          await doctorService.listMedicalRecordsByPatient(patientProfileId);
+        const all: any[] = Array.isArray(res?.data)
+          ? res.data
+          : Array.isArray(res)
+            ? res
+            : [];
+        const todays = all.filter(
+          (r) => String(r.createdAt ?? "").substring(0, 10) === today,
+        );
+        const exps: any = await exerciseService
+          .listPatientExercisePrescriptions(patientProfileId, { limit: 50 })
+          .catch(() => ({ data: [] }));
+        const expRows: any[] = Array.isArray(exps?.data) ? exps.data : [];
+        const records = await Promise.all(
+          todays.map(async (r) => {
+            const mps: any = await doctorService
+              .listMedicationPrescriptionsByMedicalRecord(r.id)
+              .catch(() => ({ results: [] }));
+            const mpCodes: string[] = (
+              Array.isArray(mps?.results) ? mps.results : []
+            ).map((m: any) => m.code);
+            const expCodes: string[] = expRows
+              .filter((e: any) => e.medicalRecordId === r.id)
+              .map((e: any) => e.code);
+            const content: any = r.content ?? {};
+            return {
+              id: r.id,
+              appointmentId: r.appointmentId ?? "",
+              createdAt: r.createdAt,
+              diagnosis:
+                typeof content.diagnosis === "string" ? content.diagnosis : "",
+              mpCodes,
+              expCodes,
+            };
+          }),
+        );
+        setSavedToday({ records });
+        // Đã có bệnh án hôm nay cho lượt khám này thì khóa nút Lưu khi
+        // form chưa thay đổi (tránh bấm lưu lặp tạo bệnh án trống).
+        // Nhưng còn nháp chưa lưu thì phải cho lưu — nháp tồn tại nghĩa
+        // là nội dung đó chưa từng được lưu.
+        const hasRecordForThisVisit = records.some(
+          (rec) =>
+            !appointmentId ||
+            !rec.appointmentId ||
+            rec.appointmentId === appointmentId,
+        );
+        let hasUnsavedDraft = false;
+        try {
+          const raw = localStorage.getItem(
+            `doctor-workspace-draft:v1:${patientProfileId}`,
+          );
+          if (raw) {
+            const dd = JSON.parse(raw);
+            hasUnsavedDraft = Boolean(
+              dd.diagnosis?.trim() ||
+                dd.doctorNotes?.trim() ||
+                dd.drugRows?.length ||
+                dd.exerciseRows?.length ||
+                dd.selectedServiceIds?.length ||
+                dd.serviceNote?.trim() ||
+                dd.sessionAssessmentIds?.length,
+            );
+          }
+        } catch {}
+        if (hasRecordForThisVisit && !hasUnsavedDraft) {
+          setSessionSaveSnapshot(draftJSONRef.current);
+        } else if (!hasRecordForThisVisit) {
+          setSessionSaveSnapshot(null);
+        }
+      } catch {
+        setSavedToday({ records: [] });
+      }
+    },
+    [],
+  );
+
+  // Nạp nháp + dữ liệu đã lưu hôm nay khi đổi bệnh nhân.
+  useEffect(() => {
+    const pid = currentPatient?.patientProfileId;
+    if (!pid) return;
+    skipDraftSaveRef.current = true;
+    let hasDraftContent = false;
+    try {
+      const raw = localStorage.getItem(workspaceDraftKey(pid));
+      const d: Partial<WorkspaceDraft> = raw ? JSON.parse(raw) : {};
+      hasDraftContent = Boolean(
+        d.diagnosis?.trim() ||
+          d.doctorNotes?.trim() ||
+          d.drugRows?.length ||
+          d.exerciseRows?.length ||
+          d.selectedServiceIds?.length ||
+          d.serviceNote?.trim() ||
+          d.sessionAssessmentIds?.length,
+      );
+      setDiagnosis(typeof d.diagnosis === "string" ? d.diagnosis : "");
+      setDoctorNotes(typeof d.doctorNotes === "string" ? d.doctorNotes : "");
+      setDrugRows(Array.isArray(d.drugRows) ? d.drugRows : []);
+      setExerciseRows(Array.isArray(d.exerciseRows) ? d.exerciseRows : []);
+      setSelectedServiceIds(
+        Array.isArray(d.selectedServiceIds) ? d.selectedServiceIds : [],
+      );
+      setServiceNote(typeof d.serviceNote === "string" ? d.serviceNote : "");
+      setSessionAssessmentIds(
+        Array.isArray(d.sessionAssessmentIds) ? d.sessionAssessmentIds : [],
+      );
+    } catch {
+      resetExamForm();
+    }
+    setSavedMp(null);
+    setSavedExpCode("");
+    setSavedExpRows([]);
+    setCreatedPrescriptionCode("");
+    setPrintAssessments([]);
+    // Có nháp chưa lưu thì cho lưu ngay; chưa có gì thì khóa nút Lưu cho
+    // tới khi tải xong "Đã lưu hôm nay" (tránh bấm lưu 1 form trống trong
+    // lúc dữ liệu chưa về).
+    setSessionSaveSnapshot(
+      hasDraftContent ? null : JSON.stringify(emptyWorkspaceDraft()),
+    );
+    setSavedToday(null);
+    void loadSavedToday(pid, currentPatient?.appointmentId);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentPatient?.patientProfileId]);
+
+  // Ghi nháp mỗi khi nội dung thay đổi (localStorage — chỉ ở máy bác sĩ,
+  // không gửi lên server).
+  useEffect(() => {
+    const pid = currentPatient?.patientProfileId;
+    if (!pid) return;
+    if (draftClearedRef.current) {
+      draftClearedRef.current = false;
+      return;
+    }
+    if (skipDraftSaveRef.current) {
+      skipDraftSaveRef.current = false;
+      return;
+    }
+    try {
+      localStorage.setItem(workspaceDraftKey(pid), draftJSON);
+    } catch {}
+  }, [currentPatient?.patientProfileId, draftJSON]);
 
   // GĐ5 — hoàn thành can thiệp: checklist + khóa phiếu (khác hẳn nút
   // "Hoàn thành" cũ ở hàng đợi — nút cũ chỉ đổi state local, không gọi API
@@ -427,7 +781,28 @@ export default function DoctorWorkspacePage() {
             t.status === "PREPARING" ||
             t.status === "RETURNING"),
       );
-      if (therapy) {
+      if (nextPatient.isWalkIn) {
+        // Vãng lai không có lịch hẹn nên không gọi được bằng mã hẹn:
+        // gọi qua phiếu dịch vụ; đã SERVING (được mời từ màn hình
+        // phòng) thì khỏi gọi lại, chỉ chuyển sang khám.
+        if (therapy) {
+          const res = await roomService.callPatient(therapy.id);
+          if (!res.success) {
+            throw new Error(res.message || "Không gọi được bệnh nhân.");
+          }
+        } else {
+          const serving = roomQueue.therapyQueue.find(
+            (t) =>
+              t.patientProfileId === nextPatient.patientProfileId &&
+              t.status === "SERVING",
+          );
+          if (!serving) {
+            throw new Error(
+              "Không tìm thấy phiếu khám của bệnh nhân trong phòng.",
+            );
+          }
+        }
+      } else if (therapy) {
         const res = await roomService.callPatient(therapy.id);
         if (!res.success) {
           throw new Error(res.message || "Không gọi được bệnh nhân.");
@@ -589,6 +964,7 @@ export default function DoctorWorkspacePage() {
   const handleSaveSession = async () => {
     if (!currentPatient) return;
     setIsSaved(true);
+    setIsSavingSession(true);
     try {
       // 16/11: thước VAS nhanh ở thẻ bệnh nhân đã bỏ theo yêu cầu — điểm
       // đau nay chỉ nhập ở tab Thang điểm (Assessment VAS có cấu trúc).
@@ -605,7 +981,11 @@ export default function DoctorWorkspacePage() {
       // bệnh án mã hóa.
       const record = await doctorService.createMedicalRecord({
         patientProfileId: currentPatient.patientProfileId,
-        appointmentCode: currentPatient.appointmentCode,
+        // Vãng lai không có lịch hẹn: không gửi appointmentCode (backend
+        // tra code không thấy sẽ báo lỗi "Không tìm thấy cuộc hẹn").
+        appointmentCode: currentPatient.appointmentId
+          ? currentPatient.appointmentCode
+          : undefined,
         templateId: phcnTemplateId || undefined,
         content: {
           diagnosis,
@@ -651,7 +1031,7 @@ export default function DoctorWorkspacePage() {
         const exp = await exerciseService.createExercisePrescription({
           patientProfileId: currentPatient.patientProfileId,
           medicalRecordId: record?.id,
-          appointmentId: currentPatient.id,
+          appointmentId: currentPatient.appointmentId,
           items: exerciseItems.map((e) => ({
             exerciseId: e.exerciseId,
             sets: e.sets,
@@ -688,12 +1068,31 @@ export default function DoctorWorkspacePage() {
         prev.map((p, idx) => (idx === activePatientIndex ? { ...p, status: "COMPLETED" } : p))
       );
 
+      // Đánh dấu đã lưu + xóa nháp: nội dung này đã vào bệnh án, làm mới
+      // trang không còn hiện lại form cũ; lưu lần nữa khi chưa sửa gì sẽ
+      // bị khóa nút (chặn trùng bệnh án). Lượng giá đã gắn vào bệnh án
+      // thì xóa khỏi danh sách chờ gắn để lần lưu sau không gắn lại.
+      setSessionSaveSnapshot(draftJSONRef.current);
+      draftClearedRef.current = true;
+      try {
+        localStorage.removeItem(
+          workspaceDraftKey(currentPatient.patientProfileId),
+        );
+      } catch {}
+      setSessionAssessmentIds([]);
+      setIsSavingSession(false);
+      void loadSavedToday(
+        currentPatient.patientProfileId,
+        currentPatient.appointmentId,
+      );
+
       setTimeout(() => {
         setIsSaved(false);
         setShowPrintModal(true);
       }, 600);
     } catch (err: any) {
       setIsSaved(false);
+      setIsSavingSession(false);
       alert(
         "Lưu bệnh án thất bại: " +
           (err.response?.data?.message || err.message || "Vui lòng thử lại."),
@@ -769,10 +1168,10 @@ export default function DoctorWorkspacePage() {
         </div>
       ) : !currentPatient ? (
         <div className="bg-[#fffefc] border border-[#efeeeb] rounded-[14px] p-12 text-center space-y-3">
-          <h3 className="text-base font-semibold text-[#0f3e17]">Không có lịch hẹn khám hôm nay</h3>
+          <h3 className="text-base font-semibold text-[#0f3e17]">Không có bệnh nhân khám hôm nay</h3>
           <p className="text-xs text-[#222222]/70 max-w-md mx-auto">
-            Buồng khám chưa có lịch hẹn nào cho ngày hôm nay. Lịch hẹn mới đặt qua web hoặc lễ tân
-            sẽ tự hiện ở đây.
+            Buồng khám chưa có lịch hẹn nào cho ngày hôm nay. Lịch hẹn mới đặt qua web hoặc lễ tân,
+            và bệnh nhân vãng lai được mời vào phòng, sẽ tự hiện ở đây (tự làm mới mỗi 30 giây).
           </p>
         </div>
       ) : (
@@ -830,6 +1229,48 @@ export default function DoctorWorkspacePage() {
               </div>
             </div>
 
+          </div>
+
+          {/* Đã lưu hôm nay (19/11) — để bác sĩ thấy bệnh án/đơn đã lưu
+              sau khi làm mới trang, thay vì tưởng chưa lưu rồi bấm lưu trùng. */}
+          <div className="bg-[#fffefc] border border-[#efeeeb] rounded-[14px] p-4 space-y-2">
+            <h4 className="eyebrow text-[#0f3e17] flex items-center gap-2">
+              <CheckCircle2 className="w-4 h-4 text-[#0f3e17]" />
+              <span>Đã lưu hôm nay</span>
+            </h4>
+            {!savedToday ? (
+              <p className="text-xs text-[#222222]/60">Đang tải...</p>
+            ) : savedToday.records.length === 0 ? (
+              <p className="text-xs text-[#222222]/60">
+                Chưa có bệnh án nào lưu hôm nay cho bệnh nhân này.
+              </p>
+            ) : (
+              <ul className="space-y-2">
+                {savedToday.records.map((rec) => (
+                  <li key={rec.id} className="text-xs bg-[#e1f4df]/40 rounded-[14px] p-2.5 space-y-0.5">
+                    <div className="flex items-center justify-between">
+                      <span className="font-semibold text-[#0f3e17]">Bệnh án</span>
+                      <span className="text-[#222222]/60">
+                        {new Date(rec.createdAt).toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" })}
+                      </span>
+                    </div>
+                    <div className="text-[#222222]/80">
+                      {rec.diagnosis ? `Chẩn đoán: ${rec.diagnosis}` : "Chưa ghi chẩn đoán"}
+                    </div>
+                    {rec.mpCodes.length > 0 && (
+                      <div className="text-[#222222]/80">
+                        Đơn thuốc: {rec.mpCodes.join(", ")}
+                      </div>
+                    )}
+                    {rec.expCodes.length > 0 && (
+                      <div className="text-[#222222]/80">
+                        Đơn bài tập: {rec.expCodes.join(", ")}
+                      </div>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
 
           {/* GĐ5 — Hoàn thành can thiệp (khóa phiếu). Khác hẳn nút "Hoàn
@@ -933,6 +1374,16 @@ export default function DoctorWorkspacePage() {
             <h4 className="eyebrow text-[#0f3e17] flex items-center gap-2">
               <Users className="w-4 h-4 text-[#0f3e17]" />
               <span>Hàng đợi buồng này ({queue.length})</span>
+              <button
+                type="button"
+                onClick={() => void loadQueue(true)}
+                disabled={queueRefreshing}
+                title="Tải lại hàng đợi"
+                aria-label="Tải lại hàng đợi"
+                className="ml-auto p-1.5 rounded-full text-[#0f3e17] hover:bg-[#e1f4df] transition-colors disabled:opacity-50"
+              >
+                <RefreshCw className={`w-3.5 h-3.5 ${queueRefreshing ? "animate-spin" : ""}`} />
+              </button>
             </h4>
             <div className="space-y-2 max-h-56 overflow-y-auto pr-1">
               {queue.map((item, idx) => (
@@ -1011,7 +1462,7 @@ export default function DoctorWorkspacePage() {
             {activeTab === "FIM" && currentPatient && (
               <AssessmentTab
                 patientProfileId={currentPatient.patientProfileId}
-                appointmentId={currentPatient.id}
+                appointmentId={currentPatient.appointmentId}
                 onAssessmentCreated={(id) =>
                   setSessionAssessmentIds((prev) => (prev.includes(id) ? prev : [...prev, id]))
                 }
@@ -1219,8 +1670,18 @@ export default function DoctorWorkspacePage() {
                 <button
                   type="button"
                   onClick={handleSaveSession}
-                  disabled={isSaved}
-                  title="Hoàn tất Ca khám & Lưu Bệnh án"
+                  disabled={
+                    isSaved ||
+                    isSavingSession ||
+                    (sessionSaveSnapshot !== null &&
+                      draftJSON === sessionSaveSnapshot)
+                  }
+                  title={
+                    sessionSaveSnapshot !== null &&
+                    draftJSON === sessionSaveSnapshot
+                      ? "Đã lưu nội dung này rồi — sửa gì đó rồi mới lưu lại"
+                      : "Hoàn tất Ca khám & Lưu Bệnh án"
+                  }
                   aria-label="Hoàn tất Ca khám & Lưu Bệnh án"
                   className="p-2.5 rounded-[14px] bg-[#0f3e17] hover:bg-[#0c2f10] text-[#fffefc] flex items-center justify-center transition-colors disabled:opacity-50"
                 >
