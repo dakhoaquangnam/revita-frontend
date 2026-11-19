@@ -135,7 +135,12 @@ export default function DoctorWorkspacePage() {
   const [callError, setCallError] = useState("");
 
   useEffect(() => {
-    const myDoctorId = user?.doctor?.id;
+    // GỐC LỖI 19/11: response đăng nhập KHÔNG trả user.doctor (backend
+    // chỉ gắn doctor vào JWT payload và /auth/me), nên user?.doctor?.id
+    // luôn undefined và effect này chưa bao giờ chạy — trang bác sĩ mãi
+    // không biết phòng trực. Dự phòng: doctorId từ lịch hẹn hôm nay
+    // (state doctorId do loadQueue đặt từ appointments[0].doctorId).
+    const myDoctorId = user?.doctor?.id ?? doctorId;
     if (!myDoctorId) return;
     let cancelled = false;
     receptionistService
@@ -172,7 +177,7 @@ export default function DoctorWorkspacePage() {
     return () => {
       cancelled = true;
     };
-  }, [user?.doctor?.id]);
+  }, [user?.doctor?.id, doctorId]);
 
   // Hàng đợi buồng khám — lịch hẹn hôm nay + bệnh nhân vãng lai đã được
   // mời vào phòng khám (phiếu Khám PHCN, chưa có lịch hẹn). Trước đây chỉ
