@@ -237,8 +237,25 @@ export default function DoctorWorkspacePage() {
         // Gộp bệnh nhân vãng lai: phiếu dịch vụ Khám PHCN trong phòng trực,
         // do chính bác sĩ này phụ trách, chưa có lịch hẹn, chưa trùng với
         // lịch hẹn đã có trong hàng đợi.
-        if (myRoomId && myDoctorId) {
+        if (myDoctorId) {
           try {
+            // Lấy phòng ngay trong lượt tải này (19/11): trước đây việc
+            // biết phòng chờ effect myRoom chạy sau loadQueue nên lượt tải
+            // đầu luôn thiếu vãng lai, phải bấm Tải lại mới hiện. Lấy
+            // phòng ở đây thì lượt tải đầu đã gộp được Bình.
+            let roomId = myRoomId;
+            if (!roomId) {
+              const room = await appointmentService.getDoctorRoom(
+                myDoctorId,
+                today,
+              );
+              if (room) {
+                roomId = room.roomId;
+                setMyRoomId(room.roomId);
+                setMyRoomName(room.roomName);
+              }
+            }
+            if (roomId) {
             if (!examServiceIdRef.current) {
               const services = await appointmentService.getServicesByDoctor(
                 myDoctorId,
@@ -253,7 +270,7 @@ export default function DoctorWorkspacePage() {
             }
             const examServiceId = examServiceIdRef.current;
             if (examServiceId) {
-              const roomQueue = await roomService.getRoomQueue(myRoomId);
+              const roomQueue = await roomService.getRoomQueue(roomId);
               const inQueue = new Set(items.map((i) => i.patientProfileId));
               const walkins = roomQueue.therapyQueue.filter(
                 (t) =>
@@ -304,6 +321,7 @@ export default function DoctorWorkspacePage() {
                         : "WAITING",
                 });
               });
+            }
             }
           } catch {
             // Không gộp được vãng lai thì hàng đợi lịch hẹn vẫn hiện —
