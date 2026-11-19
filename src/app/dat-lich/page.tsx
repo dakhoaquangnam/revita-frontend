@@ -7,7 +7,8 @@ import { Navbar } from "@/components/layout/navbar";
 import { Footer } from "@/components/layout/footer";
 import { useSpecialties } from "@/hooks/use-public-data";
 import { appointmentService, SERVICE_TECHNICIAN_MAP } from "@/services/appointment.service";
-import { toVietnamSlotRange, toVietnamTimeFromISO } from "@/lib/vietnam-time";
+import { toVietnamSlotRange, toVietnamTimeFromISO, toVietnamMinutes } from "@/lib/vietnam-time";
+import { useVietnamNow } from "@/hooks/use-vietnam-now";
 import {
   Calendar as CalendarIcon,
   Clock,
@@ -54,6 +55,19 @@ export default function DatLichPage() {
     setSelectedDate(todayLocal());
   }, []);
   const [selectedSlot, setSelectedSlot] = useState<{ startTime: string; endTime: string } | null>(null);
+
+  // Giờ hiện tại theo giờ Việt Nam — để làm mờ khung giờ đã qua trong ngày
+  // hôm nay và để ô chọn ngày chỉ chặn ngày quá khứ (min = hôm nay).
+  const vietnamNow = useVietnamNow();
+
+  // Khung giờ đã chọn mà quá giờ bắt đầu (để trang mở lâu) thì bỏ chọn,
+  // để bệnh nhân không đặt nhầm khung đã qua.
+  useEffect(() => {
+    if (!vietnamNow || !selectedSlot || selectedDate !== vietnamNow.date) return;
+    if (toVietnamMinutes(selectedSlot.startTime) <= vietnamNow.minutes) {
+      setSelectedSlot(null);
+    }
+  }, [vietnamNow, selectedSlot, selectedDate]);
 
   // KTV bệnh nhân chọn ở bước riêng sau khi chọn dịch vụ.
   const [selectedTechnicianId, setSelectedTechnicianId] = useState<string>("");
@@ -376,7 +390,7 @@ export default function DatLichPage() {
                     <input
                       type="date"
                       value={selectedDate}
-                      min={selectedDate || undefined}
+                      min={vietnamNow?.date}
                       onChange={(e) => {
                         setSelectedDate(e.target.value);
                         setSelectedDoctorId("");
@@ -499,17 +513,26 @@ export default function DatLichPage() {
                         const isSelected =
                           selectedSlot?.startTime === slot.startTime &&
                           selectedSlot?.endTime === slot.endTime;
+                        // Ngày hôm nay: khung đã qua giờ bắt đầu thì làm mờ,
+                        // không cho chọn nữa. Ngày khác thì tất cả đều chọn được.
+                        const isPast =
+                          vietnamNow !== null &&
+                          selectedDate === vietnamNow.date &&
+                          toVietnamMinutes(slot.startTime) <= vietnamNow.minutes;
                         return (
                           <button
                             key={label}
                             type="button"
+                            disabled={isPast}
                             onClick={() =>
                               setSelectedSlot({ startTime: slot.startTime, endTime: slot.endTime })
                             }
                             className={`py-2.5 px-2 rounded-[14px] text-xs font-semibold border transition-colors ${
-                              isSelected
-                                ? "bg-[#0f3e17] border-transparent text-[#fffefc]"
-                                : "bg-[#fffefc] border-[#efeeeb] text-[#222222] hover:bg-[#efeeeb]/40"
+                              isPast
+                                ? "bg-[#efeeeb]/60 border-[#efeeeb] text-[#222222]/40 cursor-not-allowed opacity-60"
+                                : isSelected
+                                  ? "bg-[#0f3e17] border-transparent text-[#fffefc]"
+                                  : "bg-[#fffefc] border-[#efeeeb] text-[#222222] hover:bg-[#efeeeb]/40"
                             }`}
                           >
                             <p>{label}</p>

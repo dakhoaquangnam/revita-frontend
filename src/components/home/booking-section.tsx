@@ -14,7 +14,8 @@ import {
 } from "lucide-react";
 import { useSpecialties } from "@/hooks/use-public-data";
 import { appointmentService, SERVICE_TECHNICIAN_MAP } from "@/services/appointment.service";
-import { toVietnamTime } from "@/lib/vietnam-time";
+import { toVietnamTime, toVietnamMinutes } from "@/lib/vietnam-time";
+import { useVietnamNow } from "@/hooks/use-vietnam-now";
 
 // Ngày hôm nay theo giờ địa phương (gán trong useEffect để không đọc
 // new Date() lúc prerender — Next.js 16 chặn giá trị thời gian không ổn định).
@@ -60,6 +61,20 @@ export function BookingSection() {
     endTime: string;
   } | null>(null);
   const [copied, setCopied] = useState(false);
+
+  // Giờ hiện tại theo giờ Việt Nam — để làm mờ khung giờ đã qua trong ngày
+  // hôm nay và để ô chọn ngày chỉ chặn ngày quá khứ (min = hôm nay).
+  const vietnamNow = useVietnamNow();
+
+  // Khung giờ đã chọn mà quá giờ bắt đầu (để trang mở lâu) thì bỏ chọn,
+  // để bệnh nhân không đặt nhầm khung đã qua.
+  useEffect(() => {
+    if (!vietnamNow || !formData.slot || formData.date !== vietnamNow.date) return;
+    const [startTime] = formData.slot.split(" - ");
+    if (startTime && toVietnamMinutes(startTime) <= vietnamNow.minutes) {
+      setFormData((prev) => ({ ...prev, slot: "" }));
+    }
+  }, [vietnamNow, formData.slot, formData.date]);
 
   useEffect(() => {
     setFormData((prev) => ({ ...prev, date: todayLocal() }));
@@ -468,7 +483,7 @@ export function BookingSection() {
                         <input
                           type="date"
                           value={formData.date}
-                          min={formData.date || undefined}
+                          min={vietnamNow?.date}
                           onChange={(e) => {
                             setFormData({ ...formData, date: e.target.value });
                             resetAfterSpecialtyOrDate();
@@ -506,11 +521,23 @@ export function BookingSection() {
                         className="w-full pl-9 pr-3 py-2 text-sm bg-[#fffefc] border border-[#efeeeb] rounded-[14px] focus:outline-none focus:border-[#0f3e17] transition-all disabled:opacity-60"
                       >
                         <option value="">-- Chọn khung giờ còn trống --</option>
-                        {slots.map((s) => (
-                          <option key={`${s.startTime} - ${s.endTime}`} value={`${s.startTime} - ${s.endTime}`}>
-                            {toVietnamTime(s.startTime)} - {toVietnamTime(s.endTime)}
-                          </option>
-                        ))}
+                        {slots.map((s) => {
+                          // Ngày hôm nay: khung đã qua giờ bắt đầu thì làm mờ,
+                          // không cho chọn nữa. Ngày khác thì tất cả đều chọn được.
+                          const isPast =
+                            vietnamNow !== null &&
+                            formData.date === vietnamNow.date &&
+                            toVietnamMinutes(s.startTime) <= vietnamNow.minutes;
+                          return (
+                            <option
+                              key={`${s.startTime} - ${s.endTime}`}
+                              value={`${s.startTime} - ${s.endTime}`}
+                              disabled={isPast}
+                            >
+                              {toVietnamTime(s.startTime)} - {toVietnamTime(s.endTime)}
+                            </option>
+                          );
+                        })}
                       </select>
                     </div>
                     {formData.serviceId && !slotsLoading && slots.length === 0 && (

@@ -16,6 +16,32 @@ export function toVietnamTime(hhmm: string): string {
   return `${String(Math.floor(total / 60)).padStart(2, "0")}:${String(total % 60).padStart(2, "0")}`;
 }
 
+/**
+ * "HH:MM" UTC -> số phút từ 0h theo giờ Việt Nam (0–1439).
+ * Dùng để so sánh khung giờ với giờ hiện tại (vd khung 07:30 VN = 450).
+ * Trả -1 nếu chuỗi không đúng dạng.
+ */
+export function toVietnamMinutes(hhmm: string): number {
+  const m = /^(\d{2}):(\d{2})$/.exec(hhmm.trim());
+  if (!m) return -1;
+  return (Number(m[1]) * 60 + Number(m[2]) + 7 * 60) % (24 * 60);
+}
+
+/**
+ * Giờ hiện tại theo giờ Việt Nam: { date: "YYYY-MM-DD", minutes }.
+ * CHỈ gọi trong useEffect / event handler — không gọi lúc render
+ * (Next.js 16 chặn giá trị thời gian không ổn định ở render).
+ */
+export function nowVietnam(): { date: string; minutes: number } {
+  const now = new Date(Date.now() + 7 * 60 * 60 * 1000);
+  const mm = String(now.getUTCMonth() + 1).padStart(2, "0");
+  const dd = String(now.getUTCDate()).padStart(2, "0");
+  return {
+    date: `${now.getUTCFullYear()}-${mm}-${dd}`,
+    minutes: now.getUTCHours() * 60 + now.getUTCMinutes(),
+  };
+}
+
 export function toVietnamSlotRange(start: string, end: string): string {
   return `${toVietnamTime(start)} - ${toVietnamTime(end)}`;
 }
