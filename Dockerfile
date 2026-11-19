@@ -1,5 +1,5 @@
 # Revita frontend (Next.js 16) — Dockerfile cho VPS ONIE
-# Build: docker compose build --build-arg NEXT_PUBLIC_API_URL=... --build-arg NEXT_PUBLIC_SOCKET_URL=...
+# Build: docker compose build --build-arg NEXT_PUBLIC_API_URL=... --build-arg NEXT_PUBLIC_SOCKET_URL=... --build-arg NEXT_PUBLIC_SITE_URL=...
 # Chạy:  npm start (next start, cổng 3000 trong container, không publish ra host —
 #        nginx của backend đã chiếm cổng 80 và sẽ proxy / về container này).
 # Lưu ý: NEXT_PUBLIC_* được "nướng" vào JS lúc build, đổi API base thì phải build lại.
@@ -11,10 +11,12 @@ RUN apk add --no-cache libc6-compat
 COPY package.json package-lock.json ./
 RUN npm ci
 COPY . .
-ARG NEXT_PUBLIC_API_URL=http://23.132.252.189/api
-ARG NEXT_PUBLIC_SOCKET_URL=http://23.132.252.189
+ARG NEXT_PUBLIC_API_URL=https://bsthanhsang.com/api
+ARG NEXT_PUBLIC_SOCKET_URL=https://bsthanhsang.com
+ARG NEXT_PUBLIC_SITE_URL=https://bsthanhsang.com
 ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
 ENV NEXT_PUBLIC_SOCKET_URL=$NEXT_PUBLIC_SOCKET_URL
+ENV NEXT_PUBLIC_SITE_URL=$NEXT_PUBLIC_SITE_URL
 RUN npm run build
 
 # ---------- Stage 2: chạy ----------

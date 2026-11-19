@@ -1,0 +1,40 @@
+# Revita frontend — docker-compose cho VPS ONIE (chạy cùng máy backend)
+# Đặt tại /opt/revita-fe/docker-compose.yml, cùng thư mục với code clone từ GitHub.
+# Frontend KHÔNG publish cổng ra host: nginx của backend (cổng 80) sẽ proxy / về nó.
+# Mạng dùng chung với backend để nginx (container revita-nginx) phân giải được tên "frontend".
+
+name: revita-frontend
+
+services:
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        # Nướng vào JS lúc build — đổi API base/domain sau này thì build lại.
+        NEXT_PUBLIC_API_URL: https://bsthanhsang.com/api
+        NEXT_PUBLIC_SOCKET_URL: https://bsthanhsang.com
+        NEXT_PUBLIC_SITE_URL: https://bsthanhsang.com
+    container_name: revita-frontend
+    restart: unless-stopped
+    env_file:
+      - .env
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 512M
+        reservations:
+          memory: 256M
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    networks:
+      - revita-net
+
+networks:
+  revita-net:
+    external: true
+    name: revita_revita-net
