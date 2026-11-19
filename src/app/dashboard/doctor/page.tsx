@@ -148,7 +148,23 @@ export default function DoctorWorkspacePage() {
         if (mine) {
           setMyRoomId(mine.id);
           setMyRoomName(mine.roomName);
+          return;
         }
+        // Ngoài giờ ca (19/11): GET /routing/rooms chỉ gắn bác sĩ vào
+        // buồng khi ca ĐANG diễn ra, nên 11:30–13:30 không tìm được phòng
+        // bằng đường trên. Dự phòng: phòng của ca hôm nay (ca đang diễn
+        // ra, rồi ca sắp tới, rồi ca cuối ngày) — backend trả kèm trong
+        // endpoint dịch vụ của bác sĩ.
+        const today = new Date().toISOString().substring(0, 10);
+        return appointmentService
+          .getDoctorRoom(myDoctorId, today)
+          .then((room) => {
+            if (!cancelled && room) {
+              setMyRoomId(room.roomId);
+              setMyRoomName(room.roomName);
+            }
+          })
+          .catch(() => {});
       })
       .catch(() => {
         // Không xác định được phòng trực: nút gọi sẽ báo rõ lỗi, không gọi giả.
@@ -1478,6 +1494,23 @@ export default function DoctorWorkspacePage() {
             {/* TAB 2: KÊ ĐƠN THUỐC & BÀI TẬP PHCN TẠI NHÀ */}
             {activeTab === "RX" && (
               <div className="space-y-6">
+                {/* Phần 0: Chẩn đoán (19/11) — trước đây state chẩn đoán
+                    không có ô nhập nào trong giao diện nên bác sĩ không
+                    thể ghi chẩn đoán, mọi bệnh án đều lưu chẩn đoán rỗng.
+                    Ô này nằm trong nháp workspace nên làm mới trang vẫn giữ. */}
+                <div className="space-y-2">
+                  <label className="block text-xs font-semibold text-[#0f3e17]">
+                    Chẩn đoán:
+                  </label>
+                  <textarea
+                    rows={2}
+                    value={diagnosis}
+                    onChange={(e) => setDiagnosis(e.target.value)}
+                    placeholder="Ví dụ: Di chứng liệt nửa người trái sau đột quỵ não, 3 tháng"
+                    className="w-full p-3 rounded-[14px] bg-[#fffefc] border border-[#efeeeb] text-xs text-[#222222] focus:outline-none focus:border-[#0f3e17]"
+                  />
+                </div>
+
                 {/* Phần 1: Đơn thuốc — kê từ danh mục Dược thư (GĐ4) */}
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">

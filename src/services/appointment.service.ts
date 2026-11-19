@@ -48,6 +48,16 @@ export interface DoctorServiceItem {
   description?: string;
 }
 
+// Phòng của bác sĩ trong ngày (từ ca làm việc đã duyệt) — xem
+// getDoctorRoom ở dưới. Null khi bác sĩ không có ca nào trong ngày.
+export interface DoctorRoomInfo {
+  roomId: string;
+  roomCode: string;
+  roomName: string;
+  boothId: string;
+  boothCode: string;
+}
+
 export interface BookAppointmentPayload {
   patientProfileId: string;
   doctorId: string;
@@ -220,6 +230,25 @@ export const appointmentService = {
     );
     const data = res.data;
     return Array.isArray(data?.services) ? data.services : [];
+  },
+
+  /**
+   * Phòng của bác sĩ trong một ngày, lấy từ ca làm việc đã duyệt (19/11).
+   * Dùng khi GET /routing/rooms không gắn được bác sĩ vào buồng — endpoint
+   * đó chỉ trả bác sĩ của ca ĐANG diễn ra, nên ngoài giờ ca (11:30–13:30)
+   * trang bác sĩ mất phòng và không gộp được bệnh nhân vãng lai vào hàng đợi.
+   * Trả null khi bác sĩ không có ca nào trong ngày.
+   */
+  async getDoctorRoom(
+    doctorId: string,
+    date: string,
+  ): Promise<DoctorRoomInfo | null> {
+    const res = await apiClient.get(
+      `/appointment-booking/doctors/${doctorId}/services`,
+      { params: { date } },
+    );
+    const room = res.data?.room;
+    return room && typeof room.roomId === "string" ? room : null;
   },
 
   /** Các slot thời gian khám còn trống (public). */
