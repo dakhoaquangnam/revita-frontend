@@ -3,7 +3,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
-  Calendar as CalendarIcon,
   Clock,
   User,
   Phone,
@@ -385,7 +384,7 @@ export function BookingSection() {
                         required
                         value={formData.dateOfBirth}
                         onChange={(e) => setFormData({ ...formData, dateOfBirth: e.target.value })}
-                        className="w-full px-3 py-2 text-sm bg-[#fffefc] border border-[#efeeeb] rounded-[14px] focus:outline-none focus:border-[#0f3e17] transition-all"
+                        className="w-full min-w-0 px-3 py-2 text-sm bg-[#fffefc] border border-[#efeeeb] rounded-[14px] focus:outline-none focus:border-[#0f3e17] transition-all"
                       />
                     </div>
 
@@ -478,8 +477,7 @@ export function BookingSection() {
                       <label className="block text-xs font-semibold text-[#0f3e17] mb-1">
                         Ngày khám mong muốn
                       </label>
-                      <div className="relative">
-                        <CalendarIcon className="w-4 h-4 text-[#222222]/40 absolute left-3 top-3" />
+                      <div className="relative min-w-0">
                         <input
                           type="date"
                           value={formData.date}
@@ -488,7 +486,7 @@ export function BookingSection() {
                             setFormData({ ...formData, date: e.target.value });
                             resetAfterSpecialtyOrDate();
                           }}
-                          className="w-full pl-9 pr-3 py-2 text-sm bg-[#fffefc] border border-[#efeeeb] rounded-[14px] focus:outline-none focus:border-[#0f3e17] transition-all"
+                          className="w-full min-w-0 pl-3 pr-3 py-2 text-sm bg-[#fffefc] border border-[#efeeeb] rounded-[14px] focus:outline-none focus:border-[#0f3e17] transition-all"
                         />
                       </div>
                     </div>

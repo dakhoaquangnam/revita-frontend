@@ -398,7 +398,7 @@ export default function DatLichPage() {
                         setSelectedSlot(null);
                         setSelectedTechnicianId("");
                       }}
-                      className="w-full px-3.5 py-2.5 text-sm bg-[#fffefc] border border-[#efeeeb] rounded-[14px] focus:outline-none focus:border-[#0f3e17]"
+                      className="w-full min-w-0 px-3.5 py-2.5 text-sm bg-[#fffefc] border border-[#efeeeb] rounded-[14px] focus:outline-none focus:border-[#0f3e17]"
                     />
                   </div>
                   <div>
@@ -667,7 +667,7 @@ export default function DatLichPage() {
                       required
                       value={patientInfo.dateOfBirth}
                       onChange={(e) => setPatientInfo({ ...patientInfo, dateOfBirth: e.target.value })}
-                      className="w-full px-3.5 py-2.5 text-sm bg-[#fffefc] border border-[#efeeeb] rounded-[14px] focus:outline-none focus:border-[#0f3e17]"
+                      className="w-full min-w-0 px-3.5 py-2.5 text-sm bg-[#fffefc] border border-[#efeeeb] rounded-[14px] focus:outline-none focus:border-[#0f3e17]"
                     />
                   </div>
 
