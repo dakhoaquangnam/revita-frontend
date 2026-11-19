@@ -909,7 +909,7 @@ export default function RoomWorkspacePage() {
             <DoorOpen className="h-6 w-6 text-[#0f3e17]" /> Màn hình phòng
           </h1>
           <p className="mt-1 text-sm text-[#222222]/60">
-            Hàng đợi khám và trị liệu của một phòng — tự làm mới mỗi 15 giây
+            Hàng đợi trị liệu của một phòng — tự làm mới mỗi 15 giây
             {isConnected ? " và khi có lệnh gọi mới" : " (mất kết nối thời gian thực, đang dùng poll)"}.
           </p>
         </div>
